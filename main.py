@@ -13,6 +13,7 @@ lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'ei
 main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
 
+
 from googleapiclient.discovery import build
 import pprint
 
@@ -58,6 +59,22 @@ def call_flow(flow_sid, tel=''):
                 .executions \
                 .create(to=tel, from_=main_number)
 
+
+            # while len(steps) < 12:
+            #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
+            #         .executions(execution.sid) \
+            #         .steps \
+            #         .list(limit=20)
+            #     time.sleep(5)
+            #     print(len(steps))
+            #
+            # last_step_sid = steps[0].sid
+            # execution_step_context = client.studio \
+            #     .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
+            #     .executions(execution.sid) \
+            #     .steps(last_step_sid) \
+            #     .step_context() \
+            #     .fetch()
 def profile_detail():
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -123,6 +140,18 @@ def call_to_check_bld():
             .list(limit=20)
         time.sleep(5)
         print(len(steps))
+    # sid = execution.sid
+    # execution_step = client.studio \
+    #                         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
+    #                         .executions('FN76531ee7fcda3617d99bec690d915045') \
+    #                         .steps \
+    #                         .fetch()
+
+    # call specific Flow and Execution only for understanding and deveopment
+    # execution = client.studio \
+    #                   .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
+    #                   .executions('FN76531ee7fcda3617d99bec690d915045') \
+    #                   .fetch()
 
     last_step_sid = steps[0].sid
     execution_step_context = client.studio \
@@ -163,7 +192,7 @@ def check_new_user(tel=''):
     all_sheet = sheet.get_all_values()
     phone_lst = []
     for a in all_sheet:phone_lst.append(a[0])
-    tel_not_plus = str(tel[1:12])
+    tel_not_plus = str(tel[1:13])
     if tel_not_plus in phone_lst:
         return 'Exist'
     else:
@@ -182,7 +211,7 @@ def save_new_user(tel='', tab=''):
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    new_row = [tel[1:12],'','','','','','','','','','','',json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
+    new_row = [tel[1:13],'','','','','','','','','','','',json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
@@ -400,6 +429,19 @@ def search():
         if it == 3: break
     x = {"search_result": str}
     return (jsonify(x))
-
+# def print_mars_photos():
+#     from redis import Redis
+#     from rq import Queue
+#
+#     from mars import get_mars_photo
+#
+#     q = Queue(connection=Redis())
+#
+#     print('Before')
+#     for i in range(10):
+#         #get_mars_photo(1 + i)
+#         q.enqueue(get_mars_photo, 1 + i)
+#     print('After')
+#print_mars_photos()
 if __name__ == "__main__":
     app.run(debug=True)
