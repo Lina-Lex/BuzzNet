@@ -400,19 +400,6 @@ def search():
         if it == 3: break
     x = {"search_result": str}
     return (jsonify(x))
-# def print_mars_photos():
-#     from redis import Redis
-#     from rq import Queue
-#
-#     from mars import get_mars_photo
-#
-#     q = Queue(connection=Redis())
-#
-#     print('Before')
-#     for i in range(10):
-#         #get_mars_photo(1 + i)
-#         q.enqueue(get_mars_photo, 1 + i)
-#     print('After')
-#print_mars_photos()
+
 if __name__ == "__main__":
     app.run(debug=True)
