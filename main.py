@@ -57,23 +57,7 @@ def call_flow(flow_sid, tel=''):
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
                 .create(to=tel, from_=main_number)
-
-
-            # while len(steps) < 12:
-            #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #         .executions(execution.sid) \
-            #         .steps \
-            #         .list(limit=20)
-            #     time.sleep(5)
-            #     print(len(steps))
-            #
-            # last_step_sid = steps[0].sid
-            # execution_step_context = client.studio \
-            #     .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #     .executions(execution.sid) \
-            #     .steps(last_step_sid) \
-            #     .step_context() \
-            #     .fetch()
+            
 def profile_detail():
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
