@@ -13,7 +13,6 @@ lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'ei
 main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
 
-
 from googleapiclient.discovery import build
 import pprint
 
