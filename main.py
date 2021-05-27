@@ -211,7 +211,7 @@ def save_new_user(tel='', tab=''):
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    new_row = [tel[1:13],'','','','','','','','','','','',json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
+    new_row = [tel[1:13],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),'19258609793','19258609793', indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
