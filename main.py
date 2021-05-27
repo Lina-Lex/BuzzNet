@@ -192,7 +192,7 @@ def check_new_user(tel=''):
     all_sheet = sheet.get_all_values()
     phone_lst = []
     for a in all_sheet:phone_lst.append(a[0])
-    tel_not_plus = str(tel[1:13])
+    tel_not_plus = str(tel[1:15])
     if tel_not_plus in phone_lst:
         return 'Exist'
     else:
@@ -211,7 +211,7 @@ def save_new_user(tel='', tab=''):
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    new_row = [tel[1:13],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
+    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
     sheet.append_row(new_row)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
