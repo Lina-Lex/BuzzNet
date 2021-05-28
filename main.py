@@ -1,3 +1,10 @@
+"""
+IVR API
+
+This API uses for specific functions during phone call between Client and IVR system
+
+
+"""
 import os
 from flask import Flask, request, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
@@ -21,6 +28,7 @@ my_api_key = os.environ['google_api_key']
 my_cse_id = os.environ['google_cse_id']
 
 def out_bound_call (tel):
+    """ Function for making outbound call"""
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
@@ -36,6 +44,7 @@ def out_bound_call (tel):
             .executions \
             .create(to=tel, from_=main_number)
 def call_flow(flow_sid, tel=''):
+    """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
@@ -76,6 +85,7 @@ def call_flow(flow_sid, tel=''):
             #     .step_context() \
             #     .fetch()
 def profile_detail():
+    """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
@@ -119,6 +129,7 @@ def profile_detail():
                 print(f'for {ph}:{v} is good')
 
 def call_to_check_bld():
+    """ Function for checking blood pressure and saving results to google spreadsheet """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
@@ -179,6 +190,7 @@ def call_to_check_bld():
     sheet.append_row(new_row)
     time.sleep(5)
 def check_new_user(tel=''):
+    """ Function for checking type of User (NEW/EXISTING) """
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
@@ -200,6 +212,7 @@ def check_new_user(tel=''):
 app = Flask(__name__)
 
 def save_new_user(tel='', tab=''):
+    """ Function for saving NEW user in google spreadsheet"""
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
@@ -215,6 +228,7 @@ def save_new_user(tel='', tab=''):
     sheet.append_row(new_row)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
+    """ Function for making joined call """
     resp = VoiceResponse()
     tel = request.form['From']
     answer = request.form['SpeechResult']
@@ -236,6 +250,7 @@ def voice_joined():
     return(str(resp))
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
+    """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
     user = check_new_user(tel)
@@ -247,6 +262,7 @@ def voice():
         resp.append(gather)
     return str(resp)
 def save_data(col_name, value, tel):
+    """ Function for saving data to google spreadsheet"""
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
@@ -276,6 +292,7 @@ def save_data(col_name, value, tel):
             break
 @app.route("/after_call", methods=['GET', 'POST'])
 def after_call():
+    """ Function for saving data after call to spreadsheet """
     resp = VoiceResponse()
     req = request.values
     for r in req:
@@ -283,6 +300,7 @@ def after_call():
     return str(resp)
 @app.route("/username", methods=['GET', 'POST'])
 def username():
+    """ Function for getting Name of the Client from google spreadsheet """
     req = request.values
     phone = req.get('phone')
 
@@ -307,6 +325,7 @@ def username():
     return (jsonify(x))
 @app.route("/call_to_friend", methods=['GET', 'POST'])
 def call_to_friend():
+    """ Function for making call to the friend according data in the spreadsheet """
     resp = VoiceResponse()
 
     req = request.values
@@ -332,6 +351,7 @@ def call_to_friend():
     return (jsonify(x))
 @app.route("/call_to_operator", methods=['GET', 'POST'])
 def call_to_operator():
+    """ Function for making call to the operator according data in the spreadsheet """
     resp = VoiceResponse()
 
     req = request.values
@@ -358,6 +378,7 @@ def call_to_operator():
 
 @app.route("/save_blood_pressure", methods=['GET', 'POST'])
 def save_blood_pressure():
+    """ Function for saving measurement of the blood pressure to the spreadsheet """
     resp = VoiceResponse()
 
     req = request.values
@@ -378,8 +399,10 @@ def save_blood_pressure():
     sheet.append_row(new_row)
 
     return(str(resp))
+
 @app.route("/save_feedback_service", methods=['GET', 'POST'])
 def save_feedback_service():
+    """ Function for gathering feedback and put information about it to google spreadsheet """
     resp = VoiceResponse()
     req = request.values
 
@@ -409,11 +432,13 @@ def save_feedback_service():
 
     return (str(resp))
 def google_search(search_term, api_key, cse_id, **kwargs):
+    """ Function for using Google Search API"""
     service = build("customsearch", "v1", developerKey=api_key)
     res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
     return res['items']
 @app.route("/search", methods=['GET', 'POST'])
 def search():
+    """ Function for answering search results on phrase from Client"""
     req = request.values
     req_str = req.get('str')
 
