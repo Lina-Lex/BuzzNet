@@ -236,7 +236,7 @@ def voice_joined():
         save_new_user(tel, 'Existing')
         resp.say('Thanks for joining us. \n'
                  'We are glad to welcome you to our social network. \n'
-                 'Buzznet is a unique platform where you can make friends with the same interests.\n'
+                 'Heart Voices is a unique platform where you can make friends with the same interests.\n'
                  'With us, you can use Google search through your phone. \n'
                  'You can take advantage of the unique smart reminder feature. \n'
                  'Our system will remind you every day of important events for you, it can be a daily medication intake, the need to do something, or a reminder that you really want to learn a new language.\n'
@@ -258,7 +258,7 @@ def voice():
     else:
         save_new_user(tel,'Calls')
         gather = Gather(input='speech dtmf', action='/voice_joined',  timeout=3, num_digits=1)
-        gather.say('Welcome to Buzznet! We are really helping to people in their journey to a healthy life. Do you want to join us? Say yes or no.')
+        gather.say('Welcome to Heart Voices ! We are really helping to people in their journey to a healthy life. Do you want to join us? Say yes or no.')
         resp.append(gather)
     return str(resp)
 def save_data(col_name, value, tel):
@@ -409,7 +409,7 @@ def save_feedback_service():
     phone = ''
     REurl = 'YES'
     if req.get('phone'):
-        phone =  req.get('phone')
+        phone = req.get('phone')
     else:
         account_sid = os.environ['TWILIO_ACCOUNT_SID']
         auth_token = os.environ['TWILIO_AUTH_TOKEN']
