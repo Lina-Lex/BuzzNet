@@ -262,7 +262,7 @@ def voice():
         resp.append(gather)
     return str(resp)
 def save_data(col_name, value, tel):
-    """ Function for saving data to google spreadsheet"""
+    """ Function for saving data to google spreadsheet """
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
@@ -323,6 +323,39 @@ def username():
         if phone == f'+{tel}':
             x = {"username": row.get('username')}
     return (jsonify(x))
+@app.route("/check_client_type", methods=['GET', 'POST'])
+def check_client_type():
+    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
+    req = request.values
+    phone = req.get('phone')
+
+    # GET username from SPREDASHEET
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    client = gspread.authorize(creds)
+
+    spreadsheetName = "Users"
+    sheetName = "Existing"
+
+    spreadsheet = client.open(spreadsheetName)
+    sheet = spreadsheet.worksheet(sheetName)
+
+    all_sheet = sheet.get_all_values()
+    rows = sheet.get_all_records()
+    x = {}
+    for row in rows:
+        tel = row.get('Phone Number')
+        if phone == f'+{tel}':
+            x = {"type": row.get('type')}
+    return (jsonify(x))
+@app.route("/save_client_type", methods=['GET', 'POST'])
+def save_client_type():
+    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
+    resp = VoiceResponse()
+    req = request.values
+    save_data('type', req.get('client_type'), req.get('phone'))
+    return str(resp)
+
 @app.route("/call_to_friend", methods=['GET', 'POST'])
 def call_to_friend():
     """ Function for making call to the friend according data in the spreadsheet """
