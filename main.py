@@ -28,17 +28,68 @@ from oauth2client.service_account import ServiceAccountCredentials
 import time
 import datetime
 import json
+from peewee import *
+from supermemo2 import SMTwo
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
+postgreSQLpass = os.environ['postgreSQLpass']
 
 
 from googleapiclient.discovery import build
-import pprint
+#import pprint
 
 my_api_key = os.environ['google_api_key']
 my_cse_id = os.environ['google_cse_id']
+
+#conn = MySQLDatabase('GOandDO', user='root', password='PASSWORD', host='127.0.0.1', port=3306)
+conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
+
+# Base model for work with Database through ORM
+class BaseModel(Model):
+    class Meta:
+        database = conn  # connection with database
+
+# Patient model
+class Patient(BaseModel):
+    id = AutoField(column_name='ID')
+    phone = TextField(column_name='phone', null=True)
+    username = TextField(column_name='username', null=True)
+    gender = TextField(column_name='gender', null=True)
+    timezone = TextField(column_name='timezone', null=True)
+    callstart = TimeField(column_name='callstart', null=True)
+    callend = TimeField(column_name='callend', null=True)
+    type = TextField(column_name='type', null=True)
+    created = DateTimeField(column_name='created', null=True)
+    updated = DateTimeField(column_name='updated', null=True)
+
+    class Meta:
+        table_name = 'patient'
+
+# Reminder
+class Reminder(BaseModel):
+    id = AutoField(column_name='ID')
+    text = TextField(column_name='text', null=True)
+
+    class Meta:
+        table_name = 'reminder'
+
+# Smart Reminder
+class SmartReminder(BaseModel):
+    id = AutoField(column_name='ID')
+    patient_id = IntegerField(column_name='patientid')
+    reminder_id = IntegerField(column_name='reminderid')
+
+    easiness = FloatField(column_name='easiness', null=True)
+    interval = IntegerField(column_name='interval', null=True)
+    repetitions = IntegerField(column_name='repetitions', null=True)
+
+    last_time = DateTimeField(column_name='lasttime', null=True)
+    next_time = DateTimeField(column_name='nexttime', null=True)
+
+    class Meta:
+        table_name = 'smartreminder'
 
 def out_bound_call (tel):
     """ Function for making outbound call"""
@@ -514,5 +565,105 @@ def search():
 #         q.enqueue(get_mars_photo, 1 + i)
 #     print('After')
 #print_mars_photos()
+
+def db_create_tables():
+    #conn.drop_tables([Patient, Reminder, SmartReminder])
+    # conn.cursor().execute("drop table patient")
+    # conn.cursor().execute("drop table reminder")
+    # conn.cursor().execute("drop table smartreminder")
+
+    conn.create_tables([Patient, Reminder, SmartReminder])
+    conn.commit()
+
+    conn.cursor().execute("INSERT INTO Patient(Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('13333333333', 'Alex', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
+    conn.cursor().execute("INSERT INTO Patient (Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('12222222222', 'Lina', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ('Get at least 150 minutes per week of moderate-intensity aerobic activity or 75 minutes per week of vigorous aerobic activity, or a combination of both, preferably spread throughout the week.')")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ( 'Add moderate- to high-intensity muscle-strengthening activity (such as resistance or weights) on at least 2 days per week.')")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ( 'Spend less time sitting. Even light-intensity activity can offset some of the risks of being sedentary.')")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '1', now())")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '2', now())")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '3', now())")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('2', '1', now())")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('2', '2', now())")
+    conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('2', '3', now())")
+
+    conn.commit()
+    #conn.close()
+@app.route("/get_next_reminder", methods=['GET', 'POST'])
+def get_next_reminder():
+    req = request.values
+    phone = req.get('phone')
+    tel = str(phone[1:15]) # exclude +
+
+    conn.connect()
+    # get Patient ID by the phone
+    pat = Patient.get(Patient.phone == tel)
+    print(pat.id, pat.phone)
+
+    # get SmartReminders by Patient ID
+    #smr = SmartReminder.get(SmartReminder.id==pat.id)
+    query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
+    smr_selected = query.dicts().execute()
+
+    result = ''
+    # get reminder text by SmartReminder ID
+    for s in smr_selected:
+        rm = Reminder.get(Reminder.id==s['reminder_id'])
+        result = rm.text
+        print (rm.text)
+        # change next time of reminding
+        update_reminder(s['reminder_id'])
+        conn.commit()
+    conn.close()
+    x = {"text":f' Lets listen interesting fact of the day...{result} ...Thank you.'}
+    return (jsonify(x))
+def init_db():
+    with conn.atomic() as transaction:  # Opens new transaction.
+        try:
+            db_create_tables()
+        except:
+            # Because this block of code is wrapped with "atomic", a
+            # new transaction will begin automatically after the call
+            # to rollback().
+            transaction.rollback()
+            error_saving = True
+            raise
+
+        #create_report(error_saving=error_saving)
+        # Note: no need to call commit. Since this marks the end of the
+        # wrapped block of code, the `atomic` context manager will
+        # automatically call commit for us.
+    conn.close()
+def update_reminder(id):
+
+    # get smart reminder by ID
+    smr = SmartReminder.get(SmartReminder.id==id)
+    #smr = SmartReminder()
+    r = SMTwo.first_review(3)
+    if smr.last_time is None:
+        # first review
+        r = SMTwo.first_review(3)
+        print(r)
+    else:
+        # next review
+        r = SMTwo(smr.easiness, smr.interval, smr.repetitions).review(3)
+        print(r)
+    smr.interval = r.interval
+    smr.easiness = r.easiness
+    smr.repetitions = r.repetitions
+    smr.last_time = datetime.datetime.now()
+    smr.next_time = r.review_date
+    smr.save()
+
+    # second review
+    # review = SMTwo(r.easiness, r.interval, r.repetitions).review(level, r.review_date)
+    # print(r.review_date, review)
+    # dt = r.review_date
+    # for i in range(10):
+    #     dt = dt + datetime.timedelta(days=1)
+    #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
+    #     print(dt, review)
+#init_db()
+
 if __name__ == "__main__":
-    app.run(debug=True)
+     app.run(debug=True)
