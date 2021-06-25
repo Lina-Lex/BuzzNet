@@ -36,7 +36,6 @@ main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
 postgreSQLpass = os.environ['postgreSQLpass']
 
-
 from googleapiclient.discovery import build
 #import pprint
 
