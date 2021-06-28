@@ -92,5 +92,5 @@ db.close()
 # query
 rows = Patient.select()
 for (i, row) in enumerate(rows):
-   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability}utc: {row.utc}")
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} utc: {row.utc}")
 db.close()
