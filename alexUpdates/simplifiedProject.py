@@ -1,0 +1,94 @@
+from peewee import *
+import random
+import pandas as pd
+import numpy as np
+import phonenumbers
+from phonenumbers import geocoder
+from phonenumbers.timezone import time_zones_for_number
+from faker import Faker
+import us
+import os
+
+# initialize faker object for "fake" users and load mappings (State to Time Zone)
+fake = Faker()
+tzs_df = pd.read_csv("tzmapping.csv")
+tzs_df.index = tzs_df['State']
+
+# converts a phone number to a timezone
+def convertToTimeZone(number):  
+    fmtNum = phonenumbers.parse("+" + str(number))
+    state = geocoder.description_for_number(fmtNum, 'en')
+    time_zone = tzs_df.loc[state]['Zone']
+    fmtTimeZone = "US/" + time_zone.split(" ")[0]
+    return fmtTimeZone
+
+# zone = "US/Pacific"
+def convertToUTC(zone):  
+    #localized_dt = pytz.timezone(fmtZone)
+    # dt = localized_dt.localize(dt)
+    # print(localized_dt)
+
+    # target_tz = pytz.timezone("UTC")
+    # normalizedUTC = target_tz.normalize(dt)
+    # print(normalizedUTC)
+
+    return zone
+
+# remove db if exits, because will make duplicates if not each time code is run
+if os.path.exists('simple.db'):
+    os.remove('simple.db')
+
+# initialize db
+db = SqliteDatabase('simple.db')
+
+# Base model for work with Database through ORM
+class BaseModel(Model):
+    class Meta:
+        database = db  # connection with database
+
+class Patient(BaseModel):
+    id = AutoField(column_name='ID')
+    phone = TextField(column_name='Phone', null=True)
+    username = TextField(column_name='Username', null=True)
+    gender = TextField(column_name='Gender', null=True)
+    timezone = TextField(column_name='Timezone', null=True)
+    availability = TextField(column_name='Availability', null=True) # NEW FIELD
+    callstart = TimeField(column_name='CallStart', null=True)
+    callend = TimeField(column_name='CallEnd', null=True)
+    type = TextField(column_name='Type', null=True)
+    created = DateTimeField(column_name='Created', null=True)
+    updated = DateTimeField(column_name='Updated', null=True)
+    class Meta:
+        table_name = 'Patient'
+
+# connect + create Patient table in "workingFile.db" database
+db.connect()
+db.create_tables([Patient])
+
+# fake users
+numbers = ["16692419870", "16617480240", "14436533745"]
+available = ["3 pm to 7 pm", "11 am to 3 pm", "11 am to 3 pm"]
+time_zones = [convertToTimeZone(i) for i in numbers]
+names = [fake.name() for i in range(len(numbers))]
+utc = [convertToUTC(convertToTimeZone(i)) for i in numbers]
+
+print(f"utc: {utc}")
+# add to db all rows of users
+rows = zip(names, numbers, available)
+for row in rows:
+    p = Patient(
+            username=row[0], 
+            phone=row[1], 
+            timezone=convertToTimeZone(row[1]), 
+            availability=row[2]
+            )
+    p.save() # each row now stored in database
+
+# close conn
+db.close()
+
+# query
+rows = Patient.select()
+for (i, row) in enumerate(rows):
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability}")
+db.close()
