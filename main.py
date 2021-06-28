@@ -42,13 +42,11 @@ from googleapiclient.discovery import build
 my_api_key = os.environ['google_api_key']
 my_cse_id = os.environ['google_cse_id']
 
-#conn = MySQLDatabase('GOandDO', user='root', password='PASSWORD', host='127.0.0.1', port=3306)
-conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
-
+db_proxy = Proxy()
 # Base model for work with Database through ORM
 class BaseModel(Model):
     class Meta:
-        database = conn  # connection with database
+        database = db_proxy  # connection with database
 
 # Patient model
 class Patient(BaseModel):
@@ -89,6 +87,16 @@ class SmartReminder(BaseModel):
 
     class Meta:
         table_name = 'smartreminder'
+if 'HEROKU' in os.environ:
+    import urlparse, psycopg2
+    urlparse.uses_netloc.append('postgres')
+    url = urlparse.urlparse(os.environ["DATABASE_URL"])
+    conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
+    db_proxy.initialize(conn)
+else:
+    conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
+    db_proxy.initialize(conn)
+
 
 def out_bound_call (tel):
     """ Function for making outbound call"""
@@ -662,7 +670,9 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
-#init_db()
+save_data(1,2,3)
 
-if __name__ == "__main__":
-     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
+    db_proxy.connect()
+    db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
