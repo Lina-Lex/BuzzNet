@@ -61,7 +61,7 @@ class Patient(BaseModel):
     class Meta:
         table_name = 'Patient'
 
-# connect + create Patient table in "workingFile.db" database
+# connect + create Patient table in "simple.db" database
 db.connect()
 db.create_tables([Patient])
 
