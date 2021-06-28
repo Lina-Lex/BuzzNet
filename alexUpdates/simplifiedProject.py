@@ -6,6 +6,8 @@ import phonenumbers
 from phonenumbers import geocoder
 from phonenumbers.timezone import time_zones_for_number
 from faker import Faker
+import datetime
+import pytz
 import us
 import os
 
@@ -24,15 +26,14 @@ def convertToTimeZone(number):
 
 # zone = "US/Pacific"
 def convertToUTC(zone):  
-    #localized_dt = pytz.timezone(fmtZone)
-    # dt = localized_dt.localize(dt)
-    # print(localized_dt)
+    dt = datetime.datetime.now()
+    localized_dt = pytz.timezone(zone)
+    dt = localized_dt.localize(dt)
 
-    # target_tz = pytz.timezone("UTC")
-    # normalizedUTC = target_tz.normalize(dt)
-    # print(normalizedUTC)
+    target_tz = pytz.timezone("UTC")
+    normalizedUTC = target_tz.normalize(dt)
 
-    return zone
+    return normalizedUTC
 
 # remove db if exits, because will make duplicates if not each time code is run
 if os.path.exists('simple.db'):
@@ -53,6 +54,7 @@ class Patient(BaseModel):
     gender = TextField(column_name='Gender', null=True)
     timezone = TextField(column_name='Timezone', null=True)
     availability = TextField(column_name='Availability', null=True) # NEW FIELD
+    utc = TimeField(column_name='UTC', null=True) # NEW FIELD
     callstart = TimeField(column_name='CallStart', null=True)
     callend = TimeField(column_name='CallEnd', null=True)
     type = TextField(column_name='Type', null=True)
@@ -72,15 +74,17 @@ time_zones = [convertToTimeZone(i) for i in numbers]
 names = [fake.name() for i in range(len(numbers))]
 utc = [convertToUTC(convertToTimeZone(i)) for i in numbers]
 
-print(f"utc: {utc}")
+#print(f"UTC: {[i for i in utc]}")
+
 # add to db all rows of users
-rows = zip(names, numbers, available)
+rows = zip(names, numbers, available, utc)
 for row in rows:
     p = Patient(
             username=row[0], 
             phone=row[1], 
             timezone=convertToTimeZone(row[1]), 
-            availability=row[2]
+            availability=row[2],
+            utc=convertToUTC(convertToTimeZone(row[1])),
             )
     p.save() # each row now stored in database
 
@@ -90,5 +94,5 @@ db.close()
 # query
 rows = Patient.select()
 for (i, row) in enumerate(rows):
-   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability}")
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability}utc: {row.utc}")
 db.close()
