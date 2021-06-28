@@ -1,5 +1,4 @@
 from peewee import *
-import random
 import pandas as pd
 import numpy as np
 import phonenumbers
@@ -8,7 +7,6 @@ from phonenumbers.timezone import time_zones_for_number
 from faker import Faker
 import datetime
 import pytz
-import us
 import os
 
 # initialize faker object for "fake" users and load mappings (State to Time Zone)
