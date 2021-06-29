@@ -14,6 +14,13 @@ fake = Faker()
 tzs_df = pd.read_csv("tzmapping.csv")
 tzs_df.index = tzs_df['State']
 
+# query all users and print them
+def query_all():
+    rows = Patient.select()
+    for (i, row) in enumerate(rows):
+       print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
+    db.close()
+
 # converts a phone number to a timezone
 def convertToTimeZone(number):  
     fmtNum = phonenumbers.parse("+" + str(number))
@@ -97,23 +104,20 @@ for row in rows:
 # close conn
 db.close()
 
-# query
-rows = Patient.select()
-for (i, row) in enumerate(rows):
-   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
-db.close()
-
+# query all users and print them
+print("Querying and printing all users...")
+query_all()
 
 # Alex example --> pat = Patient.get(Patient.phone == tel)
 #print(pat.id, pat.phone)
 query = (Patient
          .select(Patient.username, Patient.phone, Patient.timezone, Patient.availability, Patient.timestamp, Patient.utc)
          .where(
-             (Patient.timezone == "US/Pacific")
+             (Patient.timezone == "US/Eastern")
              # Patient.available == True
          ))
 
-# query
+print("Querying only US/Pacific users...")
 for (i, row) in enumerate(query):
    print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
 db.close()
