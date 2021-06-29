@@ -37,7 +37,6 @@ def convertToUTC(zone):
 
     target_tz = pytz.timezone("UTC")
     normalizedUTC = target_tz.normalize(dt)
-
     return normalizedUTC
 
 # remove db if exits, because will make duplicates if not each time code is run
