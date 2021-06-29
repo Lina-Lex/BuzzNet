@@ -73,14 +73,6 @@ class Patient(BaseModel):
 db.connect()
 db.create_tables([Patient])
 
-
-# users = {
-#     {"username" : "joe123", "available" : "11 am to 3 pm"},
-#     {"username" : "alice123", "available" : "3 pm to 7 pm"},
-# }
-# for user in users:
-#     Patient.create(**user)
-
 # fake users
 numbers = ["16692419870", "16617480240", "14436533745"]
 available = ["3 pm to 7 pm", "11 am to 3 pm", "11 am to 3 pm"]
