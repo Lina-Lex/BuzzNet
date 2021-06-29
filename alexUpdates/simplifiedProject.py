@@ -53,6 +53,7 @@ class Patient(BaseModel):
     timezone = TextField(column_name='Timezone', null=True)
     availability = TextField(column_name='Availability', null=True) # NEW FIELD
     utc = TimeField(column_name='UTC', null=True) # NEW FIELD
+    timestamp = DateTimeField(column_name='Timestamp', default=datetime.datetime.now, null=False) # NEW FIELD
     callstart = TimeField(column_name='CallStart', null=True)
     callend = TimeField(column_name='CallEnd', null=True)
     type = TextField(column_name='Type', null=True)
@@ -82,7 +83,7 @@ for row in rows:
             phone=row[1], 
             timezone=convertToTimeZone(row[1]), 
             availability=row[2],
-            utc=convertToUTC(convertToTimeZone(row[1])),
+            utc=convertToUTC(convertToTimeZone(row[1]))
             )
     p.save() # each row now stored in database
 
@@ -92,5 +93,23 @@ db.close()
 # query
 rows = Patient.select()
 for (i, row) in enumerate(rows):
-   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} utc: {row.utc}")
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
 db.close()
+
+
+# Alex example --> pat = Patient.get(Patient.phone == tel)
+#print(pat.id, pat.phone)
+query = (Patient
+         .select(Patient.username, Patient.timezone)
+         .where(
+             (Patient.timezone == "US/Pacific")
+         ))
+
+
+usernames = [i.username for i in query]
+timezones = [i.timezone for i in query]
+rows2 = zip(usernames, timezones)
+for r in rows2:
+    print(f"r[0]: {r[0]}, r[1]: {r[1]}")
+
+
