@@ -113,7 +113,7 @@ query_all()
 query = (Patient
          .select(Patient.username, Patient.phone, Patient.timezone, Patient.availability, Patient.timestamp, Patient.utc)
          .where(
-             (Patient.timezone == "US/Eastern")
+             (Patient.timezone == "US/Western")
              # Patient.available == True
          ))
 
