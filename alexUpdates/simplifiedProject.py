@@ -96,7 +96,7 @@ for row in rows:
 db.close()
 
 # query all users and print them
-print("Querying and printing all users...")
+print("\nQuerying and printing all users...")
 query_all()
 
 # Alex example --> pat = Patient.get(Patient.phone == tel)
@@ -108,7 +108,7 @@ query = (Patient
              # Patient.available == True
          ))
 
-print("Querying only US/Pacific users...")
+print("\nQuerying only US/Pacific users...")
 for (i, row) in enumerate(query):
    print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
 db.close()
