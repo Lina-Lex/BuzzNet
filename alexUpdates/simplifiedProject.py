@@ -100,16 +100,27 @@ db.close()
 # Alex example --> pat = Patient.get(Patient.phone == tel)
 #print(pat.id, pat.phone)
 query = (Patient
-         .select(Patient.username, Patient.timezone)
+         .select(Patient.username, Patient.timezone, Patient.availability)
          .where(
              (Patient.timezone == "US/Pacific")
+             # Patient.available == True
          ))
 
 
 usernames = [i.username for i in query]
 timezones = [i.timezone for i in query]
-rows2 = zip(usernames, timezones)
+available = [i.availability for i in query]
+rows2 = zip(usernames, timezones, available)
 for r in rows2:
-    print(f"r[0]: {r[0]}, r[1]: {r[1]}")
+    print(f"r[0]: {r[0]}, r[1]: {r[1]} r[2]: {r[2]}")
 
 
+
+# # We can express the current time as a Python datetime value, or we could
+# # alternatively use the appropriate SQL function/name.
+# now = Value(datetime.datetime.now())  # Or SQL('current_timestamp'), e.g.
+
+# query = (Task
+#          .select(Task, Schedule)
+#          .join(Schedule)
+#          .where(now >= next_occurrence))
