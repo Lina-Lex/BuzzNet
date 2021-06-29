@@ -66,14 +66,20 @@ class Patient(BaseModel):
 db.connect()
 db.create_tables([Patient])
 
+
+# users = {
+#     {"username" : "joe123", "available" : "11 am to 3 pm"},
+#     {"username" : "alice123", "available" : "3 pm to 7 pm"},
+# }
+# for user in users:
+#     Patient.create(**user)
+
 # fake users
 numbers = ["16692419870", "16617480240", "14436533745"]
 available = ["3 pm to 7 pm", "11 am to 3 pm", "11 am to 3 pm"]
 time_zones = [convertToTimeZone(i) for i in numbers]
 names = [fake.name() for i in range(len(numbers))]
 utc = [convertToUTC(convertToTimeZone(i)) for i in numbers]
-
-#print(f"UTC: {[i for i in utc]}")
 
 # add to db all rows of users
 rows = zip(names, numbers, available, utc)
@@ -84,6 +90,7 @@ for row in rows:
             timezone=convertToTimeZone(row[1]), 
             availability=row[2],
             utc=convertToUTC(convertToTimeZone(row[1]))
+            #utc_availability=??
             )
     p.save() # each row now stored in database
 
@@ -100,27 +107,13 @@ db.close()
 # Alex example --> pat = Patient.get(Patient.phone == tel)
 #print(pat.id, pat.phone)
 query = (Patient
-         .select(Patient.username, Patient.timezone, Patient.availability)
+         .select(Patient.username, Patient.phone, Patient.timezone, Patient.availability, Patient.timestamp, Patient.utc)
          .where(
              (Patient.timezone == "US/Pacific")
              # Patient.available == True
          ))
 
-
-usernames = [i.username for i in query]
-timezones = [i.timezone for i in query]
-available = [i.availability for i in query]
-rows2 = zip(usernames, timezones, available)
-for r in rows2:
-    print(f"r[0]: {r[0]}, r[1]: {r[1]} r[2]: {r[2]}")
-
-
-
-# # We can express the current time as a Python datetime value, or we could
-# # alternatively use the appropriate SQL function/name.
-# now = Value(datetime.datetime.now())  # Or SQL('current_timestamp'), e.g.
-
-# query = (Task
-#          .select(Task, Schedule)
-#          .join(Schedule)
-#          .where(now >= next_occurrence))
+# query
+for (i, row) in enumerate(query):
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp} utc: {row.utc}")
+db.close()
