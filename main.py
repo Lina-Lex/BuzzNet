@@ -675,7 +675,9 @@ def update_reminder(id):
     #     print(dt, review)
 
 if __name__ == '__main__':
+    print ('start db connect...')
     db_proxy.connect()
     #db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
+    print('init db...')
     init_db()
     app.run(debug=True)
