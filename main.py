@@ -603,7 +603,7 @@ def get_next_reminder():
     phone = req.get('phone')
     tel = str(phone[1:15]) # exclude +
 
-    conn.connect()
+    #conn.connect()
     # get Patient ID by the phone
     pat = Patient.get(Patient.phone == tel)
     print(pat.id, pat.phone)
