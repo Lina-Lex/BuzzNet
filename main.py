@@ -88,7 +88,8 @@ class SmartReminder(BaseModel):
     class Meta:
         table_name = 'smartreminder'
 if 'HEROKU' in os.environ:
-    import urlparse, psycopg2
+    from urllib.parse import urlparse
+    import psycopg2
     urlparse.uses_netloc.append('postgres')
     url = urlparse.urlparse(os.environ["DATABASE_URL"])
     conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
@@ -670,7 +671,6 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
-save_data(1,2,3)
 
 if __name__ == '__main__':
     app.run(debug=True)
