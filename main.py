@@ -575,7 +575,7 @@ def search():
 #print_mars_photos()
 
 def db_create_tables():
-    #conn.drop_tables([Patient, Reminder, SmartReminder])
+    conn.drop_tables([Patient, Reminder, SmartReminder])
     # conn.cursor().execute("drop table patient")
     # conn.cursor().execute("drop table reminder")
     # conn.cursor().execute("drop table smartreminder")
@@ -629,11 +629,13 @@ def init_db():
     with conn.atomic() as transaction:  # Opens new transaction.
         try:
             db_create_tables()
+            print ("tables in database created...")
         except:
             # Because this block of code is wrapped with "atomic", a
             # new transaction will begin automatically after the call
             # to rollback().
             transaction.rollback()
+            print ("rollback ...")
             error_saving = True
             raise
 
@@ -674,5 +676,6 @@ def update_reminder(id):
 
 if __name__ == '__main__':
     db_proxy.connect()
-    db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
+    #db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
+    init_db()
     app.run(debug=True)
