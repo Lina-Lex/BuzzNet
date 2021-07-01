@@ -88,10 +88,10 @@ class SmartReminder(BaseModel):
     class Meta:
         table_name = 'smartreminder'
 if 'HEROKU' in os.environ:
-    from urllib.parse import urlparse
+    import urllib.parse
     import psycopg2
-    urlparse.uses_netloc.append('postgres')
-    url = urlparse.urlparse(os.environ["DATABASE_URL"])
+    urllib.parse.uses_netloc.append('postgres')
+    url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
     conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
     db_proxy.initialize(conn)
 else:
