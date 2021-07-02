@@ -16,7 +16,12 @@ db.create_tables([Patient])
 numbers = ["16692419870", "16617480240", "14436533745"]
 available = [["3 pm", "7 pm"], ["11 am", "3 pm"], ["11 am", "3 pm"]]
 names = [fake.name() for i in range(len(numbers))]
-utc_start, utc_end = availabilityToUTC(available)
+
+# format availability
+available = availabilityToUTC(available)
+utc_start = convertLocalStartToUtcStart("US/Pacific", available[0][0])
+utc_end = convertLocalStartToUtcStart("US/Pacific", available[0][1])
+
 
 # add to db all rows of users
 rows = zip(names, numbers)
