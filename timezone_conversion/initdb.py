@@ -19,7 +19,7 @@ names = [fake.name() for i in range(len(numbers))]
 zones = [convertNumberToTimeZone(i) for i in numbers]
 
 # extract digits from each element of list of lists and use zone for that utc_start, utc_end to convert to utc for utc_start, utc_end
-times = test(zones, available)
+times = formattedAvailabilityListToUTC(zones, available)
 
 # add to db all rows of users
 rows = zip(names, numbers, times)
@@ -30,8 +30,10 @@ for idx, row in enumerate(rows):
             timezone=convertNumberToTimeZone(row[1]), 
             utc_start=row[2][0],
             utc_end=row[2][1],
-            #duration
-            # timestamp (utc) default
+            #implicit fields
+                # timestamp (utc) default
+            #fields to add
+                #duration
             )
     p.save() # each row now stored in database
 
