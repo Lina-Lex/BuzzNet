@@ -69,9 +69,6 @@ def formattedAvailabilityListToUTC(zones, available):
     # initialize list
     times = []
 
-    # extract digits from each element of list in lists
-    available = extractAvailabilityFromList(available)
-
     # loop and print
     for idx, i in enumerate(available):
         row = convertLocalStartToUtcStart(zones[idx], available[idx][0]), convertLocalStartToUtcStart(zones[idx], available[idx][1])
