@@ -55,7 +55,7 @@ def convertLocalStartToUtcStart(zone, localStart):
     normalizedUTCStart = target_tz.normalize(dt)
     return normalizedUTCStart
 
-def availabilityToUTC(available):
+def extractAvailabilityFromList(available):
     output = []
     for i, avail in enumerate(available):
         utc_start, utc_end = avail
@@ -65,12 +65,12 @@ def availabilityToUTC(available):
         output.append(row)
     return output
 
-def test(zones, available):
+def formattedAvailabilityListToUTC(zones, available):
     # initialize list
     times = []
 
     # extract digits from each element of list in lists
-    available = availabilityToUTC(available)
+    available = extractAvailabilityFromList(available)
 
     # loop and print
     for idx, i in enumerate(available):
@@ -78,6 +78,6 @@ def test(zones, available):
 
         # append row to times list
         times.append(row)
-        
+
     # return formatted times to be inserted into db
     return times
