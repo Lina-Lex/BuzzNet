@@ -18,9 +18,11 @@ available = [["3 pm", "7 pm"], ["11 am", "3 pm"], ["11 am", "3 pm"]]
 names = [fake.name() for i in range(len(numbers))]
 zones = [convertNumberToTimeZone(i) for i in numbers]
 
-# extract digits from each element of list of lists and use zone for that utc_start, utc_end to convert to utc for utc_start, utc_end
-available = extractAvailabilityFromList(available)
-times = formattedAvailabilityListToUTC(zones, available)
+# extract digits from each element of list of lists 
+fmtAvailable = extractAvailabilityFromList(available)
+
+# use formatted availability list from above
+times = formattedAvailabilityListToUTC(zones, fmtAvailable)
 
 # add to db all rows of users
 rows = zip(names, numbers, times)
