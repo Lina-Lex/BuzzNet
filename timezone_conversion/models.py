@@ -23,8 +23,6 @@ class Patient(BaseModel):
     username = TextField(column_name='Username', null=True)
     gender = TextField(column_name='Gender', null=True)
     timezone = TextField(column_name='Timezone', null=True)
-    #availability = TextField(column_name='Availability', null=True) # NEW FIELD
-    #utc = TimeField(column_name='UTC', null=True) # NEW FIELD
     timestamp = DateTimeField(column_name='Timestamp', default=datetime.datetime.utcnow, null=False) # NEW FIELD
     utc_start = TimeField(column_name='UTC_Start', null=True) # NEW FIELD
     utc_end = TimeField(column_name='UTC_End', null=True) # NEW FIELD
