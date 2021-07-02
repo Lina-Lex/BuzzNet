@@ -18,24 +18,18 @@ available = [["3 pm", "7 pm"], ["11 am", "3 pm"], ["11 am", "3 pm"]]
 names = [fake.name() for i in range(len(numbers))]
 zones = [convertNumberToTimeZone(i) for i in numbers]
 
-# format availability and convert local start, stop times to utc stop start times (need each start, stop times local zone to be able to localize it then conver to utc)
-available = availabilityToUTC(available)
-times = []
-for idx, i in enumerate(available):
-    row = convertLocalStartToUtcStart(zones[idx], available[idx][0]), convertLocalStartToUtcStart(zones[idx], available[idx][1])
-
-    print(row[0], "-", row[1])
-    times.append(row)
+# extract digits from each element of list of lists and use zone for that utc_start, utc_end to convert to utc for utc_start, utc_end
+times = test(zones, available)
 
 # add to db all rows of users
-rows = zip(names, numbers)
+rows = zip(names, numbers, times)
 for idx, row in enumerate(rows):
     p = Patient(
             username=row[0], 
             phone=row[1], 
             timezone=convertNumberToTimeZone(row[1]), 
-            utc_start=times[idx][0],
-            utc_end=times[idx][1]
+            utc_start=row[2][0],
+            utc_end=row[2][1],
             #duration
             # timestamp (utc) default
             )
