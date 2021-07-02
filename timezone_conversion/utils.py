@@ -55,9 +55,13 @@ def convertLocalStartToUtcStart(zone, localStart):
     normalizedUTCStart = target_tz.normalize(dt)
     return normalizedUTCStart
 
+
 def availabilityToUTC(available):
+    output = []
     for i, avail in enumerate(available):
         utc_start, utc_end = avail
         utc_start = int(utc_start.split(" ")[0])
         utc_end = int(utc_end.split(" ")[0])
-    return utc_start, utc_end
+        row = [utc_start, utc_end]
+        output.append(row)
+    return output
