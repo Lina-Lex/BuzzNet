@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  buzz-net-web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      DEV_MODE: 'true'
+      DB_HOST: buzz-net-db
+      FLASK_APP: main.py
+    command: wait-for-it buzz-net-db:5432 -- bash -c "flask db upgrade && flask run"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - buzz-net-db
+  buzz-net-db:
+    image: postgres:12
+    container_name: buzz-net-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=buzz_net
+    volumes:
+      - ./.docker/data/buzz-net-db:/var/lib/postgresql/data
+volumes:
+  buzz-net-db:
