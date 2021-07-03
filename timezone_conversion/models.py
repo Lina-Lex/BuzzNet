@@ -35,3 +35,22 @@ class Patient(BaseModel):
     class Meta:
         table_name = 'Patient'
 
+# functionalize
+"""def findMatch(number, db_object):
+    timeZoneFromNumber = convertToTimeZone(number)
+    query = (Patient
+            .select(Patient.username, Patient.phone, Patient.timezone, Patient.timestamp, Patient.utc_start, Patient.utc_end)
+            .where(
+                (Patient.timezone == "US/Pacific"),
+                # (Patient.timestamp.between(Patient.utc_start, Patient.utc_end))
+                )
+            )
+
+    print(f"\n[INFO] Querying only {timeZoneFromNumber} users...")
+    for (i, row) in enumerate(query):
+        print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} availability: {row.availability} timestamp: {row.timestamp}\n")
+    db.close()
+
+number = ["16617480240"]
+findMatch(number[0], db)
+"""
