@@ -18,22 +18,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 """
-
 import os
 from flask import Flask, request, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-# from twilio.rest import Client
+#from twilio.rest import Client
 import time
 import datetime
 import json
 from peewee import *
 from supermemo2 import SMTwo
-
-from BuzzNet.util import send_mail
-
+from util import send_mail
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
@@ -41,20 +38,16 @@ optional_number = os.environ['optional_number']
 postgreSQLpass = os.environ['postgreSQLpass']
 
 from googleapiclient.discovery import build
-
-# import pprint
+#import pprint
 
 my_api_key = os.environ['google_api_key']
 my_cse_id = os.environ['google_cse_id']
 
 db_proxy = Proxy()
-
-
 # Base model for work with Database through ORM
 class BaseModel(Model):
     class Meta:
         database = db_proxy  # connection with database
-
 
 # Patient model
 class Patient(BaseModel):
@@ -72,7 +65,6 @@ class Patient(BaseModel):
     class Meta:
         table_name = 'patient'
 
-
 # Reminder
 class Reminder(BaseModel):
     id = AutoField(column_name='ID')
@@ -80,7 +72,6 @@ class Reminder(BaseModel):
 
     class Meta:
         table_name = 'reminder'
-
 
 # Smart Reminder
 class SmartReminder(BaseModel):
@@ -97,22 +88,18 @@ class SmartReminder(BaseModel):
 
     class Meta:
         table_name = 'smartreminder'
-
-
 if 'HEROKU' in os.environ:
     import urlparse, psycopg2
-
     urlparse.uses_netloc.append('postgres')
     url = urlparse.urlparse(os.environ["DATABASE_URL"])
-    conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname,
-                              port=url.port)
+    conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
     db_proxy.initialize(conn)
 else:
     conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
     db_proxy.initialize(conn)
 
 
-def out_bound_call(tel):
+def out_bound_call (tel):
     """ Function for making outbound call"""
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
@@ -128,8 +115,6 @@ def out_bound_call(tel):
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
             .create(to=tel, from_=main_number)
-
-
 def call_flow(flow_sid, tel=''):
     """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
@@ -138,7 +123,7 @@ def call_flow(flow_sid, tel=''):
     if tel != '':
         status = check_new_user(tel)
         if (status != 'New'):
-            print(f'start call for existing User {tel}')
+            print (f'start call for existing User {tel}')
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
@@ -155,6 +140,7 @@ def call_flow(flow_sid, tel=''):
                 .executions \
                 .create(to=tel, from_=main_number)
 
+
             # while len(steps) < 12:
             #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
             #         .executions(execution.sid) \
@@ -170,8 +156,6 @@ def call_flow(flow_sid, tel=''):
             #     .steps(last_step_sid) \
             #     .step_context() \
             #     .fetch()
-
-
 def profile_detail():
     """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
@@ -183,7 +167,7 @@ def profile_detail():
 
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
-    # all_sheet = sheet.get_all_values()
+    #all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
 
     row_num = 0
@@ -199,7 +183,7 @@ def profile_detail():
                     break
                 elif v in ('weight', 'height'):
                     print(f'getting {v} from {ph}')
-                    call_flow('FW6661af875fa71bfcc36030d653e745ec', str(ph))
+                    call_flow ('FW6661af875fa71bfcc36030d653e745ec', str(ph))
                     break
                 elif v in ('activity', 'hobby'):
                     print(f'getting {v} from {ph}')
@@ -215,7 +199,6 @@ def profile_detail():
                     break
             else:
                 print(f'for {ph}:{v} is good')
-
 
 def call_to_check_bld():
     """ Function for checking blood pressure and saving results to google spreadsheet """
@@ -278,8 +261,6 @@ def call_to_check_bld():
 
     sheet.append_row(new_row)
     time.sleep(5)
-
-
 def check_new_user(tel=''):
     """ Function for checking type of User (NEW/EXISTING) """
     # check data in spreadsheet
@@ -294,16 +275,13 @@ def check_new_user(tel=''):
     sheet = spreadsheet.worksheet(sheetName)
     all_sheet = sheet.get_all_values()
     phone_lst = []
-    for a in all_sheet: phone_lst.append(a[0])
+    for a in all_sheet:phone_lst.append(a[0])
     tel_not_plus = str(tel[1:15])
     if tel_not_plus in phone_lst:
         return 'Exist'
     else:
         return 'New'
-
-
 app = Flask(__name__)
-
 
 def save_new_user(tel='', tab=''):
     """ Function for saving NEW user in google spreadsheet"""
@@ -318,12 +296,9 @@ def save_new_user(tel='', tab=''):
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    new_row = [tel[1:15], '', '', '', '', '', '', '', '', '', '', '',
-               json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), '19258609793', '19258609793']
+    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
     sheet.append_row(new_row)
     send_mail("NEW USER", phone=tel)
-
-
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
     """ Function for making joined call """
@@ -345,26 +320,20 @@ def voice_joined():
     else:
         resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
         resp.hangup()
-    return (str(resp))
-
-
+    return(str(resp))
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
     """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
     user = check_new_user(tel)
-    if user == 'Exist':
-        resp.dial(optional_number)
+    if user == 'Exist':resp.dial(optional_number)
     else:
-        save_new_user(tel, 'Calls')
-        gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
-        gather.say(
-            'Welcome to Heart Voices ! We are really helping to people in their journey to a healthy life. Do you want to join us? Say yes or no.')
+        save_new_user(tel,'Calls')
+        gather = Gather(input='speech dtmf', action='/voice_joined',  timeout=3, num_digits=1)
+        gather.say('Welcome to Heart Voices ! We are really helping to people in their journey to a healthy life. Do you want to join us? Say yes or no.')
         resp.append(gather)
     return str(resp)
-
-
 def save_data(col_name, value, tel):
     """ Function for saving data to google spreadsheet """
     # PUT DATA TO SPREDASHEET
@@ -383,7 +352,7 @@ def save_data(col_name, value, tel):
     row_num = 0
     for r in all_sheet:
         row_num = row_num + 1
-        ph = r[0]  # find the Phone Number
+        ph = r[0] #find the Phone Number
         if tel == f'+{ph}':
             break
 
@@ -394,8 +363,6 @@ def save_data(col_name, value, tel):
             print(row_num, col_num, col_name, value)
             sheet.update_cell(row_num, col_num, value)
             break
-
-
 @app.route("/after_call", methods=['GET', 'POST'])
 def after_call():
     """ Function for saving data after call to spreadsheet """
@@ -404,8 +371,6 @@ def after_call():
     for r in req:
         save_data(r, req.get(r), req.get('phone'))
     return str(resp)
-
-
 @app.route("/username", methods=['GET', 'POST'])
 def username():
     """ Function for getting Name of the Client from google spreadsheet """
@@ -431,8 +396,6 @@ def username():
         if phone == f'+{tel}':
             x = {"username": row.get('username')}
     return (jsonify(x))
-
-
 @app.route("/check_client_type", methods=['GET', 'POST'])
 def check_client_type():
     """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
@@ -458,8 +421,6 @@ def check_client_type():
         if phone == f'+{tel}':
             x = {"type": row.get('type')}
     return (jsonify(x))
-
-
 @app.route("/save_client_type", methods=['GET', 'POST'])
 def save_client_type():
     """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
@@ -467,7 +428,6 @@ def save_client_type():
     req = request.values
     save_data('type', req.get('client_type'), req.get('phone'))
     return str(resp)
-
 
 @app.route("/call_to_friend", methods=['GET', 'POST'])
 def call_to_friend():
@@ -495,8 +455,6 @@ def call_to_friend():
         if phone == f'+{tel}':
             x = {f"friend": row.get('friend')}
     return (jsonify(x))
-
-
 @app.route("/call_to_operator", methods=['GET', 'POST'])
 def call_to_operator():
     """ Function for making call to the operator according data in the spreadsheet """
@@ -524,7 +482,6 @@ def call_to_operator():
             x = {'operator': row.get('operator')}
     return (jsonify(x))
 
-
 @app.route("/save_blood_pressure", methods=['GET', 'POST'])
 def save_blood_pressure():
     """ Function for saving measurement of the blood pressure to the spreadsheet """
@@ -547,8 +504,7 @@ def save_blood_pressure():
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return (str(resp))
-
+    return(str(resp))
 
 @app.route("/save_feedback_service", methods=['GET', 'POST'])
 def save_feedback_service():
@@ -580,16 +536,13 @@ def save_feedback_service():
     new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), phone, REurl]
     sheet.append_row(new_row)
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
-    return str(resp)
 
-
+    return (str(resp))
 def google_search(search_term, api_key, cse_id, **kwargs):
     """ Function for using Google Search API"""
     service = build("customsearch", "v1", developerKey=api_key)
     res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
     return res['items']
-
-
 @app.route("/search", methods=['GET', 'POST'])
 def search():
     """ Function for answering search results on phrase from Client"""
@@ -600,16 +553,14 @@ def search():
     it = 0
     str = ''
     for result in results:
-        # title=result.get('title')
-        res = result.get('snippet')
-        # name = result.get('displayLink')
-        str = str + f'{lst_num[it]} result: {res}".\n'
-        it = it + 1
+        #title=result.get('title')
+        res=result.get('snippet')
+        #name = result.get('displayLink')
+        str= str + f'{lst_num[it]} result: {res}".\n'
+        it=it+1
         if it == 3: break
     x = {"search_result": str}
     return (jsonify(x))
-
-
 # def print_mars_photos():
 #     from redis import Redis
 #     from rq import Queue
@@ -623,10 +574,10 @@ def search():
 #         #get_mars_photo(1 + i)
 #         q.enqueue(get_mars_photo, 1 + i)
 #     print('After')
-# print_mars_photos()
+#print_mars_photos()
 
 def db_create_tables():
-    # conn.drop_tables([Patient, Reminder, SmartReminder])
+    #conn.drop_tables([Patient, Reminder, SmartReminder])
     # conn.cursor().execute("drop table patient")
     # conn.cursor().execute("drop table reminder")
     # conn.cursor().execute("drop table smartreminder")
@@ -634,16 +585,11 @@ def db_create_tables():
     conn.create_tables([Patient, Reminder, SmartReminder])
     conn.commit()
 
-    conn.cursor().execute(
-        "INSERT INTO Patient(Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('13333333333', 'Alex', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
-    conn.cursor().execute(
-        "INSERT INTO Patient (Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('12222222222', 'Lina', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
-    conn.cursor().execute(
-        "INSERT INTO Reminder (Text) VALUES ('Get at least 150 minutes per week of moderate-intensity aerobic activity or 75 minutes per week of vigorous aerobic activity, or a combination of both, preferably spread throughout the week.')")
-    conn.cursor().execute(
-        "INSERT INTO Reminder (Text) VALUES ( 'Add moderate- to high-intensity muscle-strengthening activity (such as resistance or weights) on at least 2 days per week.')")
-    conn.cursor().execute(
-        "INSERT INTO Reminder (Text) VALUES ( 'Spend less time sitting. Even light-intensity activity can offset some of the risks of being sedentary.')")
+    conn.cursor().execute("INSERT INTO Patient(Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('13333333333', 'Alex', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
+    conn.cursor().execute("INSERT INTO Patient (Phone, Username, Gender, Timezone, CallStart,CallEnd, Type, Created, Updated) VALUES ('12222222222', 'Lina', 'Male', 'Pacific Standard Time', '16:00:00', '18:00:00', 'Volunteer', now(), now())")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ('Get at least 150 minutes per week of moderate-intensity aerobic activity or 75 minutes per week of vigorous aerobic activity, or a combination of both, preferably spread throughout the week.')")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ( 'Add moderate- to high-intensity muscle-strengthening activity (such as resistance or weights) on at least 2 days per week.')")
+    conn.cursor().execute("INSERT INTO Reminder (Text) VALUES ( 'Spend less time sitting. Even light-intensity activity can offset some of the risks of being sedentary.')")
     conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '1', now())")
     conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '2', now())")
     conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('1', '3', now())")
@@ -652,14 +598,12 @@ def db_create_tables():
     conn.cursor().execute("INSERT INTO SmartReminder (PatientID, ReminderID, NextTime) VALUES ('2', '3', now())")
 
     conn.commit()
-    # conn.close()
-
-
+    #conn.close()
 @app.route("/get_next_reminder", methods=['GET', 'POST'])
 def get_next_reminder():
     req = request.values
     phone = req.get('phone')
-    tel = str(phone[1:15])  # exclude +
+    tel = str(phone[1:15]) # exclude +
 
     conn.connect()
     # get Patient ID by the phone
@@ -667,24 +611,22 @@ def get_next_reminder():
     print(pat.id, pat.phone)
 
     # get SmartReminders by Patient ID
-    # smr = SmartReminder.get(SmartReminder.id==pat.id)
+    #smr = SmartReminder.get(SmartReminder.id==pat.id)
     query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
     smr_selected = query.dicts().execute()
 
     result = ''
     # get reminder text by SmartReminder ID
     for s in smr_selected:
-        rm = Reminder.get(Reminder.id == s['reminder_id'])
+        rm = Reminder.get(Reminder.id==s['reminder_id'])
         result = rm.text
-        print(rm.text)
+        print (rm.text)
         # change next time of reminding
         update_reminder(s['reminder_id'])
         conn.commit()
     conn.close()
-    x = {"text": f' Lets listen interesting fact of the day...{result} ...Thank you.'}
+    x = {"text":f' Lets listen interesting fact of the day...{result} ...Thank you.'}
     return (jsonify(x))
-
-
 def init_db():
     with conn.atomic() as transaction:  # Opens new transaction.
         try:
@@ -697,17 +639,16 @@ def init_db():
             error_saving = True
             raise
 
-        # create_report(error_saving=error_saving)
+        #create_report(error_saving=error_saving)
         # Note: no need to call commit. Since this marks the end of the
         # wrapped block of code, the `atomic` context manager will
         # automatically call commit for us.
     conn.close()
-
-
 def update_reminder(id):
+
     # get smart reminder by ID
-    smr = SmartReminder.get(SmartReminder.id == id)
-    # smr = SmartReminder()
+    smr = SmartReminder.get(SmartReminder.id==id)
+    #smr = SmartReminder()
     r = SMTwo.first_review(3)
     if smr.last_time is None:
         # first review
@@ -732,9 +673,7 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
-
-
-save_data(1, 2, 3)
+save_data(1,2,3)
 
 if __name__ == '__main__':
     app.run(debug=True)
