@@ -17,7 +17,7 @@ tzs_df.index = tzs_df['State']
 def query_all():
     rows = Patient.select()
     for (i, row) in enumerate(rows):
-       print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} timestamp: {row.timestamp} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
+       print(i, f"name: {row.username} phone: {row.phone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
     db.close()
 
 # converts a phone number to a timezone
@@ -34,7 +34,7 @@ def utc_to_localtime(tz):
     utc_to_local = pytz.utc.localize(utc_time, is_dst=None).astimezone(tz)
     return utc_to_local
 
-# converts local time to utc
+# converts *current* local time given a zone to utc
 def local_to_utc(zone):  
     dt = datetime.datetime.now()
     localized_dt = pytz.timezone(zone)
