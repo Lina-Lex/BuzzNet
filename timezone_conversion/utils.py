@@ -1,80 +1,25 @@
-import datetime
-import pytz
-from pytz import timezone
-import phonenumbers
-from phonenumbers import geocoder
-from faker import Faker
-import pandas as pd
-
+from peewee import *
 from models import db, Patient
+from utils import *
 
-# initialize faker object for "fake" users and load mappings (State to Time Zone)
-fake = Faker()
-tzs_df = pd.read_csv("./data/tzmapping.csv")
-tzs_df.index = tzs_df['State']
+# initialize db
+db = SqliteDatabase('respondNoTwilio.db')
+db.connect() # important
 
 # query all users and print them
-def query_all():
-    rows = Patient.select()
-    for (i, row) in enumerate(rows):
-        print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
-    db.close()
+print("\n[INFO] Querying and printing all users...")
+query_all()
 
-# converts a phone number to a timezone
-def convertNumberToTimeZone(number):  
-    fmtNum = phonenumbers.parse("+" + str(number))
-    state = geocoder.description_for_number(fmtNum, 'en')
-    time_zone = tzs_df.loc[state]['Zone']
-    fmtTimeZone = "US/" + time_zone.split(" ")[0]
-    return fmtTimeZone
+query = (Patient
+         .select(Patient.username, Patient.phone, Patient.timezone, Patient.utc_start, Patient.utc_end)
+         .where(
+            (Patient.timezone == "US/Pacific"),
+            Patient.utc_start > datetime.datetime.utcnow()
+            )
+         )
 
-# converts utc to a local time
-def utc_to_localtime(tz):
-    utc_time = datetime.datetime.utcnow()
-    utc_to_local = pytz.utc.localize(utc_time, is_dst=None).astimezone(tz)
-    return utc_to_local
+print("\n[INFO] Querying only US/Pacific users...")
+for (i, row) in enumerate(query):
+   print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
 
-# converts *current* local time given a zone to utc
-def local_to_utc(zone):  
-    dt = datetime.datetime.now()
-    localized_dt = pytz.timezone(zone)
-    dt = localized_dt.localize(dt)
-
-    target_tz = pytz.timezone("UTC")
-    normalizedUTC = target_tz.normalize(dt)
-    return normalizedUTC
-
-def convertLocalStartToUtcStart(zone, localStart):
-    today = datetime.datetime.today() #tz_info??
-    dt = today.replace(hour=localStart, minute=00)
-
-    localized_dt = pytz.timezone(zone)
-    dt = localized_dt.localize(dt)
-
-    target_tz = pytz.timezone("UTC")
-    normalizedUTCStart = target_tz.normalize(dt)
-    return normalizedUTCStart
-
-def extractAvailabilityFromList(available):
-    output = []
-    for i, avail in enumerate(available):
-        utc_start, utc_end = avail
-        utc_start = int(utc_start.split(" ")[0])
-        utc_end = int(utc_end.split(" ")[0])
-        row = [utc_start, utc_end]
-        output.append(row)
-    return output
-
-def formattedAvailabilityListToUTC(zones, available):
-    # initialize list
-    times = []
-
-    # loop and print
-    for idx, i in enumerate(available):
-        row = convertLocalStartToUtcStart(zones[idx], available[idx][0]), convertLocalStartToUtcStart(zones[idx], available[idx][1])
-
-        # append row to times list
-        times.append(row)
-
-    # return formatted times to be inserted into db
-    return times
+db.close()
