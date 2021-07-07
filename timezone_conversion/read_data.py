@@ -4,7 +4,7 @@ from utils import *
 
 # initialize db
 db = SqliteDatabase('respondNoTwilio.db')
-db.connect()
+db.connect() # important
 
 # query all users and print them
 print("\n[INFO] Querying and printing all users...")
@@ -14,8 +14,7 @@ query = (Patient
          .select(Patient.username, Patient.phone, Patient.timezone, Patient.utc_start, Patient.utc_end)
          .where(
             (Patient.timezone == "US/Pacific"),
-            Patient.utc_start > datetime.datetime.utcnow()
-            )
+            Patient.utc_start > datetime.datetime.utcnow())
          )
 
 print("\n[INFO] Querying only US/Pacific users...")
