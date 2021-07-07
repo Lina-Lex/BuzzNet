@@ -24,11 +24,6 @@ users = [
     {"username": "Tim", "phone": "14436533745",  "utc_start" : utc_start, "utc_end" : utc_end},
 ]
 
-tz = TimeZoneHelper("16692419870")
-tz.numberToTimeZone() 
-print(tz.utcToLocal())
-
-
 #print(users["utc_start"])
 for d in users:
     tz = TimeZoneHelper(d["phone"])
