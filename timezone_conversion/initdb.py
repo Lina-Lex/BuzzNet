@@ -42,6 +42,3 @@ for d in users:
 
 # close conn
 db.close()
-
-utc_start = datetime.datetime(2021, 7, 6, 6, 0, 0)
-print(utc_start < datetime.datetime.utcnow())
