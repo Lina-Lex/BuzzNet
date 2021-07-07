@@ -3,7 +3,7 @@ from models import db, Patient
 from utils import *
 
 # query all users and print them
-print("\n[INFO] Querying and printing all users...")
+print("\n[INFO] Querying and printing all users Pacific Time...")
 query_all()
 
 query = (Patient
@@ -17,3 +17,5 @@ query = (Patient
 print("\n[INFO] Querying only US/Pacific users...")
 for (i, row) in enumerate(query):
    print(i, f"name: {row.username} phone: {row.phone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
+
+db.close()
