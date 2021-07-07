@@ -30,6 +30,7 @@ import datetime
 import json
 from peewee import *
 from supermemo2 import SMTwo
+from util import send_mail
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
@@ -298,6 +299,7 @@ def save_new_user(tel='', tab=''):
 
     new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
     sheet.append_row(new_row)
+    send_mail("NEW USER", phone=tel)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
     """ Function for making joined call """
@@ -534,6 +536,7 @@ def save_feedback_service():
 
     new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), phone, REurl]
     sheet.append_row(new_row)
+    send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
     return (str(resp))
 def google_search(search_term, api_key, cse_id, **kwargs):
