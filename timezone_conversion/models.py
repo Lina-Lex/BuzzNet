@@ -23,7 +23,7 @@ class Patient(BaseModel):
     username = TextField(column_name='Username', null=True)
     #gender = TextField(column_name='Gender', null=True)
     timezone = TextField(column_name='Timezone', null=True)
-    #timestamp = DateTimeField(column_name='Timestamp', default=datetime.datetime.utcnow, null=False) # NEW FIELD
+    timestamp = DateTimeField(column_name='Timestamp', default=datetime.datetime.utcnow, null=False) # NEW FIELD
     utc_start = TimeField(column_name='UTC_Start', null=True) # NEW FIELD
     utc_end = TimeField(column_name='UTC_End', null=True) # NEW FIELD
     #duration = TimeField(column_name='Duration', null=True) # NEW FIELD
@@ -34,3 +34,10 @@ class Patient(BaseModel):
     #updated = DateTimeField(column_name='Updated', null=True)
     class Meta:
         table_name = 'Patient'
+
+class Person(Model):
+    field1 = CharField()
+    field2 = CharField()
+
+    class Meta:
+        database = db # This model uses the "people.db" database.
