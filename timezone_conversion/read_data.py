@@ -10,7 +10,6 @@ db.connect() # important
 print("\n[INFO] Querying and printing all users...")
 query_all()
 
-
 #now = datetime.datetime.utcnow()
 query = (Patient
          .select(Patient.username, Patient.phone, Patient.timezone, Patient.timestamp, Patient.utc_start, Patient.utc_end)
