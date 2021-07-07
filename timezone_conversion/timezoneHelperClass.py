@@ -6,8 +6,6 @@ from phonenumbers import geocoder
 from faker import Faker
 import pandas as pd
 
-#from models import db, Patient
-
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
         self.phoneNumber = phoneNumber
