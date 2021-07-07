@@ -14,6 +14,7 @@ query = (Patient
          .select(Patient.username, Patient.phone, Patient.timezone, Patient.utc_start, Patient.utc_end)
          .where(
             (Patient.timezone == "US/Pacific"),
+            Patient.utc_start > datetime.datetime.utcnow()
             )
          )
 
