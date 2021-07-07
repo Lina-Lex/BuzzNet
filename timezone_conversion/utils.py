@@ -17,7 +17,7 @@ tzs_df.index = tzs_df['State']
 def query_all():
     rows = Patient.select()
     for (i, row) in enumerate(rows):
-       print(i, f"name: {row.username} phone: {row.phone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
+        print(i, f"name: {row.username} phone: {row.phone} timezone: {row.timezone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
     db.close()
 
 # converts a phone number to a timezone
