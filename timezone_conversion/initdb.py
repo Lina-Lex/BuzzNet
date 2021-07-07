@@ -1,42 +1,63 @@
 # imports
 import os
 from utils import *
+from timezoneHelperClass import TimeZoneHelper
 
 # remove db if exits, because will make duplicates if not each time code is run
-if os.path.exists('simple.db'):
+if os.path.exists('respondNoTwilio.db'):
     print("\nDatabase already exists...removing...\n")
-    os.remove('simple.db')
+    os.remove('respondNoTwilio.db')
 
 # Create database and tables
-from models import db, Patient
+from models import db, Patient, Person
 db.connect()
-db.create_tables([Patient])
+db.create_tables([Patient, Person]) # Person for testing purposes
 
-# fake users
-numbers = ["16692419870", "16617480240", "14436533745"]
-available = [["3 pm", "7 pm"], ["11 am", "3 pm"], ["11 am", "3 pm"]]
-names = [fake.name() for i in numbers]
-zones = [convertNumberToTimeZone(i) for i in numbers]
+# # Add sample data
+# datetime.datetime(year, month, day, hour, minute)
+utc_start = datetime.datetime(2021, 7, 6, 6, 0, 0)
+utc_end = datetime.datetime(2021, 7, 6, 6, 0, 0)
 
-# extract digits from each element of list of lists in availabile variable 
-fmtAvailable = extractAvailabilityFromList(available)
+users = [
+    {"username": "Alice", "phone": "16692419870", "utc_start" : utc_start, "utc_end" : utc_end},
+    {"username": "Elizabeth", "phone": "16617480240", "utc_start" : utc_start, "utc_end" : utc_end},
+    {"username": "Tim", "phone": "14436533745",  "utc_start" : utc_start, "utc_end" : utc_end},
+]
 
-# use fmtAvailable list of lists from above to get availability times converted to utc as list of lists
-times = formattedAvailabilityListToUTC(zones, fmtAvailable)
+tz = TimeZoneHelper("16692419870")
+tz.numberToTimeZone() 
+print(tz.utcToLocal())
 
-# add to db all rows of users
-rows = zip(names, numbers, times)
-for idx, row in enumerate(rows):
+
+#print(users["utc_start"])
+for d in users:
+    tz = TimeZoneHelper(d["phone"])
     p = Patient(
-            username=row[0], 
-            phone=row[1], 
-            timezone=convertNumberToTimeZone(row[1]), 
-            utc_start=row[2][0],
-            utc_end=row[2][1],
+            username=d["username"], 
+            phone=d["phone"],
+            utc_start=d["utc_start"],
+            utc_end=d["utc_end"],
+            timezone=tz.numberToTimeZone()
             )
     p.save() # each row now stored in database
 
-# close conn
+    # close conn
 db.close()
 
+# query all users and print them
+print("\n[INFO] Querying and printing all users Pacific Time...")
+query_all()
 
+query = (Patient
+         .select(Patient.username, Patient.phone, Patient.utc_start, Patient.utc_end)
+         .where(
+            (Patient.timezone == "US/Pacific"),
+            Patient.utc_start > datetime.datetime.utcnow()
+            )
+         )
+
+print("\n[INFO] Querying only US/Pacific users...")
+for (i, row) in enumerate(query):
+   print(i, f"name: {row.username} phone: {row.phone} utc_start: {row.utc_start} utc_end: {row.utc_end}\n")
+
+db.close()
