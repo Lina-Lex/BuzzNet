@@ -4,7 +4,7 @@ from utils import *
 
 # initialize db
 db = SqliteDatabase('respondNoTwilio.db')
-db.connect() # important
+db.connect()
 
 # query all users and print them
 print("\n[INFO] Querying and printing all users...")
