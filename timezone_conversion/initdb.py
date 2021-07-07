@@ -24,7 +24,6 @@ users = [
     {"username": "Tim", "phone": "14436533745",  "utc_start" : utc_start, "utc_end" : utc_end},
 ]
 
-#print(users["utc_start"])
 for d in users:
     tz = TimeZoneHelper(d["phone"])
     p = Patient(
