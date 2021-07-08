@@ -1,9 +1,3 @@
-################################
-######## MUST BE RUN WITH NGROK 
-# >>> ngrok http 5000
-# kevins twilio number: (925) 291-5450
-# v0
-################################
 import os
 import os
 from dotenv import load_dotenv
@@ -20,11 +14,13 @@ twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
 
 app = Flask(__name__)
 
-# see "/helpers/helper.txt and "helpers/webhookSMS.png" and "helpers/nbrok.png" for explanation of how to set this up
+# timezone helper class to get time zone from number
+from timezoneHelperClass import TimeZoneHelper
+
 @app.route("/incoming_sms", methods=['POST'])
-def sms_reply():  
-    """Respond to incoming calls with a simple text message."""
- 
+def sms_reply():  # sourcery skip
+    """Determine Users Phone Number from SMS and use TimeZoneHelper class to determine Time Zone."""    
+    
     # Use this data in your application logic
     from_number = request.form['From']
     to_number = request.form['To']
@@ -38,14 +34,16 @@ def sms_reply():
 
     # Determine the right reply for this message
     if body == 'find' or 'Find':
-        resp.message("Your Phone Number: {} \nYour timezone: {}".format(from_number, tz.numberToTimeZone()))
+        resp.message(f"\nYour Phone Number: {from_number} \nYour timezone: {tz.numberToTimeZone()}")
     elif body == 'bye':
         resp.message("Goodbye")
     else:
         resp.message("I didn't catch that. Sorry.")
+
     #elif "alex" in body:
         #while True:
             # resp.message(alex) :)
+
     return str(resp)
 
 if __name__ == "__main__":
