@@ -1,8 +1,5 @@
 # Reminders for setting everything up -kZ 7-8-21
 
-
-
-
 # remember: webhook must share same name as flask route
 # so if https://3c00a939967a.ngrok.io/incoming_sms 
 # then the function must be named @app.route("/incoming_sms", methods=['GET', 'POST'])
