@@ -30,12 +30,12 @@ import datetime
 import json
 from peewee import *
 from supermemo2 import SMTwo
+from util import send_mail
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
 postgreSQLpass = os.environ['postgreSQLpass']
-
 
 from googleapiclient.discovery import build
 #import pprint
@@ -43,13 +43,11 @@ from googleapiclient.discovery import build
 my_api_key = os.environ['google_api_key']
 my_cse_id = os.environ['google_cse_id']
 
-#conn = MySQLDatabase('GOandDO', user='root', password='PASSWORD', host='127.0.0.1', port=3306)
-conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
-
+db_proxy = Proxy()
 # Base model for work with Database through ORM
 class BaseModel(Model):
     class Meta:
-        database = conn  # connection with database
+        database = db_proxy  # connection with database
 
 # Patient model
 class Patient(BaseModel):
@@ -90,6 +88,17 @@ class SmartReminder(BaseModel):
 
     class Meta:
         table_name = 'smartreminder'
+if 'HEROKU' in os.environ:
+    import urllib.parse
+    import psycopg2
+    urllib.parse.uses_netloc.append('postgres')
+    url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
+    conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
+    db_proxy.initialize(conn)
+else:
+    conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
+    db_proxy.initialize(conn)
+
 
 def out_bound_call (tel):
     """ Function for making outbound call"""
@@ -290,6 +299,7 @@ def save_new_user(tel='', tab=''):
 
     new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
     sheet.append_row(new_row)
+    send_mail("NEW USER", phone=tel)
 @app.route("/voice_joined", methods=['GET', 'POST'])
 def voice_joined():
     """ Function for making joined call """
@@ -526,6 +536,7 @@ def save_feedback_service():
 
     new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), phone, REurl]
     sheet.append_row(new_row)
+    send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
     return (str(resp))
 def google_search(search_term, api_key, cse_id, **kwargs):
@@ -567,7 +578,7 @@ def search():
 #print_mars_photos()
 
 def db_create_tables():
-    #conn.drop_tables([Patient, Reminder, SmartReminder])
+    conn.drop_tables([Patient, Reminder, SmartReminder])
     # conn.cursor().execute("drop table patient")
     # conn.cursor().execute("drop table reminder")
     # conn.cursor().execute("drop table smartreminder")
@@ -595,7 +606,7 @@ def get_next_reminder():
     phone = req.get('phone')
     tel = str(phone[1:15]) # exclude +
 
-    conn.connect()
+    #conn.connect()
     # get Patient ID by the phone
     pat = Patient.get(Patient.phone == tel)
     print(pat.id, pat.phone)
@@ -621,11 +632,13 @@ def init_db():
     with conn.atomic() as transaction:  # Opens new transaction.
         try:
             db_create_tables()
+            print ("tables in database created...")
         except:
             # Because this block of code is wrapped with "atomic", a
             # new transaction will begin automatically after the call
             # to rollback().
             transaction.rollback()
+            print ("rollback ...")
             error_saving = True
             raise
 
@@ -663,7 +676,11 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
-#init_db()
 
-if __name__ == "__main__":
-     app.run(debug=True)
+if __name__ == '__main__':
+    print ('start db connect...')
+    db_proxy.connect()
+    #db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
+    print('init db...')
+    init_db()
+    app.run(debug=True)
