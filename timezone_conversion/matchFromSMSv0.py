@@ -1,22 +1,8 @@
-
-
-#  curl -G https://api.twilio.com/2010-04-01/Accounts     -u 'AC2fcff6668dd972c5fcc1af4e2b368a29:7d0c2b154a0349976b2d4b45bb06f183'
-
-# import os
-# import os
-# from dotenv import load_dotenv
-# from twilio.rest import Client
-
-
-
-# message = twilio_client.messages.create(
-#     to='+19253393908',
-#     from_='+19252915450',
-#     body="Hello from tuna!--flask-")
-
-# print(message.sid)
-
-########
+################################
+######## MUST BE RUN WITH NGROK 
+# >>> ngrok http 5000
+# (925) 291-5450
+################################
 import os
 import os
 from dotenv import load_dotenv
@@ -34,12 +20,13 @@ twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
 
 app = Flask(__name__)
 
+# see helper.txt and "webhookSMS.png" for explanation of how to set this up
 @app.route("/incoming_sms", methods=['GET', 'POST'])
 def incoming_sms():
     """Send a dynamic reply to an incoming text message"""
     # Get the message the user sent our Twilio number
     body = request.values.get('Body', None)
-    phone = request.values.get('Phone')
+    #phone = request.values.get('Phone')
 
     # Start our TwiML response
     resp = MessagingResponse()
