@@ -3,8 +3,6 @@ import pytz
 from pytz import timezone
 import phonenumbers
 from phonenumbers import geocoder
-from faker import Faker
-import pandas as pd
 
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
@@ -31,5 +29,5 @@ class TimeZoneHelper:
         return loc_dt.strftime(self.fmt)
 
 tz = TimeZoneHelper("16692419870")
-tz.numberToTimeZone()
+print(tz.numberToTimeZone())
 print(tz.utcToLocal())
