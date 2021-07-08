@@ -18,7 +18,7 @@ app = Flask(__name__)
 from timezoneHelperClass import TimeZoneHelper
 
 @app.route("/incoming_sms", methods=['POST'])
-def sms_reply():  # sourcery skip
+def sms_reply():  
     """Determine Users Phone Number from SMS and use TimeZoneHelper class to determine Time Zone."""    
     
     # Use this data in your application logic
