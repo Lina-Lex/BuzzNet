@@ -4,4 +4,4 @@
 # so if https://3c00a939967a.ngrok.io/incoming_sms 
 # then the function must be named @app.route("/incoming_sms", methods=['GET', 'POST'])
 # also need to have ngrok running ngrok http 5000
-# see nbrok photo in this directory
+# see ngrok photo in this directory
