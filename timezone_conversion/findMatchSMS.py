@@ -39,10 +39,6 @@ def sms_reply():
     else:
         resp.message("I didn't catch that. Sorry.")
 
-    #elif "alex" in body:
-        #while True:
-            # resp.message(alex) :)
-
     return str(resp)
 
 if __name__ == "__main__":
