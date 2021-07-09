@@ -20,20 +20,21 @@ from timezoneHelperClass import TimeZoneHelper
 @app.route("/incoming_sms", methods=['POST'])
 def sms_reply():  
     """Determine Users Phone Number from SMS and use TimeZoneHelper class to determine Time Zone."""    
-    
     # Use this data in your application logic
-    from_number = request.form['From']
+    from_number = request.form['From']    # to_number = request.form['To']
     body = request.form['Body']
-
+    to_number = request.form['To']
+    
     # Start our TwiML response
     resp = MessagingResponse()
 
     # timezone helper class to get time zone from number
-    tz = TimeZoneHelper(from_number)
+    tz_from = TimeZoneHelper(from_number)
+    tz_to = TimeZoneHelper(to_number)
 
     # Determine the right reply for this message
     if body == 'find' or 'Find':
-        resp.message(f"\nYour Phone Number: {from_number} \nYour timezone: {tz.numberToTimeZone()}")
+        resp.message(f"\nYour Phone Number: {from_number} \nYour timezone: {tz_from.numberToTimeZone()} My Number: {to_number} My Time Zone: {tz_to.numberToTimeZone()}")
     elif body == 'bye':
         resp.message("Goodbye")
     else:
