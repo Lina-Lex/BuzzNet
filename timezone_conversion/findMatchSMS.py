@@ -20,8 +20,7 @@ from timezoneHelperClass import TimeZoneHelper
 @app.route("/incoming_sms", methods=['POST'])
 def sms_reply():  
     """Determine Users Phone Number from SMS and use TimeZoneHelper class to determine Time Zone."""    
-    # Use this data in your application logic
-    from_number = request.form['From']    # to_number = request.form['To']
+    from_number = request.form['From'] 
     body = request.form['Body']
     to_number = request.form['To']
     
