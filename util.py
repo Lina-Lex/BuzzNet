@@ -2,8 +2,9 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-recipient_list = ['googlegroup1@mail.com', 'googlegroup1@mail.com']
-sender_mail = 'sender@mail.com'
+recipient_list = ['goandtodo@googlegroups.com']
+
+sender_mail = 'heartvoices.org@gmail.com'
 
 
 def send_mail(mail_type, phone, feedback=''):

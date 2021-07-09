@@ -676,7 +676,6 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
-
 if __name__ == '__main__':
     print ('start db connect...')
     db_proxy.connect()
