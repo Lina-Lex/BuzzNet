@@ -1,5 +1,5 @@
 import datetime
-import pytz
+import pandas as pd
 from pytz import timezone
 import phonenumbers
 from phonenumbers import geocoder
@@ -7,7 +7,7 @@ from phonenumbers import geocoder
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
         self.phoneNumber = phoneNumber
-        self.tzs_df = pd.read_csv("./data/tzmapping.csv")
+        self.tzs_df = pd.read_csv("/home/batman/Desktop/goanddo/BuzzNet/timezone_conversion/data/tzmapping.csv")
         self.tzs_df.index = self.tzs_df['State']
         self.user_zone = self.numberToTimeZone()
         self.fmt = '%Y-%m-%d %H:%M:%S %Z%z'
@@ -28,6 +28,6 @@ class TimeZoneHelper:
         loc_dt = utc_dt.astimezone(zone_objct)
         return loc_dt.strftime(self.fmt)
 
-tz = TimeZoneHelper("16692419870")
-print(tz.numberToTimeZone())
-print(tz.utcToLocal())
+# tz = TimeZoneHelper("16692419870")
+# print(tz.numberToTimeZone())
+# print(tz.utcToLocal())
