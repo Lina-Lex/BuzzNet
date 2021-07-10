@@ -10,8 +10,6 @@ app = Flask(__name__)
 app.debug = True
 
 # Configs
-# Replace the user, password, hostname and database according to your configuration information
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://vincentolagbemide:@localhost:5432/book-store-api'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite3'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True 
