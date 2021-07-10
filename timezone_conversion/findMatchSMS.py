@@ -5,10 +5,6 @@ from twilio.rest import Client
 from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 
-twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
-twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
-twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
-
 
 # load_dotenv()
 # twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
