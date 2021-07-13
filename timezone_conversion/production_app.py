@@ -49,6 +49,7 @@ def voice():
     """Respond to incoming phone calls with a menu of options"""
     # Start our TwiML response
     resp = VoiceResponse()
+    tel = request.values['From']
 
     # Start our <Gather> verb
     gather = Gather(num_digits=1)
