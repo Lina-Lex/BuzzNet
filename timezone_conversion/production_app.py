@@ -7,6 +7,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
+from twilio.twiml.voice_response import VoiceResponse, Gather
+
 
 # define the scope
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -41,6 +43,23 @@ twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
 from timezoneHelperClass import TimeZoneHelper
 
 app = Flask(__name__)
+
+@app.route("/voice", methods=['GET', 'POST'])
+def voice():
+    """Respond to incoming phone calls with a menu of options"""
+    # Start our TwiML response
+    resp = VoiceResponse()
+
+    # Start our <Gather> verb
+    gather = Gather(num_digits=1)
+    gather.say('To find a friend to speak with, press 1. For support, press 2.')
+
+    resp.append(gather)
+
+    # If the user doesn't select an option, redirect them into a loop
+    resp.redirect('/voice')
+
+    return str(resp)
 
 @app.route("/incoming_sms", methods=['GET', 'POST'])
 def incoming_sms():
