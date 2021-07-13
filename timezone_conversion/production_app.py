@@ -13,11 +13,16 @@ from twilio.twiml.voice_response import VoiceResponse, Gather
 # timezone helper class to get time zone from number
 from timezoneHelperClass import TimeZoneHelper
 
+# creds
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
+
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 # define the scope
@@ -47,15 +52,19 @@ def voice():
     """Respond to incoming phone calls with a menu of options"""
     # Start our TwiML response
     resp = VoiceResponse()
-    tel = request.values['From']
+    #tel = request.values['From']
+    from_number = request.form['From'] 
 
-    # Start our <Gather> verb
     gather = Gather(num_digits=1)
     gather.say('To find a friend to speak with, press 1. For support, press 2.')
     resp.append(gather)
     
     # get number match and dial it
-    #resp.dial(#match)
+    #resp.dial(match)
+
+    test_match = "+192533393908"
+    #resp.say("you should call {}".format(test_match))
+    resp.dial(test_match)
 
     # If the user doesn't select an option, redirect them into a loop
     resp.redirect('/voice')
