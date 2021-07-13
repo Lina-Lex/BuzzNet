@@ -9,7 +9,6 @@ import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
-
 # define the scope
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 
@@ -54,8 +53,10 @@ def voice():
     # Start our <Gather> verb
     gather = Gather(num_digits=1)
     gather.say('To find a friend to speak with, press 1. For support, press 2.')
-
     resp.append(gather)
+    
+    # get number match and dial it
+    #resp.dial(#match)
 
     # If the user doesn't select an option, redirect them into a loop
     resp.redirect('/voice')
