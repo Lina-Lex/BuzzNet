@@ -24,7 +24,7 @@ tasks.py
 ```
 @celelry_app.add_task(plug_to='name-of-the-beat-functions')
 def proxy_mytaskName(*args,**kw):
-    from module import example_funtion
+    from module import example_funtion # or import before defining tasks
     # Do something 
     # call the real function
     example_function(*args,**kw)
