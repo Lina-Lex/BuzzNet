@@ -70,11 +70,17 @@ def incoming_sms():
     # Start our TwiML response
     resp = MessagingResponse()
 
+    # timezone helper class to get time zone from number
+    tz_from = TimeZoneHelper(from_number)
+    tz_to = TimeZoneHelper(to_number)
+    
     # Determine the right reply for this message
     if body == 'hello':
         resp.message("Hi!")
     elif body == 'bye':
         resp.message("Goodbye")
+    elif body == 'find':
+        resp.message(f"\nYour Phone Number: {from_number} \nYour time zone: {tz_from.numberToTimeZone()} My Number: {to_number} My time zone: {tz_to.numberToTimeZone()}")
 
     return str(resp)
 
