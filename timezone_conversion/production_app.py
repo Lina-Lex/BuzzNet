@@ -31,15 +31,11 @@ client = gspread.authorize(creds)
 # get the instance of the Spreadsheet
 sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1gIDRAw203QCWp_8mGo6sZQi50vziKBsQShbd0txIktU/edit?usp=sharing")
 
-# get the first sheet of the Spreadsheet
-#sheet_instance = sheet.get_worksheet(0)
-
 # get all worksheets
 sheet_instance = sheet.worksheets()
 
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
-#print(dataframe.head())
 
 app = Flask(__name__)
 
