@@ -1,14 +1,24 @@
 import os
 from os import environ
 from dotenv import load_dotenv
+import gspread
+import pandas as pd
 from twilio.rest import Client
 from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
-import gspread
-import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
+# timezone helper class to get time zone from number
+from timezoneHelperClass import TimeZoneHelper
+
+# acquire credentials for twilio from environment variables
+load_dotenv()
+twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
+                       twilio_account_sid)
 # define the scope
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 
@@ -30,13 +40,6 @@ sheet_instance = sheet.worksheets()
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 #print(dataframe.head())
-
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
-twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
-                       twilio_account_sid)
 
 # timezone helper class to get time zone from number
 from timezoneHelperClass import TimeZoneHelper
