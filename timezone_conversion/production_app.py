@@ -7,6 +7,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
+from flask_moment import Moment
+
 
 # define the scope
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -41,6 +43,7 @@ twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
 from timezoneHelperClass import TimeZoneHelper
 
 app = Flask(__name__)
+moment = Moment(app)
 
 @app.route("/incoming_sms", methods=['GET', 'POST'])
 def incoming_sms():
