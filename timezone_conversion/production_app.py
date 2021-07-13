@@ -41,9 +41,6 @@ sheet_instance = sheet.worksheets()
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 #print(dataframe.head())
 
-# timezone helper class to get time zone from number
-from timezoneHelperClass import TimeZoneHelper
-
 app = Flask(__name__)
 
 @app.route("/voice", methods=['GET', 'POST'])
