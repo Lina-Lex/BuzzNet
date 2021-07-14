@@ -20,6 +20,7 @@ twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
 twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
+
 # define the scope
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 
@@ -30,16 +31,15 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('/home/batman/Desktop/g
 client = gspread.authorize(creds)
 
 # get the instance of the Spreadsheet
-#sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1gIDRAw203QCWp_8mGo6sZQi50vziKBsQShbd0txIktU/edit?usp=sharing")
 sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
+
 # get all worksheets
 sheet_instance = sheet.worksheets()
 
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
-print(f"*** ALL WORKSHEETS *** {sheet_instance}")
-print(f"df {dataframe.head()}")
 
+# imit flask app
 app = Flask(__name__)
 
 @app.route("/voice", methods=['GET', 'POST'])
@@ -47,8 +47,7 @@ def voice():
     """Respond to incoming phone calls with a menu of options"""
     # Start our TwiML response
     resp = VoiceResponse()
-    #tel = request.values['From']
-    from_number = request.form['From'] 
+    from_number = request.form['From']  #tel = request.values['From']
 
     gather = Gather(num_digits=1)
     gather.say('To find a friend to speak with, press 1. For support, press 2.')
@@ -70,7 +69,6 @@ def voice():
 def incoming_sms():
     """Send a dynamic reply to an incoming text message"""
     # Get the message the user sent our Twilio number
-    #body = request.values.get('Body', None)
     body = request.form['Body']
     to_number = request.form['To']
     from_number = request.form['From'] 
@@ -83,31 +81,28 @@ def incoming_sms():
     tz_to = TimeZoneHelper(to_number)
 
 ########################################################
+    # format/clean data
     df = dataframe
-    tzs_df = pd.read_csv("/home/batman/Desktop/BuzzNet-main/timezone_conversion/data/tzmapping.csv")
+    tzs_df = pd.read_csv("/home/batman/Desktop/timezone_conversion/data/tzmapping.csv")
     tzs_df.index = tzs_df['State'] # important
     pd.set_option('display.float_format', lambda x: '%.0f' % x)
-    #df.drop('time zone', axis=1, inplace=True)
-    df.rename(columns={'Unnamed: 0': 'Username'}, inplace=True)
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
+
+    # get current UTC time and find match
     now_utc = datetime.utcnow()
-    #tz = TimeZoneHelper(number)
-    tz = "US/Pacific"
+    tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
     match = result.head(1)
-    # print(match['Number'])
     match = int(match['Number'])
 ########################################################
-
+    
     # Determine the right reply for this message
-    if body == 'Find':
+    if body == 'Find friend':
         resp.message("Hi! You should call {}".format(match))
-    elif body == 'bye':
+    else:
         resp.message("Goodbye")
-    # elif body == 'find':
-    #     resp.message(f"\nYour Phone Number: {from_number} \nYour time zone: {tz_from.numberToTimeZone()} My Number: {to_number} My time zone: {tz_to.numberToTimeZone()}")
 
     return str(resp)
 
