@@ -7,7 +7,7 @@ from phonenumbers import geocoder
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
         self.phoneNumber = phoneNumber
-        self.tzs_df = pd.read_csv("/home/batman/Desktop/goanddo/BuzzNet/timezone_conversion/data/tzmapping.csv")
+        self.tzs_df = pd.read_csv("/home/batman/Desktop/timezone_conversion/data/tzmapping.csv")
         self.tzs_df.index = self.tzs_df['State']
         self.user_zone = self.numberToTimeZone()
         self.fmt = '%Y-%m-%d %H:%M:%S %Z%z'
