@@ -83,9 +83,6 @@ def incoming_sms():
 ########################################################
     # format/clean data
     df = dataframe
-    tzs_df = pd.read_csv("/home/batman/Desktop/timezone_conversion/data/tzmapping.csv")
-    tzs_df.index = tzs_df['State'] # important
-    pd.set_option('display.float_format', lambda x: '%.0f' % x)
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
 
