@@ -12,13 +12,17 @@ from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
 # timezone helper class to get time zone from number
-from timezoneHelperClass import TimeZoneHelpe
+from timezoneHelperClass import TimeZoneHelper
+
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
 
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -40,7 +44,8 @@ sheet_instance = sheet.worksheets()
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 print(dataframe)
-# imit flask app
+
+# init flask app
 app = Flask(__name__)
 
 @app.route("/voice", methods=['GET', 'POST'])
@@ -92,10 +97,13 @@ def incoming_sms():
     tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
+    print("len {}".format(result))
     match = result.head(1)
     match = int(match['Number'])
     print(f"dataframe shape {dataframe.shape}") # all results shape
-    print(f"result shape: {result.shape}") # candidate matches shape (may be more candidates but have to pick one)
+    print(f"result shape: {result.shape}") # candidate matches shape
+    #^^may be more candidates but have to pick one
+
 ########################################################
     
     # Determine the right reply for this message
