@@ -2,6 +2,7 @@ import os
 from os import environ
 from dotenv import load_dotenv
 from datetime import datetime
+from datetime import timedelta
 import gspread
 import pandas as pd
 from twilio.rest import Client
@@ -11,7 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
 # timezone helper class to get time zone from number
-from timezoneHelperClass import TimeZoneHelper
+from timezoneHelperClass import TimeZoneHelpe
 
 # acquire credentials for twilio from environment variables
 load_dotenv()
@@ -38,7 +39,7 @@ sheet_instance = sheet.worksheets()
 
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
-
+print(dataframe)
 # imit flask app
 app = Flask(__name__)
 
@@ -91,8 +92,13 @@ def incoming_sms():
     tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
+    print("len {}".format(result))
     match = result.head(1)
     match = int(match['Number'])
+    print(f"dataframe shape {dataframe.shape}") # all results shape
+    print(f"result shape: {result.shape}") # candidate matches shape
+    #^^may be more candidates but have to pick one
+
 ########################################################
     
     # Determine the right reply for this message
