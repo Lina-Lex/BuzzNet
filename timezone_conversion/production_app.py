@@ -92,13 +92,10 @@ def incoming_sms():
     tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
-    print("len {}".format(result))
     match = result.head(1)
     match = int(match['Number'])
     print(f"dataframe shape {dataframe.shape}") # all results shape
-    print(f"result shape: {result.shape}") # candidate matches shape
-    #^^may be more candidates but have to pick one
-
+    print(f"result shape: {result.shape}") # candidate matches shape (may be more candidates but have to pick one)
 ########################################################
     
     # Determine the right reply for this message
