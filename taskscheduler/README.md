@@ -40,11 +40,11 @@ def dis():
 ```
 **To start the workers**
 ```
-celery -A taskschduler.celery_app worker -c 5 --loglevel=info
+celery -A taskscheduler.celery_app worker -c 5 --loglevel=info
 ```
 **To start the beat**
 ```
-celery -A taskschduler.celery_app beat --loglevel=info
+celery -A taskscheduler.celery_app beat --loglevel=info
 ```
 
 ## API Reference
