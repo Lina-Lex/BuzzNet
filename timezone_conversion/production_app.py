@@ -27,7 +27,7 @@ def twiml(resp):
     resp.headers['Content-Type'] = 'text/xml'
     return resp
 
-def matchFromDf(dataframe, tz_from):
+def matchFromDf(dataframe, tz_from, verbose=True):
     """This is ugly but works, will clean up this  function"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
@@ -38,12 +38,13 @@ def matchFromDf(dataframe, tz_from):
     tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
-    print("len {}".format(result))
     match = result.head(1)
     match = int(match['Number'])
-    print(f"dataframe shape {dataframe.shape}") # all results shape
-    print(f"result shape: {result.shape}") # candidate matches shape
-    #^^may be more candidates but have to pick one
+    
+    if verbose:
+        print(f"dataframe shape {dataframe.shape}") # all results shape
+        print(f"result shape: {result.shape}") # candidate matches shape
+        #^^may be more candidates but have to pick one
     return match
 
 # timezone helper class to get time zone from number
