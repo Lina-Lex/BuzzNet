@@ -50,10 +50,14 @@ def matchFromDf(dataframe, tz_from, verbose=True):
     return match
 
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
+
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -87,14 +91,15 @@ def index():
   
 @app.route('/welcome', methods=['POST'])
 def welcome():
-  """Respond to incoming phone calls with a menu of options"""
+    """Respond to incoming phone calls with a menu of options"""
     response = VoiceResponse()
     with response.gather(
         num_digits=1, action=url_for('menu'), method="POST"
     ) as g:
         g.say(message="Thanks for calling the Heart Voices IVR System. " +
-              "Please press 1 to find a match." +
-              "Press 2 for help.", loop=3)
+        "Please press 1 to find a match." +
+        "Press 2 for help.", loop=3)
+    
     return twiml(response)
 
 @app.route('/menu', methods=['POST'])
@@ -130,7 +135,13 @@ def voice():
         "Connecting you to a friend. "
         + "You will be re-directed to {}.".format(formatMatch)
     )
-    resp.dial(formatMatch)
+    #resp.dial("+15005550006")
+    #resp.dial(formatMatch)
+    res = twilio_client.calls.create(from_="+19252915450",
+                                to=from_number, #formatMatch
+                                url=url_for('.outbound',
+                                            _external=True))
+    print(res.sid)
     return Response(str(resp), 200, mimetype="application/xml")
 
 @app.route("/incoming_sms", methods=['GET', 'POST'])
@@ -159,6 +170,23 @@ def incoming_sms():
         resp.message("Goodbye")
 
     return str(resp)
+
+@app.route('/outbound', methods=['POST'])
+def outbound():
+    response = VoiceResponse()
+
+    response.say("Thank you for contacting our sales department. If this "
+                 "click to call application was in production, we would "
+                 "dial out to your sales team with the Dial verb.",
+                 voice='alice')
+    '''
+    # Uncomment this code and replace the number with the number you want
+    # your customers to call.
+    response.number("+15005550006")
+    '''
+    response.number("+15005550006")
+
+    return str(response)
 
 def _redirect_welcome():
     response = VoiceResponse()
