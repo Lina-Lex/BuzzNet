@@ -19,15 +19,16 @@ from flask import (
   url_for,
 )
 from twilio.twiml.voice_response import VoiceResponse
+from flask import Response
 
 #view_helpers.py  https://github.com/TwilioDevEd/ivr-phone-tree-python/blob/master/ivr_phone_tree_python/view_helpers.py
 def twiml(resp):
-    resp = flask.Response(str(resp))
+    resp = Response(str(resp))
     resp.headers['Content-Type'] = 'text/xml'
     return resp
 
 def matchFromDf(dataframe, tz_from):
-  """This is ugly but works, will clean up this function"""
+    """This is ugly but works, will clean up this function"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
@@ -48,11 +49,15 @@ def matchFromDf(dataframe, tz_from):
 # timezone helper class to get time zone from number
 from timezoneHelperClass import TimeZoneHelper
 
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
+
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -78,7 +83,7 @@ print(dataframe)
 # init flask app
 app = Flask(__name__)
 
-
+### WEBHOOK ENTRY = /welcome
 @app.route('/')
 def index():
     return "<h1>Hello World! Lets match some friends! Friends are good!</h1>"
@@ -110,17 +115,20 @@ def welcome():
 
 @app.route('/menu', methods=['POST'])
 def menu():
-    selected_option = request.form['Digits']
-    option_actions = {'1': voice,
-                      '2': welcome}
+    # selected_option = request.form['Digits']
+    # option_actions = {'1': voice,
+    #                   '2': welcome}
 
-    if option_actions.has_key(selected_option):
-        response = VoiceResponse()
-        option_actions[selected_option](response)
-        return twiml(response)
+    # #if option_actions.has_key(selected_option):
+    # if option_actions.__contains__(selected_option):
 
-    return _redirect_welcome()
-  
+    #     response = VoiceResponse()
+    #     option_actions[selected_option](response)
+    #     return twiml(response)
+
+    #return _redirect_welcome()
+    return voice()
+
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
     """Respond to incoming phone calls with a menu of options"""
