@@ -50,10 +50,14 @@ def matchFromDf(dataframe, tz_from, verbose=True):
     return match
 
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
+
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -125,19 +129,13 @@ def voice():
 
     # how to get match from google sheet
     match = matchFromDf(dataframe, tz_from)
+    testMatch = "+19253393908"
 
     formatMatch = "+" + str(match)
     resp.say(
-        "Connecting you to a friend. "
-        + "You will be re-directed to {}.".format(formatMatch)
+        "Connecting you to a friend. Please stay on the line."
     )
-    #resp.dial("+15005550006")
-    #resp.dial(formatMatch)
-    res = twilio_client.calls.create(from_="+19252915450",
-                                to=from_number, #formatMatch
-                                url=url_for('.outbound',
-                                            _external=True))
-    print(res.sid)
+    resp.dial(testMatch, action=url_for('.end_call'))
     return Response(str(resp), 200, mimetype="application/xml")
 
 @app.route("/incoming_sms", methods=['GET', 'POST'])
@@ -167,22 +165,15 @@ def incoming_sms():
 
     return str(resp)
 
-@app.route('/outbound', methods=['POST'])
-def outbound():
+@app.route('end_call', methods=['GET', 'POST'])
+def end_call():
+    """Thank user & hang up."""
     response = VoiceResponse()
-
-    response.say("Thank you for contacting our sales department. If this "
-                 "click to call application was in production, we would "
-                 "dial out to your sales team with the Dial verb.",
-                 voice='alice')
-    '''
-    # Uncomment this code and replace the number with the number you want
-    # your customers to call.
-    response.number("+15005550006")
-    '''
-    response.number("+15005550006")
-
-    return str(response)
+    response.say(
+        "Thank you for using Call Heart Voices! " + "Your voice makes a difference. Goodbye."
+    )
+    response.hangup()
+    return Response(str(response), 200, mimetype="application/xml")
 
 def _redirect_welcome():
     response = VoiceResponse()
