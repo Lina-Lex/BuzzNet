@@ -30,7 +30,8 @@ def twiml(resp):
     return resp
 
 def matchFromDf(dataframe, tz_from, verbose=True):
-    """This is ugly but works, will clean up this function"""
+    """This function gets a match for user to call"""
+    """This function is ugly but works, will clean up this function"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
@@ -99,22 +100,22 @@ def welcome():
         g.say(message="Thanks for calling the Heart Voices IVR System. " +
         "Please press 1 to find a match." +
         "Press 2 for help.", loop=3)
-    
     return twiml(response)
 
 @app.route('/menu', methods=['POST'])
 def menu():
+    """Grabs digit user enterered in "welcome" function and triggers appropriate response"""
     selected_option = request.form['Digits']
     option_actions = {'1': "voice",
-                      '2': welcome}
+                      '2': "welcome"}
     result = option_actions.get(selected_option)
     response = VoiceResponse()
     response.redirect(url_for(result))
-    return twiml(response)
-    #return voice()
+    return twiml(response) #return voice()
 
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
+    """Selects a match from Google sheet and connects User to friend"""
     # Start our TwiML response
     resp = VoiceResponse()
     to_number = request.form['To']
@@ -128,6 +129,7 @@ def voice():
     match = matchFromDf(dataframe, tz_from)
     testMatch = "+19253393908"
 
+    # now that we have match, forward call to match
     formatMatch = "+" + str(match)
     resp.say(
         "Connecting you to a friend. Please stay on the line."
