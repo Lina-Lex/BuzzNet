@@ -2,7 +2,6 @@ import os
 from os import environ
 from dotenv import load_dotenv
 from datetime import datetime
-from datetime import timedelta
 import gspread
 import pandas as pd
 from twilio.rest import Client
@@ -10,6 +9,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from flask import Flask
+from flask import Response
 from flask import (
   flash,
   render_template,
@@ -18,17 +18,19 @@ from flask import (
   session,
   url_for,
 )
-from twilio.twiml.voice_response import VoiceResponse
-from flask import Response
 
-#view_helpers.py  https://github.com/TwilioDevEd/ivr-phone-tree-python/blob/master/ivr_phone_tree_python/view_helpers.py
+# timezone helper class to get time zone from number
+from timezoneHelperClass import TimeZoneHelper
+
+# view_helpers.py  
+# https://github.com/TwilioDevEd/ivr-phone-tree-python/blob/master/ivr_phone_tree_python/view_helpers.py
 def twiml(resp):
     resp = Response(str(resp))
     resp.headers['Content-Type'] = 'text/xml'
     return resp
 
 def matchFromDf(dataframe, tz_from, verbose=True):
-    """This is ugly but works, will clean up this  function"""
+    """This is ugly but works, will clean up this function"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
@@ -47,14 +49,16 @@ def matchFromDf(dataframe, tz_from, verbose=True):
     
     return match
 
-# timezone helper class to get time zone from number
-from timezoneHelperClass import TimeZoneHelper
+###############################################################################
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
 
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -76,6 +80,7 @@ sheet_instance = sheet.worksheets()
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 print(dataframe)
+###############################################################################
 
 # init flask app
 app = Flask(__name__)
@@ -92,7 +97,7 @@ def welcome():
         num_digits=1, action=url_for('menu'), method="POST"
     ) as g:
         g.say(message="Thanks for calling the Heart Voices IVR System. " +
-              "Please press 1 for to find a match." +
+              "Please press 1 to find a match." +
               "Press 2 for help.", loop=3)
     return twiml(response)
 
@@ -124,25 +129,14 @@ def voice():
 
     # how to get match from google sheet
     match = matchFromDf(dataframe, tz_from)
-    #print(f"test function: match is {match}")
 
-#################################################################################
-# Working now to actually call the user now that we can get a match based on time zone and UTC start, UTC end availability
     formatMatch = "+" + str(match)
-    resp.say("you should call {}".format(formatMatch))
-    #resp.dial(formatMatch)
-    # client = Client(account_sid, auth_token)
-    # call = client.calls.create(
-    #                         twiml='<Response><Say>Ahoy, World!</Say></Response>',
-    #                         to='+14155551212',
-    #                         from_='+15017122661'
-    #                     )
-#################################################################################
-
-    # If the user doesn't select an option, redirect them into a loop
-    resp.redirect('/voice')
-
-    return str(resp)
+    resp.say(
+        "Connecting you to a friend. "
+        + "You will be re-directed to {}.".format(formatMatch)
+    )
+    resp.dial(formatMatch)
+    return Response(str(resp), 200, mimetype="application/xml")
 
 @app.route("/incoming_sms", methods=['GET', 'POST'])
 def incoming_sms():
