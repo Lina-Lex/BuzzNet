@@ -91,9 +91,9 @@ def welcome():
     with response.gather(
         num_digits=1, action=url_for('menu'), method="POST"
     ) as g:
-        g.say(message="Thanks for calling the E T Phone Home Service. " +
-              "Please press 1 for directions." +
-              "Press 2 for a list of planets to call.", loop=3)
+        g.say(message="Thanks for calling the Heart Voices IVR System. " +
+              "Please press 1 for to find a match." +
+              "Press 2 for help.", loop=3)
     return twiml(response)
 
 @app.route('/menu', methods=['POST'])
