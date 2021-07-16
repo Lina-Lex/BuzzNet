@@ -50,14 +50,10 @@ def matchFromDf(dataframe, tz_from, verbose=True):
     return match
 
 # acquire credentials for twilio from environment variables
-twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
-twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
-twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
-
-# load_dotenv()
-# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+load_dotenv()
+twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
