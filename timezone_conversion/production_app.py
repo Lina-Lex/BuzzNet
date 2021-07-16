@@ -87,6 +87,7 @@ def index():
   
 @app.route('/welcome', methods=['POST'])
 def welcome():
+  """Respond to incoming phone calls with a menu of options"""
     response = VoiceResponse()
     with response.gather(
         num_digits=1, action=url_for('menu'), method="POST"
@@ -112,7 +113,6 @@ def menu():
 
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
-    """Respond to incoming phone calls with a menu of options"""
     # Start our TwiML response
     resp = VoiceResponse()
     to_number = request.form['To']
