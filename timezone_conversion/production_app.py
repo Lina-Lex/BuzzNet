@@ -6,10 +6,24 @@ from datetime import timedelta
 import gspread
 import pandas as pd
 from twilio.rest import Client
-from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
+from flask import (
+  flash,
+  render_template,
+  redirect,
+  request,
+  session,
+  url_for,
+)
+from twilio.twiml.voice_response import VoiceResponse
+
+#view_helpers.py  https://github.com/TwilioDevEd/ivr-phone-tree-python/blob/master/ivr_phone_tree_python/view_helpers.py
+def twiml(resp):
+    resp = flask.Response(str(resp))
+    resp.headers['Content-Type'] = 'text/xml'
+    return resp
 
 # timezone helper class to get time zone from number
 from timezoneHelperClass import TimeZoneHelper
@@ -44,6 +58,36 @@ print(dataframe)
 # init flask app
 app = Flask(__name__)
 
+
+@app.route('/')
+def index():
+    return "<h1>Hello World! Lets match some friends! Friends are good!</h1>"
+  
+@app.route('/welcome', methods=['POST'])
+def welcome():
+    response = VoiceResponse()
+    with response.gather(
+        num_digits=1, action=url_for('menu'), method="POST"
+    ) as g:
+        g.say(message="Thanks for calling the E T Phone Home Service. " +
+              "Please press 1 for directions." +
+              "Press 2 for a list of planets to call.", loop=3)
+    return twiml(response)
+
+
+@app.route('/menu', methods=['POST'])
+def menu():
+    selected_option = request.form['Digits']
+    option_actions = {'1': _give_instructions,
+                      '2': _list_planets}
+
+    if option_actions.has_key(selected_option):
+        response = VoiceResponse()
+        option_actions[selected_option](response)
+        return twiml(response)
+
+    return _redirect_welcome()
+  
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
     """Respond to incoming phone calls with a menu of options"""
