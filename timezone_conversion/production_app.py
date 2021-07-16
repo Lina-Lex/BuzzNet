@@ -9,6 +9,7 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.twiml.voice_response import VoiceResponse, Gather
+from flask import Flask
 from flask import (
   flash,
   render_template,
@@ -25,14 +26,35 @@ def twiml(resp):
     resp.headers['Content-Type'] = 'text/xml'
     return resp
 
+def matchFromDf(dataframe, tz_from):
+    df = dataframe
+    df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
+    df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
+
+    # get current UTC time and find match
+    now_utc = datetime.utcnow()
+    tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
+    mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
+    result = df.loc[mask]
+    print("len {}".format(result))
+    match = result.head(1)
+    match = int(match['Number'])
+    print(f"dataframe shape {dataframe.shape}") # all results shape
+    print(f"result shape: {result.shape}") # candidate matches shape
+    #^^may be more candidates but have to pick one
+    return match
+
 # timezone helper class to get time zone from number
 from timezoneHelperClass import TimeZoneHelper
 
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -75,11 +97,24 @@ def welcome():
     return twiml(response)
 
 
+# @app.route('/menu', methods=['POST'])
+# def menu():
+#     selected_option = request.form['Digits']
+#     option_actions = {'1': _give_instructions,
+#                       '2': _list_planets}
+
+#     if option_actions.has_key(selected_option):
+#         response = VoiceResponse()
+#         option_actions[selected_option](response)
+#         return twiml(response)
+
+#     return _redirect_welcome()
+
 @app.route('/menu', methods=['POST'])
 def menu():
     selected_option = request.form['Digits']
-    option_actions = {'1': _give_instructions,
-                      '2': _list_planets}
+    option_actions = {'1': voice,
+                      '2': welcome}
 
     if option_actions.has_key(selected_option):
         response = VoiceResponse()
@@ -93,14 +128,22 @@ def voice():
     """Respond to incoming phone calls with a menu of options"""
     # Start our TwiML response
     resp = VoiceResponse()
+    to_number = request.form['To']
     from_number = request.form['From']  #tel = request.values['From']
 
     gather = Gather(num_digits=1)
     gather.say('To find a friend to speak with, press 1. For support, press 2.')
     resp.append(gather)
-    
-    # get number match and dial it
-    #resp.dial(match)
+
+    # timezone helper class to get time zone from number
+    tz_from = TimeZoneHelper(from_number)
+    tz_to = TimeZoneHelper(to_number)
+
+########################################################
+    # how to get match fro google sheet
+    match = matchFromDf(dataframe, tz_from)
+    print(f"test function: match is {match}")
+########################################################
 
     test_match = "+192533393908"
     #resp.say("you should call {}".format(test_match))
@@ -127,23 +170,9 @@ def incoming_sms():
     tz_to = TimeZoneHelper(to_number)
 
 ########################################################
-    # format/clean data
-    df = dataframe
-    df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
-    df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
-
-    # get current UTC time and find match
-    now_utc = datetime.utcnow()
-    tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
-    mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
-    result = df.loc[mask]
-    print("len {}".format(result))
-    match = result.head(1)
-    match = int(match['Number'])
-    print(f"dataframe shape {dataframe.shape}") # all results shape
-    print(f"result shape: {result.shape}") # candidate matches shape
-    #^^may be more candidates but have to pick one
-
+    # how to get match fro google sheet
+    match = matchFromDf(dataframe,tz_from)
+    print(f"test function: match is {match}")
 ########################################################
     
     # Determine the right reply for this message
@@ -153,6 +182,13 @@ def incoming_sms():
         resp.message("Goodbye")
 
     return str(resp)
+
+def _redirect_welcome():
+    response = VoiceResponse()
+    response.say("Returning to the main menu", voice="alice", language="en-GB")
+    response.redirect(url_for('welcome'))
+
+    return twiml(response)
 
 if __name__ == "__main__":
     app.run(debug=True)
