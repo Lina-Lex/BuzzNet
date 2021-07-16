@@ -95,20 +95,6 @@ def welcome():
               "Press 2 for a list of planets to call.", loop=3)
     return twiml(response)
 
-
-# @app.route('/menu', methods=['POST'])
-# def menu():
-#     selected_option = request.form['Digits']
-#     option_actions = {'1': _give_instructions,
-#                       '2': _list_planets}
-
-#     if option_actions.has_key(selected_option):
-#         response = VoiceResponse()
-#         option_actions[selected_option](response)
-#         return twiml(response)
-
-#     return _redirect_welcome()
-
 @app.route('/menu', methods=['POST'])
 def menu():
     # selected_option = request.form['Digits']
@@ -121,8 +107,6 @@ def menu():
     #     response = VoiceResponse()
     #     option_actions[selected_option](response)
     #     return twiml(response)
-
-    #return _redirect_welcome()
     return voice()
 
 @app.route("/voice", methods=['GET', 'POST'])
