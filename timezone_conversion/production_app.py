@@ -133,9 +133,9 @@ def voice():
     to_number = request.form['To']
     from_number = request.form['From']  #tel = request.values['From']
 
-    gather = Gather(num_digits=1)
-    gather.say('To find a friend to speak with, press 1. For support, press 2.')
-    resp.append(gather)
+    # gather = Gather(num_digits=1)
+    # gather.say('To find a friend to speak with, press 1. For support, press 2.')
+    # resp.append(gather)
 
     # timezone helper class to get time zone from number
     tz_from = TimeZoneHelper(from_number)
@@ -147,9 +147,10 @@ def voice():
     print(f"test function: match is {match}")
 ########################################################
 
-    test_match = "+192533393908"
-    #resp.say("you should call {}".format(test_match))
-    resp.dial(test_match)
+    #test_match = "+192533393908"
+    formatMatch = "+" + str(match)
+    #resp.say("you should call {}".format(formatMatch))
+    resp.dial(formatMatch)
 
     # If the user doesn't select an option, redirect them into a loop
     resp.redirect('/voice')
