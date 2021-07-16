@@ -50,10 +50,14 @@ def matchFromDf(dataframe, tz_from, verbose=True):
     return match
 
 # acquire credentials for twilio from environment variables
-load_dotenv()
-twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
-twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
+twilio_account_sid = "AC2fcff6668dd972c5fcc1af4e2b368a29"
+twilio_api_key_sid = "SK0064f5c1db87e9534de479a1c8b5707e"
+twilio_api_key_secret = "pHkHpw7OKrjkYwB6GOrPnYT64Lu6VTTY"
+
+# load_dotenv()
+# twilio_account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+# twilio_api_key_sid = os.environ.get('TWILIO_API_KEY_SID')
+# twilio_api_key_secret = os.environ.get('TWILIO_API_KEY_SECRET')
 twilio_client = Client(twilio_api_key_sid, twilio_api_key_secret,
                        twilio_account_sid)
 
@@ -75,6 +79,7 @@ sheet_instance = sheet.worksheets()
 # convert to dataframe
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 print(dataframe)
+
 
 # init flask app
 app = Flask(__name__)
@@ -99,17 +104,14 @@ def welcome():
 
 @app.route('/menu', methods=['POST'])
 def menu():
-    # selected_option = request.form['Digits']
-    # option_actions = {'1': voice,
-    #                   '2': welcome}
-
-    # #if option_actions.has_key(selected_option):
-    # if option_actions.__contains__(selected_option):
-
-    #     response = VoiceResponse()
-    #     option_actions[selected_option](response)
-    #     return twiml(response)
-    return voice()
+    selected_option = request.form['Digits']
+    option_actions = {'1': "voice",
+                      '2': welcome}
+    result = option_actions.get(selected_option)
+    response = VoiceResponse()
+    response.redirect(url_for(result))
+    return twiml(response)
+    #return voice()
 
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
@@ -160,7 +162,7 @@ def incoming_sms():
 
     return str(resp)
 
-@app.route('end_call', methods=['GET', 'POST'])
+@app.route('/end_call', methods=['GET', 'POST'])
 def end_call():
     """Thank user & hang up."""
     response = VoiceResponse()
