@@ -76,7 +76,6 @@ sheet_instance = sheet.worksheets()
 dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
 print(dataframe)
 
-
 # init flask app
 app = Flask(__name__)
 
