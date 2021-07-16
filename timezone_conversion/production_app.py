@@ -27,6 +27,7 @@ def twiml(resp):
     return resp
 
 def matchFromDf(dataframe, tz_from):
+  """This is ugly but works, will clean up this function"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
