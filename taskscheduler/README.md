@@ -45,7 +45,7 @@ celery -A taskscheduler.celery_app worker -c 5 --loglevel=info
 
 **To start the workers (windows)**
 ```
-celery -A taskscheduler.tasks.celery_app worker -c 5 --loglevel=info
+celery -A taskscheduler.tasks.celery_app worker -c 5 --loglevel=info -P gevent
 ```
 
 **To start the beat**
