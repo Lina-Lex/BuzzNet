@@ -49,7 +49,7 @@ def send_mail(mail_type, phone, feedback=''):
     except Exception as e:
         print(e)
 
-
+# helper class
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
         self.phoneNumber = phoneNumber
@@ -81,7 +81,7 @@ class TimeZoneHelper:
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 
         # add credentials to the account
-        creds = ServiceAccountCredentials.from_json_keyfile_name('/home/batman/Desktop/googlesheets/key/master_key.json', scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
 
         # authorize the clientsheet 
         client = gspread.authorize(creds)
@@ -96,3 +96,48 @@ class TimeZoneHelper:
         dataframe = pd.DataFrame(sheet_instance[1].get_all_records())
 
         return dataframe
+
+# helper function
+def getTemporaryUserData():
+    """This function gets temporary data from google sheet"""
+
+    # define the scope
+    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+
+    # add credentials to the account
+    creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
+
+    # authorize the clientsheet 
+    client = gspread.authorize(creds)
+
+    # get the instance of the Spreadsheet
+    sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
+
+    # get all worksheets
+    sheet_instance = sheet.worksheets()
+
+    # convert to dataframe
+    dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
+
+    return dataframe
+
+# helper function to find appropriate match
+def matchFromDf(dataframe, tz_from, verbose=True):
+    """This function gets a match for user to call"""
+    df = dataframe
+    df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
+    df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
+
+    # get current UTC time and find match
+    now_utc = datetime.utcnow()
+    tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
+    mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
+    result = df.loc[mask]
+    match = result.head(1)
+    match = int(match['Number'])
+    
+    if verbose:
+        print(f"dataframe shape {dataframe.shape}") # all results shape
+        print(f"result shape: {result.shape}") # candidate matches shape
+    
+    return match
