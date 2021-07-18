@@ -460,7 +460,7 @@ def call_to_friend():
     return (jsonify(x))
 
 @app.route("/find_friend_timezone", methods=['GET', 'POST'])
-def voice():
+def find_friend_timezone():
     """Selects a match from Google sheet and connects User to friend"""
     # Start our TwiML response
     resp = VoiceResponse()
