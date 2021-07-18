@@ -99,7 +99,7 @@ def matchFromDf(dataframe, tz_from, verbose=False):
     df[["DT End"]] = df[["UTC end"]].apply(pd.to_datetime)
 
     # get current UTC time and find match
-    now_utc = datetime.utcnow()
+    now_utc = datetime.datetime.utcnow()
     tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
