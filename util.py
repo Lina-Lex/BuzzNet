@@ -53,7 +53,7 @@ def send_mail(mail_type, phone, feedback=''):
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
         self.phoneNumber = phoneNumber
-        self.tzs_df = self.getTemporaryTZMapping()
+        self.tzs_df = pd.read_csv("data/tzmapping.csv")
         self.tzs_df.index = self.tzs_df['State']
         self.user_zone = self.numberToTimeZone()
         self.fmt = '%Y-%m-%d %H:%M:%S %Z%z'
@@ -73,29 +73,6 @@ class TimeZoneHelper:
         zone_objct = timezone(self.user_zone)
         loc_dt = utc_dt.astimezone(zone_objct)
         return loc_dt.strftime(self.fmt)
-
-    def getTemporaryTZMapping(self):
-        """This function gets sheet which maps state to time zone data"""
-
-        # define the scope
-        scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-
-        # add credentials to the account
-        creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
-
-        # authorize the clientsheet 
-        client = gspread.authorize(creds)
-
-        # get the instance of the Spreadsheet
-        sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
-
-        # get all worksheets
-        sheet_instance = sheet.worksheets()
-
-        # convert to dataframe
-        dataframe = pd.DataFrame(sheet_instance[1].get_all_records())
-
-        return dataframe
 
 # helper function
 def getTemporaryUserData():
