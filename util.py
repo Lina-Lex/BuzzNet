@@ -74,7 +74,7 @@ class TimeZoneHelper:
         loc_dt = utc_dt.astimezone(zone_objct)
         return loc_dt.strftime(self.fmt)
 
-# helper function
+# helper function to get temporary User data
 def getTemporaryUserData():
     """This function gets temporary data from google sheet"""
 
@@ -98,7 +98,7 @@ def getTemporaryUserData():
 
     return dataframe
 
-# helper function to find appropriate match
+# helper function to find appropriate match from temporary User data
 def matchFromDf(dataframe, tz_from, verbose=False):
     """This function gets a match for user to call"""
     df = dataframe
