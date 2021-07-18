@@ -122,7 +122,7 @@ def getTemporaryUserData():
     return dataframe
 
 # helper function to find appropriate match
-def matchFromDf(dataframe, tz_from, verbose=True):
+def matchFromDf(dataframe, tz_from, verbose=False):
     """This function gets a match for user to call"""
     df = dataframe
     df[["DT Start"]] = df[["UTC start"]].apply(pd.to_datetime)
