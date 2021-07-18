@@ -469,7 +469,6 @@ def voice():
     
     # timezone helper class to get time zone from number
     tz_from = TimeZoneHelper(from_number)
-    tz_to = TimeZoneHelper(to_number)
 
     # how to get match from temporary google sheet
     match = matchFromDf(dataframe, tz_from)
