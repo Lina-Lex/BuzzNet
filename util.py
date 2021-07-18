@@ -141,10 +141,3 @@ def matchFromDf(dataframe, tz_from, verbose=False):
         print(f"result shape: {result.shape}") # candidate matches shape
     
     return match
-
-# view_helpers.py  
-# https://github.com/TwilioDevEd/ivr-phone-tree-python/blob/master/ivr_phone_tree_python/view_helpers.py
-def twiml(resp):
-    resp = Response(str(resp))
-    resp.headers['Content-Type'] = 'text/xml'
-    return resp
