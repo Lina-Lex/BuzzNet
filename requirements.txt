@@ -24,6 +24,7 @@ pandas==1.0.3
 pandas-datareader==0.8.1
 pdoc==7.0.2
 peewee==3.14.4
+phonenumbers==8.12.25
 protobuf==3.17.0
 psycopg2==2.9.1
 pyasn1==0.4.8
