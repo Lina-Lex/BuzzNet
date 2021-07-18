@@ -471,6 +471,7 @@ def voice():
     tz_from = TimeZoneHelper(from_number)
 
     # how to get match from temporary google sheet
+    dataframe = getTemporaryUserData()
     match = matchFromDf(dataframe, tz_from)
 
     # now that we have match, forward call to match
