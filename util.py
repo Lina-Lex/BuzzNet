@@ -76,26 +76,19 @@ class TimeZoneHelper:
 
 # helper function to get temporary User data
 def getTemporaryUserData():
-    """This function gets temporary data from google sheet"""
-
+    """This function gets temporary data from google sheet with proper formatting of User data"""
     # define the scope
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-
     # add credentials to the account
     creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
-
     # authorize the clientsheet 
     client = gspread.authorize(creds)
-
     # get the instance of the Spreadsheet
     sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
-
     # get all worksheets
     sheet_instance = sheet.worksheets()
-
     # convert to dataframe
     dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
-
     return dataframe
 
 # helper function to find appropriate match from temporary User data
@@ -113,6 +106,7 @@ def matchFromDf(dataframe, tz_from, verbose=False):
     match = result.head(1)
     match = int(match['Number'])
     
+    # log to console if necessary (default=False)
     if verbose:
         print(f"dataframe shape {dataframe.shape}") # all results shape
         print(f"result shape: {result.shape}") # candidate matches shape
