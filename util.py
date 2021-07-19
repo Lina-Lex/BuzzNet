@@ -40,5 +40,3 @@ def send_mail(mail_type, phone, feedback=''):
             print('send successfully')
     except Exception as e:
         print(e)
-
-
