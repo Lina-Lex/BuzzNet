@@ -19,7 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, url_for
+from flask import Response
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
 import gspread
@@ -30,7 +31,8 @@ import datetime
 import json
 from peewee import *
 from supermemo2 import SMTwo
-from util import send_mail
+from util import *
+
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
@@ -456,6 +458,40 @@ def call_to_friend():
         if phone == f'+{tel}':
             x = {f"friend": row.get('friend')}
     return (jsonify(x))
+
+@app.route("/find_friend_timezone", methods=['GET', 'POST'])
+def find_friend_timezone():
+    """Selects a match from Google sheet and connects User to friend"""
+    # Start our TwiML response
+    resp = VoiceResponse()
+    to_number = request.form['To']
+    from_number = request.form['From']  #tel = request.values['From']
+    
+    # timezone helper class to get time zone from number
+    tz_from = TimeZoneHelper(from_number)
+
+    # how to get match from temporary google sheet
+    dataframe = getTemporaryUserData()
+    match = matchFromDf(dataframe, tz_from)
+
+    # now that we have match, forward call to match
+    formatMatch = "+" + str(match)
+    resp.say(
+        "Connecting you to a friend. Please stay on the line."
+    )
+    resp.dial(formatMatch, action=url_for('.end_call')) # requires "action" route to be routed to when call ends
+    return Response(str(resp), 200, mimetype="application/xml")
+
+@app.route('/end_call', methods=['GET', 'POST'])
+def end_call():
+    """Thank user & hang up."""
+    response = VoiceResponse()
+    response.say(
+        "Thank you for using the Heart Voices IVR System! " + "Your voice makes a difference. Goodbye."
+    )
+    response.hangup()
+    return Response(str(response), 200, mimetype="application/xml")
+
 @app.route("/call_to_operator", methods=['GET', 'POST'])
 def call_to_operator():
     """ Function for making call to the operator according data in the spreadsheet """
