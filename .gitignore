@@ -1,1 +1,8 @@
 taskscheduler/__pycache__/
+env-buznet/
+celerybeat-schedule
+__pycache__
+*/*.db
+*/test.py
+*.db
+settwilio.py
