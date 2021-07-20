@@ -1,6 +1,7 @@
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
 import datetime
 import pandas as pd
 from pytz import timezone
@@ -11,7 +12,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 
 recipient_list = ['goandtodo@googlegroups.com']
-
+gmail_user = os.environ['gmail_user']
+gmail_password = os.environ['gmail_password']
 sender_mail = 'heartvoices.org@gmail.com'
 
 
@@ -21,31 +23,30 @@ def send_mail(mail_type, phone, feedback=''):
     the type of the mail is decided by mail_type of the argument.
     """
     phone = str(phone[0:5] + '*****' + phone[10:])
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = mail_type
     if mail_type == 'FEEDBACK':
         with open('templates/feedback.html', 'r') as template:
             html = ''.join(template.readlines())
-            message = Mail(
-                from_email=sender_mail,
-                to_emails=recipient_list,
-                subject=mail_type,
-                html_content=html.format(phone=phone, feedback=feedback))
-
+            content = html.format(phone=phone, feedback=feedback)
+            content = MIMEText(content, 'html')
+            msg.attach(content)
     elif mail_type == 'NEW USER':
         with open('templates/welcome.html', 'r') as template:
             html = ''.join(template.readlines())
-            message = Mail(
-                from_email=sender_mail,
-                to_emails=recipient_list,
-                subject=mail_type,
-                html_content=html.format(phone=phone))
+            content = html.format(phone=phone)
+            content = MIMEText(content, 'html')
+            msg.attach(content)
     else:
         print("Please check the mail_type before sending mail")
         return
+
     try:
-        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-        response = sg.send(message)
-        if response.status_code == 202:
-            print('send successfully')
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(gmail_user, gmail_password)
+        server.sendmail(sender_mail, recipient_list, msg.as_string())
+        server.close()
+        print('send successfully')
     except Exception as e:
         print(e)
 
