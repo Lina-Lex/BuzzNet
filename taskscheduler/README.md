@@ -38,13 +38,19 @@ def dis():
     for task_name ,task_obj in context_task.items():
         task_obj.apply_async(args('arg to task in tuple',),eta=datetime_obj)
 ```
-**To start the workers**
+**To start the workers (linux)**
 ```
-celery -A taskschduler.celery_app worker -c 5 --loglevel=info
+celery -A taskscheduler.celery_app worker -c 5 --loglevel=info
 ```
+
+**To start the workers (windows)**
+```
+celery -A taskscheduler.tasks.celery_app worker -c 5 --loglevel=info -P gevent
+```
+
 **To start the beat**
 ```
-celery -A taskschduler.celery_app beat --loglevel=info
+celery -A taskscheduler.celery_app beat --loglevel=info
 ```
 
 ## API Reference
