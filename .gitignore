@@ -4,5 +4,3 @@ celerybeat-schedule
 __pycache__
 */*.db
 */test.py
-*.db
-settwilio.py

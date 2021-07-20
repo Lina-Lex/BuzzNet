@@ -1,5 +1,5 @@
 from .tools import CeleryTask
-from main import call_to_check_bld
+# from main import call_to_check_bld
 
 #########################################
 # celelry application : dont change or delete
@@ -14,11 +14,5 @@ celery_app = CeleryTask('Task-Scheduler')
 
 @celery_app.add_task(plug_to='schedule-tasks-from-DB')
 # @celery_app.block_exc
-def proxy_task1(*arg,**kw):
+def proxy_task1(*arg, **kw):
     call_to_check_bld()
-
-
-# @celery_app.add_logs
-@celery_app.add_task(plug_to="schedule-tasks-from-DB")
-def proxy_dummytask(*arg , **kw):
-    print(arg,kw)

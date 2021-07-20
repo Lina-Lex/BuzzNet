@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+# Default timezone is UTC for celery 
+
 config = {
     "broker_url":"pyamqp://guest@localhost//",
     "task_serializer":"json",
@@ -11,11 +13,10 @@ config = {
     "call-DB-and-schedule-task": {
         'task': 'schedule-tasks-from-DB',
         'schedule': timedelta(seconds=5)
+    },
+    'weekly-profile-details':{
+        'task':'get-profile-details-weekly',
+        'schedule':timedelta(days=7)
     }
-    # 'every-10-sec':{
-    #     'task':'display',
-    #     'schedule':timedelta(seconds=10)
-    # }
 }
-
 }

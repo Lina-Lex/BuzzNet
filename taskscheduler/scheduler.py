@@ -10,7 +10,7 @@ celery_app.conf.update(config)
 
 ##### define heart beet tasks ########
 
-@celery_app.create_beat(name='schedule-tasks-from-DB')
+@celery_app.create_beat(name= 'schedule-tasks-from-DB')
 def get_data_and_schedule_call():
     db = PostgresqlDatabase('patient', user='postgres', password='test123',host='127.0.0.1',port=5432)
     cur = db.execute_sql('select phone,username,timezone from patient')
@@ -24,7 +24,12 @@ def get_data_and_schedule_call():
             task.apply_async(args=(i,),eta=time)
 
 
-@celery_app.create_beat(name='Demo')
-def dis():
-    print('Demo')
-    celery_app.get_plugged_tasklist()
+
+@celery_app.create_beat(name='get-profile-details-weekly')
+def get_profile_details():
+    
+    ''' Not using any task function because calling the function 
+        directly inside the beat which is scheduled weekly'''
+    
+    from main import profile_detail
+    profile_detail()
