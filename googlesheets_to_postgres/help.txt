@@ -1,0 +1,23 @@
+# get all worksheets in google sheets
+print(client.openall())
+
+# REMINDER: must share email located in key by pressing "share" button in google sheets to share with the credential email or it wont work!
+
+https://docs.gspread.org/en/latest/user-guide.html
+
+
+
+# gspread pandas
+https://github.com/aiguofer/gspread-pandas
+
+# gspread dataframe
+https://github.com/robin900/gspread-dataframe
+
+# good pattern
+
+client = Client()
+# Assumming you have a dir called 'example dir' with sheets in it
+available_sheets = client.find_spreadsheet_files_in_folders('example dir')
+spreads = []
+for sheet in available_sheets.get('example dir', []):
+    spreads.append(Spread(sheet['id'], client=client))
