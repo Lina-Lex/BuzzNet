@@ -45,5 +45,5 @@ starkbank-ecdsa==1.1.1
 supermemo2==2.0.0
 twilio==6.57.0
 uritemplate==3.0.1
-urllib3==1.26.4
+urllib3>=1.26.5
 Werkzeug==1.0.1
