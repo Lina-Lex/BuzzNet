@@ -575,6 +575,27 @@ def save_feedback_service():
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
     return (str(resp))
+@app.route("/save_feedback", methods=['GET', 'POST'])
+def save_feedback():
+    """ Function for saving feedback and to the google spreadsheet """
+    try:
+        # GET username from SPREDASHEET
+        phone = request.args.get('phone')
+        msg = request.args.get('msg')
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+        client = gspread.authorize(creds)
+        spreadsheetName = "feedback"
+        sheetName = "service"
+        spreadsheet = client.open(spreadsheetName)
+        sheet = spreadsheet.worksheet(sheetName)
+
+        new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), phone, msg]
+        sheet.append_row(new_row)
+        send_mail("FEEDBACK", phone=phone, feedback=msg)
+    except:
+        return('-1')
+    return ('0')
 def google_search(search_term, api_key, cse_id, **kwargs):
     """ Function for using Google Search API"""
     service = build("customsearch", "v1", developerKey=api_key)
