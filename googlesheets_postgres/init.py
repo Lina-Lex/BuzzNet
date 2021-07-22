@@ -29,8 +29,8 @@ print(all_sheets)
 ###############################################################################
 host = "localhost"
 port = 5432
-username = "zelda"
-password = "password"
+username = ""
+password = ""
 database = "godo0" 
 
 db_uri = f"postgresql://{username}:{password}@{host}:{port}/{database}"
