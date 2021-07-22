@@ -1,9 +1,13 @@
 from datetime import timedelta
-
-# Default timezone is UTC for celery 
-
+import os
+# Default timezone is UTC for celery
+'''
+Don't forget define BROKER_URL as local variable:
+ for local machine os.environ['BROKER_URL'] = pyamqp://guest@localhost//
+ for HEROKU instance os.environ['BROKER_URL'] - get result of command line: heroku config | grep CLOUDAMQP_URL
+'''
 config = {
-    "broker_url":"pyamqp://guest@localhost//",
+    "broker_url":os.environ['BROKER_URL'],
     "task_serializer":"json",
     "result_serializer":'json',
     "accept_content":['json'],
