@@ -11,9 +11,9 @@ from util import *
 
 # setup credentials
 cred_json = os.environ['json_path']
-df1 = GoogleSheetHelper(cred_json, "google_postgres", "existing")
-df2 = GoogleSheetHelper(cred_json, "google_postgres", "calls")
-df3 = GoogleSheetHelper(cred_json, "google_postgres", "time")
+df1 = GoogleSheetHelper(cred_json, "Users", "existing")
+df2 = GoogleSheetHelper(cred_json, "Users", "calls")
+df3 = GoogleSheetHelper(cred_json, "Users", "time")
 #print(df1.getDataframe().head()) # prints first 5 rows
 
 # all worksheets avaialble for this google key
