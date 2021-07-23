@@ -9,15 +9,16 @@ import datetime
 # import util for GoogleSheetHelper class
 from util import *
 
-cred_json = os.environ.get("'GOOGLE_SHEET_KEY")
+# setup credentials
+cred_json = os.environ['json_path']
 df1 = GoogleSheetHelper(cred_json, "google_postgres", "existing")
 df2 = GoogleSheetHelper(cred_json, "google_postgres", "calls")
 df3 = GoogleSheetHelper(cred_json, "google_postgres", "time")
-#print(df1.getDataframe().head())
+#print(df1.getDataframe().head()) # prints first 5 rows
 
 # all worksheets avaialble for this google key
 all_sheets = df1.viewAllClientSheets()
-#print(all_sheets)
+#print(all_sheets) # print list of all available sheets for that key
 
 # sanity check / will use for unit test
 print("[x] printing columns...")
@@ -30,15 +31,15 @@ print(df3.getDataframe().columns)
 ###############################################################################
 host = "localhost"
 port = 5432
-username = "zelda"
-password = "password"
-database = "emptydb" 
+username = "postgres"
+password = postgreSQLpass
+database = "goanddo" 
 
 db_uri = f"postgresql://{username}:{password}@{host}:{port}/{database}"
 engine = create_engine(db_uri, echo=True)
 
 # existing sheet inside Users worksheet
-existing_df = df1.getDataframe() #dataframe # see above
+existing_df = df1.getDataframe()
 table_name = 'User_existing'
 current_utc = datetime.datetime.utcnow()
 existing_df["CreatedUTC"] = current_utc
@@ -58,7 +59,7 @@ table_df = pd.read_sql_table(
 print(table_df.head())
 
 # calls sheet inside Users worksheet
-calls_df = df2.getDataframe() #dataframe # see above
+calls_df = df2.getDataframe() 
 table_name = 'User_calls'
 current_utc = datetime.datetime.utcnow()
 calls_df["CreatedUTC"] = current_utc
@@ -78,7 +79,7 @@ table_df = pd.read_sql_table(
 print(table_df.head())
 
 # time sheet inside Users worksheet
-time_df = df3.getDataframe() #dataframe # see above
+time_df = df3.getDataframe() 
 table_name = 'User_time' # + utc for unique backup?
 current_utc = datetime.datetime.utcnow()
 time_df["CreatedUTC"] = current_utc
