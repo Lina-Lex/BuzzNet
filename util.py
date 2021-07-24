@@ -8,11 +8,13 @@ import phonenumbers
 from phonenumbers import geocoder
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
+from twilio.rest import Client
 
 recipient_list = ['goandtodo@googlegroups.com']
 
 sender_mail = 'heartvoices.org@gmail.com'
+account_sid = os.environ['TWILIO_ACCOUNT_SID']
+auth_token = os.environ['TWILIO_AUTH_TOKEN']
 
 
 def send_mail(mail_type, phone, feedback=''):
@@ -49,6 +51,7 @@ def send_mail(mail_type, phone, feedback=''):
     except Exception as e:
         print(e)
 
+
 # helper class
 class TimeZoneHelper:
     def __init__(self, phoneNumber):
@@ -74,22 +77,25 @@ class TimeZoneHelper:
         loc_dt = utc_dt.astimezone(zone_objct)
         return loc_dt.strftime(self.fmt)
 
+
 # helper function to get temporary User data
 def getTemporaryUserData():
     """This function gets temporary data from google sheet with proper formatting of User data"""
     # define the scope
-    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     # add credentials to the account
     creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
     # authorize the clientsheet 
     client = gspread.authorize(creds)
     # get the instance of the Spreadsheet
-    sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
+    sheet = client.open_by_url(
+        "https://docs.google.com/spreadsheets/d/1M-IQ-iYji-dbJSkrPehh3CMLiLGlzWZBzzGqVWzJPog/edit?usp=sharing")
     # get all worksheets
     sheet_instance = sheet.worksheets()
     # convert to dataframe
     dataframe = pd.DataFrame(sheet_instance[0].get_all_records())
     return dataframe
+
 
 # helper function to find appropriate match from temporary User data
 def matchFromDf(dataframe, tz_from, verbose=False):
@@ -100,15 +106,32 @@ def matchFromDf(dataframe, tz_from, verbose=False):
 
     # get current UTC time and find match
     now_utc = datetime.datetime.utcnow()
-    tz = tz_from.numberToTimeZone() #tz = "US/Pacific"
+    tz = tz_from.numberToTimeZone()  # tz = "US/Pacific"
     mask = (df['DT Start'] < now_utc) & (df['DT End'] >= now_utc) & (df['time zone'] == tz)
     result = df.loc[mask]
     match = result.head(1)
     match = int(match['Number'])
-    
+
     # log to console if necessary (default=False)
     if verbose:
-        print(f"dataframe shape {dataframe.shape}") # all results shape
-        print(f"result shape: {result.shape}") # candidate matches shape
-    
+        print(f"dataframe shape {dataframe.shape}")  # all results shape
+        print(f"result shape: {result.shape}")  # candidate matches shape
+
     return match
+
+
+def call_duration_from_api(phone):
+    """
+    The function is used for fetching the call duration for a particular number from the call log API of
+    twilio and sum up the duration for the day and return it.
+    """
+    if phone:
+        client = Client(account_sid, auth_token)
+        date = datetime.datetime.today()
+        calls = client.calls.list(from_=str(phone),
+                                  start_time_after=datetime.datetime(date.year, date.month, date.day, 0, 0, 0))
+        duration = 0
+        for record in calls:
+            duration += int(record.duration)
+        return duration
+    raise ValueError("No valid phone number found")
