@@ -31,21 +31,26 @@ import datetime
 import json
 from peewee import *
 from supermemo2 import SMTwo
+
+from Question import Question
+from Surveyinitializer import SurveyInitializer
 from util import *
 
-cred_json = os.environ['json_path']
-lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
-main_number = os.environ['main_number']
-optional_number = os.environ['optional_number']
-postgreSQLpass = os.environ['postgreSQLpass']
-
-from googleapiclient.discovery import build
-#import pprint
-
-my_api_key = os.environ['google_api_key']
-my_cse_id = os.environ['google_cse_id']
+# cred_json = os.environ['json_path']
+# lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
+# main_number = os.environ['main_number']
+# optional_number = os.environ['optional_number']
+# postgreSQLpass = os.environ['postgreSQLpass']
+#
+# from googleapiclient.discovery import build
+# #import pprint
+#
+# my_api_key = os.environ['google_api_key']
+# my_cse_id = os.environ['google_cse_id']
 
 db_proxy = Proxy()
+survey = SurveyInitializer().survey
+questions = SurveyInitializer().questions
 # Base model for work with Database through ORM
 class BaseModel(Model):
     class Meta:
@@ -90,16 +95,16 @@ class SmartReminder(BaseModel):
 
     class Meta:
         table_name = 'smartreminder'
-if 'HEROKU' in os.environ:
-    import urllib.parse
-    import psycopg2
-    urllib.parse.uses_netloc.append('postgres')
-    url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
-    conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
-    db_proxy.initialize(conn)
-else:
-    conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
-    db_proxy.initialize(conn)
+# if 'HEROKU' in os.environ:
+#     import urllib.parse
+#     import psycopg2
+#     urllib.parse.uses_netloc.append('postgres')
+#     url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
+#     conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
+#     db_proxy.initialize(conn)
+# else:
+#     conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
+#     db_proxy.initialize(conn)
 
 
 def out_bound_call (tel):
@@ -466,7 +471,7 @@ def find_friend_timezone():
     resp = VoiceResponse()
     to_number = request.form['To']
     from_number = request.form['From']  #tel = request.values['From']
-    
+
     # timezone helper class to get time zone from number
     tz_from = TimeZoneHelper(from_number)
 
@@ -733,10 +738,89 @@ def update_reminder(id):
     #     dt = dt + datetime.timedelta(days=1)
     #     review = SMTwo(review.easiness, review.interval, review.repetitions).review(level, dt)
     #     print(dt, review)
+
+### Survey Related ###
+
+@app.route('/survey_voice')
+def voice_survey():
+    response = VoiceResponse()
+    welcome_user(survey, response.say)
+    redirect_to_first_question(response)
+    return str(response)
+
+@app.route('/hello')
+def hello():
+    return 'hello'
+
+
+
+def redirect_to_first_question(response):
+    first_question = questions[0]
+    first_question_url = url_for('question', question_id=first_question.id)
+    response.redirect(url=first_question_url, method='GET')
+
+
+def welcome_user(survey, send_function):
+    welcome_text = 'Welcome to the %s' % survey.title
+    send_function(welcome_text)
+
+### Question Related ###
+
+@app.route('/question/<question_id>')
+def question(question_id):
+    question = questions[int(question_id) - 1]
+    return voice_twiml(question)
+
+
+def voice_twiml(question):
+    response = VoiceResponse()
+    response.say(question.body)
+    response.say(VOICE_INSTRUCTIONS[question.type])
+
+    action_url = url_for('answer', question_id=question.id)
+    # transcription_url = url_for('answer_transcription', question_id=question.id)
+    if question.type == Question.TEXT:
+        response.record(action=action_url, transcribe_callback=None)
+    else:
+        response.gather(action=action_url)
+    return str(response)
+
+VOICE_INSTRUCTIONS = {
+    Question.TEXT: 'Please record your answer after the beep and then hit the pound sign',
+    Question.BOOLEAN: 'Please press the one key for yes and the zero key for no and then'
+    ' hit the pound sign',
+    Question.NUMERIC: 'Please press a number between 1 and 10 and then'
+    ' hit the pound sign',
+}
+
+### Answer Related ###
+
+@app.route('/answer/<question_id>', methods=['POST'])
+def answer(question_id):
+    if int(question_id) + 1 <= len(questions):
+        return redirect_twiml(questions[int(question_id)])
+    else:
+        return goodbye_twiml()
+
+def redirect_twiml(question):
+    response = VoiceResponse()
+    response.redirect(url=url_for('question', question_id=question.id), method='GET')
+    return str(response)
+
+
+def goodbye_twiml():
+    response = VoiceResponse()
+    response.say("Thank you for answering our survey. Good bye!")
+    response.hangup()
+    return str(response)
+
+
+####
+
 if __name__ == '__main__':
     print ('start db connect...')
-    db_proxy.connect()
-    #db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
-    print('init db...')
-    init_db()
+    # db_proxy.connect()
+    # #db_proxy.create_tables([Patient, Reminder, SmartReminder], safe=True)
+    # print('init db...')
+    # init_db()
     app.run(debug=True)

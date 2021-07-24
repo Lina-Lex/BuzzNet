@@ -1,0 +1,25 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "body": "Do you like Buzznet",
+      "type": "text"
+    },
+    {
+      "id": 2,
+      "body": "Are you keep ing well",
+      "type": "boolean"
+    },
+    {
+      "id": 3,
+      "body": "In a scale of 1-10, how would you rate our service?",
+      "type": "numeric"
+    },
+    {
+      "id": 4,
+      "body": "Any other comments.",
+      "type": "text"
+    }
+  ],
+  "title": "Buzz Net Feedback"
+}
