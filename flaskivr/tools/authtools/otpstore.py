@@ -3,6 +3,7 @@ from twilio.rest import Client
 import sqlite3
 import time
 from . import env
+from twilio.base.exceptions import TwilioRestException
 
 with sqlite3.connect('otp.db') as con: # can ise ":memory:" to run in mem
     cur = con.cursor()
@@ -13,11 +14,15 @@ with sqlite3.connect('otp.db') as con: # can ise ":memory:" to run in mem
 def send_otp(to : str = None,sender: str = None, otp_len= 6)-> bool:
     otp = generate_otp(otp_len = otp_len)
     if _map_otp(to,otp):
-        client = Client(env.TWILIO_ACC_SID, env.TWILIO_AUTH_TOKEN)
-        message = client.messages.create(
-            to=to, 
-            from_=env.SENDER_NUMBER,
-            body=f"Your One Time Password (OTP) is :- {otp}")
+        try :
+            client = Client(env.TWILIO_ACC_SID, env.TWILIO_AUTH_TOKEN)
+            message = client.messages.create(
+                to=to, 
+                from_=env.SENDER_NUMBER,
+                body=f"Your One Time Password (OTP) is :- {otp}")
+        except TwilioRestException as e:
+            msg = f'[X] Fatal error\n[X] Detailed error:- ({e}) '
+            raise RuntimeError(msg)
     else:
         return False
     return True
@@ -36,7 +41,7 @@ def verify_otp(otp : str = '', ph : str = '')-> bool:
                 cur.execute("DELETE FROM otp_info where Phone=(?)",(ph,))
                 db.commit()
                 return False
-            elif stored_otp != otp:
+            elif stored_otp != str(otp):
                 return False  
             return True
     return False
