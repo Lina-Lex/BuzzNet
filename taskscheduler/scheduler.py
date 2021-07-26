@@ -2,6 +2,9 @@ from datetime import timedelta,datetime
 from .tasks import celery_app
 from .celeryconfig import config
 from peewee import *
+import os
+import subprocess
+import datetime
 
 ### update config ###
 celery_app.conf.update(config)
@@ -33,3 +36,18 @@ def get_profile_details():
     
     from main import profile_detail
     profile_detail()
+
+    
+@celery_app.create_beat(name='backup-db')
+def backup_db():
+    ''' Not using any task function because calling the function 
+        directly inside the beat which is scheduled ???'''
+    
+    DB_NAME = 'goanddo'  # your db name
+    DB_USER = 'postgres' # you db user
+    DB_HOST = "localhost"
+    DB_PORT = 5432
+    DB_PASSWORD = os.environ['postgreSQLpass'] # your db password
+    
+    from util import dump_schema
+    dump_schema(DB_HOST, DB_PORT, DB_USER, DB_NAME)
