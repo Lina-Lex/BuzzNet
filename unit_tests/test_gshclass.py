@@ -1,4 +1,4 @@
-from util import *
+from gshclass import *
 import pytest
 import os
 
