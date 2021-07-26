@@ -32,7 +32,8 @@ print(df3.getDataframe().columns)
 host = "localhost"
 port = 5432
 username = "postgres"
-password = postgreSQLpass
+password = os.environ['postgreSQLpass']
+
 database = "goanddo" 
 
 db_uri = f"postgresql://{username}:{password}@{host}:{port}/{database}"
