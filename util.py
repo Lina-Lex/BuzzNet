@@ -13,12 +13,6 @@ import os
 import subprocess
 import datetime
 
-DB_NAME = 'goanddo'
-DB_USER = 'postgres' 
-DB_HOST = "localhost"
-DB_PORT = 5432
-DB_PASSWORD = os.environ['postgreSQLpass']
-
 recipient_list = ['goandtodo@googlegroups.com']
 gmail_user = os.environ['gmail_user']
 gmail_password = os.environ['gmail_password']
