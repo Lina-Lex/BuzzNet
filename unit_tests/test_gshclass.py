@@ -2,6 +2,9 @@ from gshclass import *
 import pytest
 import os
 
+# creds
+cred_json = os.environ['json_path']
+
 # testing constructor of GoogleSheetHelper class
 def test_make_gsh_helper():
     gsh1 = GoogleSheetHelper(cred_json, "google_postgres", "existing")
