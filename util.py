@@ -13,11 +13,11 @@ import os
 import subprocess
 import datetime
 
-DB_NAME = 'goanddo'  # your db name
-DB_USER = 'postgres' # you db user
+DB_NAME = 'goanddo'
+DB_USER = 'postgres' 
 DB_HOST = "localhost"
 DB_PORT = 5432
-DB_PASSWORD = os.environ['postgreSQLpass'] # your db password
+DB_PASSWORD = os.environ['postgreSQLpass']
 
 recipient_list = ['goandtodo@googlegroups.com']
 gmail_user = os.environ['gmail_user']
@@ -175,5 +175,3 @@ class GoogleSheetHelper:
         """Returns sheets this gspread (self.client) authorized to view/edit"""
         available_sheets = self.client.openall()
         return [sheet.title for sheet in available_sheets]
-
-# gsh1 = GoogleSheetHelper(cred_path, "google_postgres", "existing")
