@@ -99,11 +99,10 @@ table_df = pd.read_sql_table(
 print(table_df.head())
 
 """
+Asana task description:
 Why: there is a limit on the scalability of the architecture in the google spreadsheet. 
 It is necessary to exclude all the code for working with Google spreadsheet and replace it with working with a database (PostgreSQL).
 Prepare function Init which will automatically migrate data from the current table structure to a new one do not miss existing data.
 As result, changes should make a backup of the data, create a new database with a new structure, and upload data from the backup.
 """
-"""
-# REMINDER: must share email located in key by pressing "share" button in google sheets to share with the credential email or it wont work!
-"""
+
