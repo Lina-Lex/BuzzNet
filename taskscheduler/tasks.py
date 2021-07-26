@@ -1,5 +1,5 @@
 from .tools import CeleryTask
-# from main import call_to_check_bld
+from flaskivr.core.ivr_core import call_to_check_bld
 
 #########################################
 # celelry application : dont change or delete

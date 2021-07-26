@@ -17,7 +17,9 @@ def get_data_and_schedule_call():
     val = cur.fetchall()
     plugged_task_list =celery_app.get_plugged_tasklist()
 
+    #####################
     time = datetime.utcnow() + timedelta(seconds=7)
+    # THE above line should be replaced with the timezone eta column in DB for each user
 
     for i in val:
         for t_name ,task in plugged_task_list.items():
@@ -31,5 +33,5 @@ def get_profile_details():
     ''' Not using any task function because calling the function 
         directly inside the beat which is scheduled weekly'''
     
-    from main import profile_detail
+    from flaskivr.core.ivr_core import profile_detail
     profile_detail()
