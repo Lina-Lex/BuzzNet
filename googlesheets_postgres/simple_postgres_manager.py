@@ -35,7 +35,6 @@ def dump_schema(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
 
     if dump_success:
         print('db dump successfull')
-        #print('restoring to a new database database')
 
 
 # dump_schema(DB_HOST, DB_PORT, DB_USER, DB_NAME)
