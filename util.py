@@ -138,7 +138,6 @@ def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
         dump_success = 0
         print('Exception happened during dump %s' %(e))
 
-
     if dump_success:
         print('db dump successfull')
 
