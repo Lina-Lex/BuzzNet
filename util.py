@@ -130,7 +130,7 @@ def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
             f'--file=pgbackup`date +%F-%H%M`.dump '
     try:
         proc = subprocess.Popen(command, shell=True, env={
-                    'PGPASSWORD': DB_PASSWORD
+                    'PGPASSWORD':  os.environ['postgreSQLpass'] # DB_PASSWORD
                     })
         proc.wait()
 
