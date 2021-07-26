@@ -17,6 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License  
 along with this program.  If not, see <https://www.gnu.org/licenses/>.  
 ************************************************************************************
+
+## Project outline
+* The project is built in python flask source package **flaskapp**
+* Documentation for Source [flaskapp](flaskapp/) can be found [here](flaskapp/README.md)
+* Documentation for [taskscheduler](taskscheduler/) can be found [here](taskscheduler/README.md)
+
 ## Installation
 ```
 pip install -r requirements.txt
@@ -29,7 +35,3 @@ sudo apt install libpq-dev python3-dev
 sudo apt-get install build-essential
 pip install psycopg2
 ```
-## Project
-* The project is built in python flask source package **flaskapp**
-* Documentation for Source [flaskapp](flaskapp/) can be found [here](flaskapp/README.md)
-* Documentation for [taskscheduler](taskscheduler/) can be found [here](taskscheduler/README.md)

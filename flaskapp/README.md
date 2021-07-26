@@ -48,8 +48,8 @@ flaskapp is segrigated into ```view_functions``` that handels the the incomming 
 All the env setting for the flask app can be done insise the ``settings.py``  
 The main app and errors handelers are defined inside the ```__init__.py```   
 
-## REST API
-
+## REST API for OTP
+```Content-Type: application/json``` this will be always for using the below apis 
 ### get otp
 **url**  
 ```/authenticate/get_otp```  
