@@ -1,4 +1,4 @@
-from gshclass import *
+from util import *
 import pytest
 import os
 from dotenv import load_dotenv
