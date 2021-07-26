@@ -13,7 +13,6 @@ def test_make_gsh_helper():
     assert gsh1.cred_json == cred_path
     assert gsh1.spreadsheetName == "google_postgres"
     assert gsh1.sheetName == "existing"
-    #assert type(gsh1.client) != type(gsh1.sheetName)
 
 def test_columns_existing_tab():
     gsh_existing = GoogleSheetHelper(cred_path, "google_postgres", "existing")
