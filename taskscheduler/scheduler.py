@@ -49,5 +49,5 @@ def backup_db():
     DB_PORT = 5432
     DB_PASSWORD = os.environ['postgreSQLpass'] 
     
-    from util import dump_schema
-    dump_schema(DB_HOST, DB_PORT, DB_USER, DB_NAME)
+    from util import dump_db
+    dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME)

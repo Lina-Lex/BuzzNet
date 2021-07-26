@@ -117,7 +117,8 @@ def matchFromDf(dataframe, tz_from, verbose=False):
     return match
 
 # backup db
-def dump_schema(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
+def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
+    """Function to backup database using pg_dump"""
     dump_success = 1
     command = f'pg_dump --host={DB_HOST} ' \
             f'--port={DB_PORT} ' \
