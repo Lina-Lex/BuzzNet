@@ -1,7 +1,3 @@
-from subprocess import PIPE,Popen
-import shlex
-import gzip
-
 import os
 import subprocess
 import datetime
