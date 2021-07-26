@@ -3,7 +3,7 @@ import pytest
 import os
 
 # creds
-cred_json = os.environ.get("json_path")
+cred_json = os.environ['json_path']
 
 # testing constructor of GoogleSheetHelper class
 def test_make_gsh_helper():
