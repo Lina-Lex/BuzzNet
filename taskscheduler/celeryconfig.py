@@ -21,6 +21,10 @@ config = {
     'weekly-profile-details':{
         'task':'get-profile-details-weekly',
         'schedule':timedelta(days=7)
+    }.
+    'backup-db':{
+        'task':'backup-db',
+        'schedule':timedelta(days=2)
     }
 }
 }
