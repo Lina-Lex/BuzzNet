@@ -38,7 +38,7 @@ def get_profile_details():
     profile_detail()
 
     
-@celery_app.create_beat(name='backup-db')
+@celery_app.create_beat(name='backup-db-two-days')
 def backup_db():
     ''' Not using any task function because calling the function 
         directly inside the beat which is scheduled ???'''
