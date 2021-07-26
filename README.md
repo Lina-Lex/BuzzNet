@@ -1,7 +1,23 @@
-# flaskapp
+# BUZZNET
 
-The main flask app
+IVR API
 
+This API uses for specific functions during phone call between Client and IVR system  
+
+This program is free software: you can redistribute it and/or modify  
+it under the terms of the GNU General Public License as published by  
+the Free Software Foundation, either version 3 of the License, or  
+(at your option) any later version.  
+
+This program is distributed in the hope that it will be useful,  
+but WITHOUT ANY WARRANTY; without even the implied warranty of  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
+GNU General Public License for more details.  
+
+You should have received a copy of the GNU General Public License  
+along with this program.  If not, see <https://www.gnu.org/licenses/>.  
+************************************************************************************
+## Installation
 ```
 pip install -r requirements.txt
 
@@ -13,102 +29,7 @@ sudo apt install libpq-dev python3-dev
 sudo apt-get install build-essential
 pip install psycopg2
 ```
-## Project structure
-```
-flaskapp/
-├── core/
-│   ├── ivr_core.py
-├── __init__.py
-├── models/
-│   ├── ivr_model.py
-├── routes/
-│   ├── auth.py
-│   ├── ivr_url.py
-├── settings.py
-├── tools/
-│   ├── authtools/
-│   │   ├── authgen.py
-│   │   ├── env.py
-│   │   ├── __init__.py
-│   │   ├── otpstore.py
-│   │   └── README.md
-│   ├── data/
-│   ├── templates/
-│   └── util.py
-└── view_functions/
-    ├── authenticate.py
-    ├── ivrflow.py
-
-```
-**Note the project structure is a blue print and any changes to it should be updated ,(Auto update is not curectly implemented)**
-
-flaskapp is segrigated into ```view_functions``` that handels the the incomming routes, ```routes``` that has the actual url mapping to the view_functions using blueprints, ```models``` handels the database, ```core``` have the core business logic implemented, ```tools``` contains helper libraries.
-
-All the env setting for the flask app can be done insise the ``settings.py``  
-The main app and errors handelers are defined inside the ```__init__.py```   
-
-## REST API
-
-### get otp
-**url**  
-```/authenticate/get_otp```  
-**request**  
-```
-method POST
-body:
-{
-    "phone":"+912873645289"
-
-}
-```  
-
-**response body**  
-```
-
-{
-    "message":"success",
-    'exit_code':0
-}
--------------------------
-error:
-{
-    "error": "Internal server error 500 Internal Server Error: unable to connect to message server :- Credentials are required to create a TwilioClient",
-    "exit_code": 5,
-    "message": "failed",
-    "status_code": 500
-}
--------------------------
-``` 
-
-
-### validate otp
-**url**  
-```/authenticate/validate_otp```  
-**request**  
-```
-method POST
-body:
-{
-    "phone":"+912873645289",
-    "otp":"012313"
-
-}
-```  
-
-**response body**  
-```
-
-{
-    "message":"success",
-    'exit_code':0
-}
--------------------------
-error:
-{
-  "error": "permission denied/ 403 Forbidden: Invalid OTP or Validation failed ", 
-  "exit_code": 1, 
-  "message": "failed", 
-  "status_code": 403
-}
--------------------------
-``` 
+## Project
+* The project is built in python flask source package **flaskapp**
+* Documentation for Source [flaskapp](flaskapp/) can be found [here](flaskapp/README.md)
+* Documentation for [taskscheduler](taskscheduler/) can be found [here](taskscheduler/README.md)
