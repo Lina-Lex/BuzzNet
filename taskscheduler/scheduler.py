@@ -33,5 +33,5 @@ def get_profile_details():
     ''' Not using any task function because calling the function 
         directly inside the beat which is scheduled weekly'''
     
-    from flaskivr.core.ivr_core import profile_detail
+    from flaskapp.core.ivr_core import profile_detail
     profile_detail()

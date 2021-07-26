@@ -3,7 +3,7 @@ from twilio.rest import Client
 import sqlite3
 import time
 from . import env
-from twilio.base.exceptions import TwilioRestException
+from twilio.base.exceptions import TwilioRestException, TwilioException
 
 with sqlite3.connect('otp.db') as con: # can ise ":memory:" to run in mem
     cur = con.cursor()
@@ -20,9 +20,12 @@ def send_otp(to : str = None,sender: str = None, otp_len= 6)-> bool:
                 to=to, 
                 from_=env.SENDER_NUMBER,
                 body=f"Your One Time Password (OTP) is :- {otp}")
-        except TwilioRestException as e:
-            msg = f'[X] Fatal error\n[X] Detailed error:- ({e}) '
+        except (TwilioRestException) as e:
+            msg = f'[X] Fatal error,[X] Detailed error:- ({e}) '
             raise RuntimeError(msg)
+        except TwilioException as e:
+            msg = f"unable to connect to message server :- {e}"
+            raise ConnectionError(msg)
     else:
         return False
     return True

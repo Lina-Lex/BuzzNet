@@ -1,4 +1,4 @@
-from flaskivr.tools.authtools import send_otp, verify_otp
+from flaskapp.tools.authtools import send_otp, verify_otp
 from flask import request,abort
 
 def get_otp():
@@ -6,10 +6,15 @@ def get_otp():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            if data and send_otp(to = data.get('phone')):
+            if not len(data) == 1 and not 'phone' in data:
+                msg = f'Incorrect data format'
+                abort(400,msg)
+            if send_otp(to = data.get('phone')):
                 return {"message":"success",'exit_code':0}
         except RuntimeError as e:
-            return {'message':'failed','exit_code':'1','error':str(e)}
+            return {'message':'failed','exit_code':'1','status_code':501,'error':str(e)}
+        except ConnectionError as e:
+            abort(500,e)
 
 
 def validate_otp():

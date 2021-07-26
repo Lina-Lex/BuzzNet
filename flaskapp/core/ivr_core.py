@@ -7,9 +7,9 @@ import json
 from twilio.rest import Client as Client
 import os
 from googleapiclient.discovery import build
-from flaskivr.settings import *
-from flaskivr.tools.util import *
-from flaskivr.models.ivr_model import *
+from flaskapp.settings import *
+from flaskapp.tools.util import *
+from flaskapp.models.ivr_model import *
 
 
 def out_bound_call (tel):

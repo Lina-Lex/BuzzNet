@@ -1,6 +1,6 @@
 from peewee import *
 import os
-from flaskivr.settings import *
+from flaskapp.settings import *
 
 
 db_proxy = Proxy()

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flaskivr.view_functions.ivrflow import (
+from flaskapp.view_functions.ivrflow import (
     username,
     check_client_type,
     save_client_type,

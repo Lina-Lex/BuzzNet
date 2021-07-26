@@ -1,1 +1,1 @@
-from flaskivr import app
+from flaskapp import app

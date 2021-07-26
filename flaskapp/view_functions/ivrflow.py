@@ -5,8 +5,8 @@ from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskivr.core.ivr_core import *
-from flaskivr.models.ivr_model import *
+from flaskapp.core.ivr_core import *
+from flaskapp.models.ivr_model import *
 
 
 def voice_joined():
