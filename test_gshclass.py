@@ -22,14 +22,12 @@ def test_columns_existing_tab():
        'username', 'datetime added', 'friend', 'operator', 'type']
     assert len(gsh_existing.getDataframe().columns) == len(expected_columns)
 
-
 def test_columns_calls_tab():
     gsh_calls = GoogleSheetHelper(cred_path, "google_postgres", "calls")
     expected_columns = ['Phone Number', 'gender', 'dob', 'weight', 'height', 'activity',
        'hobby', 'time zone', 'call time', 'emergency phone', 'emergency name',
        'username', 'datetime added', 'friend', 'operator', 'type']
     assert len(gsh_calls.getDataframe().columns) == len(expected_columns)
-
 
 def test_columns_time_tab():
     gsh_time = GoogleSheetHelper(cred_path, "google_postgres", "time")
