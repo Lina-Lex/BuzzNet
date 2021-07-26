@@ -7,11 +7,9 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer, Text, String, DateTime
 import datetime
-from dotenv import load_dotenv
 
 # creds
-load_dotenv()
-cred_path = os.environ.get("cred_json")
+cred_json = os.environ['json_path']
 
 class GoogleSheetHelper:
     """Helper claas to pull data from googlesheets"""
