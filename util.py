@@ -119,7 +119,6 @@ def matchFromDf(dataframe, tz_from, verbose=False):
 # backup db
 def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
     """Function to backup database using pg_dump"""
-    dump_success = 1
     command = f'pg_dump --host={DB_HOST} ' \
             f'--port={DB_PORT} ' \
             f'--username={DB_USER} ' \
@@ -138,8 +137,7 @@ def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
         dump_success = 0
         print(f"Exception happened during dump {e}")
 
-    if dump_success:
-        print('db dump successfull')
+    print('db dump successfull')
 
 class GoogleSheetHelper:
     """Helper claas to pull data from googlesheets"""
