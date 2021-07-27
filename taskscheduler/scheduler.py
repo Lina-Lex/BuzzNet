@@ -41,7 +41,7 @@ def get_profile_details():
 @celery_app.create_beat(name='backup-db')
 def backup_db():
     ''' Not using any task function because calling the function 
-        directly inside the beat which is scheduled every 2 days'''
+        directly inside the beat which is scheduled every 15 days'''
     
     DB_NAME = 'goanddo' 
     DB_USER = 'postgres'
