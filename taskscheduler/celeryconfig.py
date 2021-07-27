@@ -24,7 +24,7 @@ config = {
     },
     'backup-db':{
         'task':'backup-db',
-        'schedule':timedelta(days=2)
+        'schedule':timedelta(days=15)
     }
 }
 }
