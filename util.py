@@ -136,7 +136,7 @@ def dump_db(DB_HOST, DB_PORT, DB_USER, DB_NAME, **kwargs):
 
     except Exception as e:
         dump_success = 0
-        print('Exception happened during dump %s' %(e))
+        print(f"Exception happened during dump {e}")
 
     if dump_success:
         print('db dump successfull')
@@ -162,8 +162,7 @@ class GoogleSheetHelper:
         """Returns all rows data from sheet as dictionary--one dict per row"""        
         spreadsheet = self.client.open(self.spreadsheetName)
         sheet = spreadsheet.worksheet(self.sheetName)
-        rows = sheet.get_all_records()
-        return rows
+        return sheet.get_all_records()
 
     def viewAllClientSheets(self):
         """Returns sheets this gspread (self.client) authorized to view/edit"""
