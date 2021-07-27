@@ -71,7 +71,7 @@ table_df = pd.read_sql_table(
 
 # time sheet inside Users worksheet
 time_df = df3.getDataframe() 
-table_name = 'User_time' # + utc for unique backup?
+table_name = 'User_time' 
 current_utc = datetime.datetime.utcnow()
 time_df["CreatedUTC"] = current_utc
 time_df.to_sql(
