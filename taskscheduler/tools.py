@@ -14,14 +14,14 @@ class CeleryTask(Celery):
         self.translate_fun_to_name= {}
         super().__init__(*args,**kw)
 
-    def add_logs(self,fun)-> 'Decorator fun':
+    def add_logs(self,fun)-> 'Decorator':
         print(fun)
         @wraps(fun)
         def inner(*a,**kw):
             va = fun(*a,**kw)
         return inner
     
-    def block_exc(self,fun)-> 'Decorator fun':
+    def block_exc(self,fun)-> 'Decorator':
         if isinstance(fun,PromiseProxy):
             msg = '[X] cannot block a registered task,use decorator before registering'
             raise RuntimeError(msg)
@@ -31,7 +31,7 @@ class CeleryTask(Celery):
             return None
         return fun
     
-    def add_task(self,plug_to=None)-> 'Decorator fun':
+    def add_task(self,plug_to=None)-> 'Decorator':
         if not isinstance (plug_to,str) and not plug_to == None:
             msg = f"[X] {plug_to} should be string or arg plug_to is required\n[params]:@add_task(plug_to=None)or str value"
             raise  AttributeError(msg)
@@ -53,7 +53,7 @@ class CeleryTask(Celery):
         return add_task_proxy
 
 
-    def create_beat(self,name=None)-> 'Decorator fun':
+    def create_beat(self,name=None)-> 'Decorator':
         if not isinstance (name,str):
             msg = f"[X] {name} should be string or arg name is required\n[params]:@create_beat(name='name-defined-in-config')"
             raise  AttributeError(msg)

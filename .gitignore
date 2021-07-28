@@ -1,6 +1,7 @@
 taskscheduler/__pycache__/
-env-buznet/
+env
 celerybeat-schedule
 __pycache__
-*/*.db
+*.db
 */test.py
+test
