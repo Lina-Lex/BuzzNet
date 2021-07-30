@@ -35,3 +35,10 @@ def get_profile_details():
     
     from flaskapp.core.ivr_core import profile_detail
     profile_detail()
+
+@celery_app.create_beat(name='gspread_to_postgres')
+def gspread_to_postgess():
+    ''' Copies google_sheets to postgres every 2 days '''
+
+    from gspread_to_postgres import execute
+    execute()
