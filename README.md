@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 * The project is built in python flask source package **flaskapp**
 * Documentation for Source [flaskapp](flaskapp/) can be found [here](flaskapp/README.md)
 * Documentation for [taskscheduler](taskscheduler/) can be found [here](taskscheduler/README.md)
+* [gspread_to_postgres](gspread_to_postgres/) is a utility that can be used to pull data stored in google spreadsheet and mapped to given postgress server.
 
 ## Installation
 ```

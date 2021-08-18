@@ -21,6 +21,10 @@ config = {
     'weekly-profile-details':{
         'task':'get-profile-details-weekly',
         'schedule':timedelta(days=7)
+    },
+    'gspread_to_postgess':{
+        'task':'gspread_to_postgres',
+        'schedule':timedelta(days=2)
     }
 }
 }
