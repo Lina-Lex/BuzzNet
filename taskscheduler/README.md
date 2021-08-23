@@ -6,7 +6,7 @@ Used to schedule task using a messaging queue and celery
 
 ```
 Message broker (Prefered RabbitMQ)
-celelry
+celery
 pewee
 
 ```
