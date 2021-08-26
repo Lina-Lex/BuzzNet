@@ -1,10 +1,13 @@
 import os
-
 cred_json = os.environ['json_path']
 lst_num = ['first', 'second', 'third', 'forth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 main_number = os.environ['main_number']
 optional_number = os.environ['optional_number']
-postgreSQLpass = os.environ['postgreSQLpass']
+if 'HEROKU' in os.environ:
+    print ('nothing')
+else:
+    postgreSQLpass = os.environ['postgreSQLpass']
+
 
 
 #import pprint

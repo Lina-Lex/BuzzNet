@@ -14,10 +14,6 @@ config = {
     # "timezone":'',
     "enable_utc":True,
     "beat_schedule":{
-    "call-DB-and-schedule-task": {
-        'task': 'schedule-tasks-from-DB',
-        'schedule': timedelta(seconds=5)
-    },
     'weekly-profile-details':{
         'task':'get-profile-details-weekly',
         'schedule':timedelta(days=7)
@@ -25,6 +21,16 @@ config = {
     'gspread_to_postgess':{
         'task':'gspread_to_postgres',
         'schedule':timedelta(days=2)
-    }
+    },
+    'daily-profile-details-daily':{
+        'task':'get-profile-details-daily',
+        'schedule':timedelta(days=1)
+                            }
 }
 }
+'''
+"call-DB-and-schedule-task": {
+        'task': 'schedule-tasks-from-DB',
+        'schedule': timedelta(seconds=5)
+    },
+'''

@@ -42,3 +42,10 @@ def gspread_to_postgess():
 
     from gspread_to_postgres import execute
     execute()
+@celery_app.create_beat(name= 'get-profile-details-daily')
+def get_profile_details_daily():
+    plugged_task_list =celery_app.get_plugged_tasklist()
+    time_min = datetime.utcnow().replace(hour=19, minute=00, second=00, microsecond=00000)
+
+    for t_name ,task in plugged_task_list.items():
+        task.apply_async(args=(1,),eta=time_min)
