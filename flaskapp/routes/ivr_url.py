@@ -14,10 +14,10 @@ from flaskapp.view_functions.ivrflow import (
     get_next_reminder,
     voice_joined,
     voice,
-    after_call
+    after_call,
+    get_term_cond
 )
-
-IVRFlow=  Blueprint('IVRFlow',__name__)
+IVRFlow=Blueprint('IVRFlow',__name__)
 
 IVRFlow.route("/voice_joined", methods=['GET', 'POST'])(voice_joined)
 IVRFlow.route("/voice", methods=['GET', 'POST'])(voice)
@@ -34,3 +34,4 @@ IVRFlow.route("/save_feedback_service", methods=['GET', 'POST'])(save_feedback_s
 IVRFlow.route("/save_feedback", methods=['GET', 'POST'])(save_feedback)
 IVRFlow.route("/search", methods=['GET', 'POST'])(search)
 IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
+IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)

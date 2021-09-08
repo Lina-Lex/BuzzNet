@@ -1,5 +1,6 @@
 amqp==5.0.6
 attrs==21.2.0
+beautifulsoup4
 billiard==3.6.4.0
 cachetools==4.2.2
 celery==5.1.2

@@ -40,7 +40,7 @@ def voice():
     else:
         save_new_user(tel,'Calls')
         gather = Gather(input='speech dtmf', action='/voice_joined',  timeout=3, num_digits=1)
-        gather.say('Welcome to Heart Voices ! We are really helping to people in their journey to a healthy life. Do you want to join us? Say yes or no.')
+        gather.say('Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
         resp.append(gather)
     return str(resp)
 
@@ -318,3 +318,22 @@ def get_next_reminder():
     conn.close()
     x = {"text":f' Lets listen interesting fact of the day...{result} ...Thank you.'}
     return (jsonify(x))
+def get_txt_from_url(url):
+    #import urllib  # the lib that handles the url stuff
+    # file = urllib.request.urlopen(url)
+    #
+    # for line in file:
+    #     decoded_line = line.decode("utf-8")
+    #     print(decoded_line)
+
+    import urllib
+    from bs4 import BeautifulSoup
+
+    html = urllib.request.urlopen(url).read()
+    soup = BeautifulSoup(html)
+    text = soup.get_text()
+
+    x = {"text": text}
+    return (jsonify(x))
+def get_term_cond():
+    return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
