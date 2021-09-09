@@ -333,7 +333,9 @@ def get_txt_from_url(url):
     soup = BeautifulSoup(html)
     text = soup.get_text()
 
-    x = {"text": text}
+    x = {"text1": text[0:15002], "text2": text[15002:30000]}
     return (jsonify(x))
 def get_term_cond():
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
+def get_privacy():
+    return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
