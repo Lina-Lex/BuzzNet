@@ -16,7 +16,8 @@ from flaskapp.view_functions.ivrflow import (
     voice,
     after_call,
     get_term_cond,
-    get_privacy
+    get_privacy,
+    get_profile
 )
 IVRFlow=Blueprint('IVRFlow',__name__)
 
@@ -37,3 +38,4 @@ IVRFlow.route("/search", methods=['GET', 'POST'])(search)
 IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
 IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)
 IVRFlow.route("/privacy", methods=['GET', 'POST'])(get_privacy)
+IVRFlow.route("/authenticate/get_profile", methods=['GET', 'POST'])(get_profile)

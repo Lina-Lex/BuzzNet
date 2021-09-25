@@ -29,21 +29,23 @@ def voice_joined():
     else:
         resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
         resp.hangup()
-    return(str(resp))
+    return (str(resp))
+
 
 def voice():
     """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
     user = check_new_user(tel)
-    if user == 'Exist':resp.dial(optional_number)
+    if user == 'Exist':
+        resp.dial(optional_number)
     else:
-        save_new_user(tel,'Calls')
-        gather = Gather(input='speech dtmf', action='/voice_joined',  timeout=3, num_digits=1)
-        gather.say('Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
+        save_new_user(tel, 'Calls')
+        gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
+        gather.say(
+            'Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
         resp.append(gather)
     return str(resp)
-
 
 
 def after_call():
@@ -53,6 +55,7 @@ def after_call():
     for r in req:
         save_data(r, req.get(r), req.get('phone'))
     return str(resp)
+
 
 def username():
     """ Function for getting Name of the Client from google spreadsheet """
@@ -79,6 +82,7 @@ def username():
             x = {"username": row.get('username')}
     return (jsonify(x))
 
+
 def check_client_type():
     """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
     req = request.values
@@ -103,6 +107,7 @@ def check_client_type():
         if phone == f'+{tel}':
             x = {"type": row.get('type')}
     return (jsonify(x))
+
 
 def save_client_type():
     """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
@@ -144,8 +149,8 @@ def find_friend_timezone():
     # Start our TwiML response
     resp = VoiceResponse()
     to_number = request.form['To']
-    from_number = request.form['From']  #tel = request.values['From']
-    
+    from_number = request.form['From']  # tel = request.values['From']
+
     # timezone helper class to get time zone from number
     tz_from = TimeZoneHelper(from_number)
 
@@ -158,8 +163,9 @@ def find_friend_timezone():
     resp.say(
         "Connecting you to a friend. Please stay on the line."
     )
-    resp.dial(formatMatch, action=url_for('.end_call')) # requires "action" route to be routed to when call ends
+    resp.dial(formatMatch, action=url_for('.end_call'))  # requires "action" route to be routed to when call ends
     return Response(str(resp), 200, mimetype="application/xml")
+
 
 def end_call():
     """Thank user & hang up."""
@@ -197,6 +203,7 @@ def call_to_operator():
             x = {'operator': row.get('operator')}
     return (jsonify(x))
 
+
 def save_blood_pressure():
     """ Function for saving measurement of the blood pressure to the spreadsheet """
     resp = VoiceResponse()
@@ -218,7 +225,8 @@ def save_blood_pressure():
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return(str(resp))
+    return (str(resp))
+
 
 def save_feedback_service():
     """ Function for gathering feedback and put information about it to google spreadsheet """
@@ -251,6 +259,8 @@ def save_feedback_service():
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
     return (str(resp))
+
+
 def save_feedback():
     """ Function for saving feedback and to the google spreadsheet """
     try:
@@ -269,7 +279,7 @@ def save_feedback():
         sheet.append_row(new_row)
         send_mail("FEEDBACK", phone=phone, feedback=msg)
     except:
-        return('-1')
+        return ('-1')
     return ('0')
 
 
@@ -282,44 +292,47 @@ def search():
     it = 0
     str = ''
     for result in results:
-        #title=result.get('title')
-        res=result.get('snippet')
-        #name = result.get('displayLink')
-        str= str + f'{lst_num[it]} result: {res}".\n'
-        it=it+1
+        # title=result.get('title')
+        res = result.get('snippet')
+        # name = result.get('displayLink')
+        str = str + f'{lst_num[it]} result: {res}".\n'
+        it = it + 1
         if it == 3: break
     x = {"search_result": str}
     return (jsonify(x))
 
+
 def get_next_reminder():
     req = request.values
     phone = req.get('phone')
-    tel = str(phone[1:15]) # exclude +
+    tel = str(phone[1:15])  # exclude +
 
-    #conn.connect()
+    # conn.connect()
     # get Patient ID by the phone
     pat = Patient.get(Patient.phone == tel)
     print(pat.id, pat.phone)
 
     # get SmartReminders by Patient ID
-    #smr = SmartReminder.get(SmartReminder.id==pat.id)
+    # smr = SmartReminder.get(SmartReminder.id==pat.id)
     query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
     smr_selected = query.dicts().execute()
 
     result = ''
     # get reminder text by SmartReminder ID
     for s in smr_selected:
-        rm = Reminder.get(Reminder.id==s['reminder_id'])
+        rm = Reminder.get(Reminder.id == s['reminder_id'])
         result = rm.text
-        print (rm.text)
+        print(rm.text)
         # change next time of reminding
         update_reminder(s['reminder_id'])
         conn.commit()
     conn.close()
-    x = {"text":f' Lets listen interesting fact of the day...{result} ...Thank you.'}
+    x = {"text": f' Lets listen interesting fact of the day...{result} ...Thank you.'}
     return (jsonify(x))
+
+
 def get_txt_from_url(url):
-    #import urllib  # the lib that handles the url stuff
+    # import urllib  # the lib that handles the url stuff
     # file = urllib.request.urlopen(url)
     #
     # for line in file:
@@ -335,7 +348,26 @@ def get_txt_from_url(url):
 
     x = {"text1": text[0:15002], "text2": text[15002:30000]}
     return (jsonify(x))
+
+
 def get_term_cond():
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
+
+
 def get_privacy():
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
+
+
+def get_profile():
+    req = request.json
+    phone = req.get("Phone Number")
+    pat = Patient.get(Patient.phone == phone)
+    print(pat.id, pat.phone)
+    patient = dict()
+    patient["Phone Number"] = pat.phone
+    patient["time zone"] = pat.timezone
+    patient["call time"] = str(pat.callstart)
+    patient["username"] = pat.username
+    patient["type"] = pat.type
+    print(patient)
+    return jsonify(patient)
