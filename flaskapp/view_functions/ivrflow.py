@@ -7,6 +7,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from flaskapp.core.ivr_core import *
 from flaskapp.models.ivr_model import *
+from flaskapp.resources.dialoges import *
 
 
 def voice_joined():
@@ -16,34 +17,25 @@ def voice_joined():
     answer = request.form['SpeechResult']
     if 'Yes' in answer:
         save_new_user(tel, 'Existing')
-        resp.say('Thanks for joining us. \n'
-                 'We are glad to welcome you to our social network. \n'
-                 'Heart Voices is a unique platform where you can make friends with the same interests.\n'
-                 'With us, you can use Google search through your phone. \n'
-                 'You can take advantage of the unique smart reminder feature. \n'
-                 'Our system will remind you every day of important events for you, it can be a daily medication intake, the need to do something, or a reminder that you really want to learn a new language.\n'
-                 'At your request, we will remind you to measure blood pressure or blood sugar, and we will collect this data for you. You can use them when you visit your doctor if needed. \n'
-                 'We provide social support through friendly calls to friends and our operators. \n'
-                 'After forwarding call you will access to our community.')
+        resp.say(VOICE_JOINED)
         resp.dial(optional_number)
     else:
         resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
         resp.hangup()
-    return (str(resp))
+    return str(resp)
 
 
 def voice():
     """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
-    user = check_new_user(tel)
-    if user == 'Exist':
+    new_user = is_user_new(tel)
+    if not new_user:
         resp.dial(optional_number)
     else:
         save_new_user(tel, 'Calls')
         gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
-        gather.say(
-            'Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
+        gather.say(GREETINGS)
         resp.append(gather)
     return str(resp)
 
@@ -80,7 +72,7 @@ def username():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {"username": row.get('username')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def check_client_type():
@@ -106,7 +98,7 @@ def check_client_type():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {"type": row.get('type')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def save_client_type():
@@ -141,7 +133,7 @@ def call_to_friend():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {f"friend": row.get('friend')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def find_friend_timezone():
@@ -201,7 +193,7 @@ def call_to_operator():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {'operator': row.get('operator')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def save_blood_pressure():
@@ -225,7 +217,7 @@ def save_blood_pressure():
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback_service():
@@ -258,7 +250,7 @@ def save_feedback_service():
     sheet.append_row(new_row)
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback():
@@ -279,8 +271,8 @@ def save_feedback():
         sheet.append_row(new_row)
         send_mail("FEEDBACK", phone=phone, feedback=msg)
     except:
-        return ('-1')
-    return ('0')
+        return False
+    return True
 
 
 def search():
@@ -289,17 +281,15 @@ def search():
     req_str = req.get('str')
 
     results = google_search(req_str, my_api_key, my_cse_id, num=10)
-    it = 0
     str = ''
-    for result in results:
+    for it, result in enumerate(results[:3]):
         # title=result.get('title')
         res = result.get('snippet')
         # name = result.get('displayLink')
         str = str + f'{lst_num[it]} result: {res}".\n'
-        it = it + 1
-        if it == 3: break
+
     x = {"search_result": str}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def get_next_reminder():
@@ -347,7 +337,7 @@ def get_txt_from_url(url):
     text = soup.get_text()
 
     x = {"text1": text[0:15002], "text2": text[15002:30000]}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def get_term_cond():

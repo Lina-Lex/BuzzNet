@@ -12,13 +12,13 @@ from flaskapp.tools.util import *
 from flaskapp.models.ivr_model import *
 
 
-def out_bound_call (tel):
+def out_bound_call(tel):
     """ Function for making outbound call"""
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    status = check_new_user(tel)
-    if (status != 'New'):
+    new_user = is_user_new(tel)
+    if not new_user:  # checking existing user
         execution = client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
@@ -28,15 +28,17 @@ def out_bound_call (tel):
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
             .create(to=tel, from_=main_number)
+
+
 def call_flow(flow_sid, tel=''):
     """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
     if tel != '':
-        status = check_new_user(tel)
-        if (status != 'New'):
-            print (f'start call for existing User {tel}')
+        new_user = is_user_new(tel)
+        if not new_user:  # checking user is already present
+            print(f'start call for existing User {tel}')
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
@@ -53,7 +55,6 @@ def call_flow(flow_sid, tel=''):
                 .executions \
                 .create(to=tel, from_=main_number)
 
-
             # while len(steps) < 12:
             #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
             #         .executions(execution.sid) \
@@ -69,6 +70,8 @@ def call_flow(flow_sid, tel=''):
             #     .steps(last_step_sid) \
             #     .step_context() \
             #     .fetch()
+
+
 def profile_detail():
     """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
@@ -80,7 +83,7 @@ def profile_detail():
 
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
-    #all_sheet = sheet.get_all_values()
+    # all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
 
     row_num = 0
@@ -96,7 +99,7 @@ def profile_detail():
                     break
                 elif v in ('weight', 'height'):
                     print(f'getting {v} from {ph}')
-                    call_flow ('FW6661af875fa71bfcc36030d653e745ec', str(ph))
+                    call_flow('FW6661af875fa71bfcc36030d653e745ec', str(ph))
                     break
                 elif v in ('activity', 'hobby'):
                     print(f'getting {v} from {ph}')
@@ -112,6 +115,7 @@ def profile_detail():
                     break
             else:
                 print(f'for {ph}:{v} is good')
+
 
 def call_to_check_bld():
     """ Function for checking blood pressure and saving results to google spreadsheet """
@@ -174,7 +178,9 @@ def call_to_check_bld():
 
     sheet.append_row(new_row)
     time.sleep(5)
-def check_new_user(tel=''):
+
+
+def is_user_new(tel=''):
     """ Function for checking type of User (NEW/EXISTING) """
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -188,12 +194,12 @@ def check_new_user(tel=''):
     sheet = spreadsheet.worksheet(sheetName)
     all_sheet = sheet.get_all_values()
     phone_lst = []
-    for a in all_sheet:phone_lst.append(a[0])
+    for a in all_sheet: phone_lst.append(a[0])
     tel_not_plus = str(tel[1:15])
     if tel_not_plus in phone_lst:
-        return 'Exist'
+        return False  # 'Exist'
     else:
-        return 'New'
+        return True  # 'New'
 
 
 def save_new_user(tel='', tab=''):
@@ -209,9 +215,11 @@ def save_new_user(tel='', tab=''):
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
+    new_row = [tel[1:15], '', '', '', '', '', '', '', '', '', '', '',
+               json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), '19258609793', '19258609793']
     sheet.append_row(new_row)
     send_mail("NEW USER", phone=tel)
+
 
 def save_data(col_name, value, tel):
     """ Function for saving data to google spreadsheet """
@@ -231,7 +239,7 @@ def save_data(col_name, value, tel):
     row_num = 0
     for r in all_sheet:
         row_num = row_num + 1
-        ph = r[0] #find the Phone Number
+        ph = r[0]  # find the Phone Number
         if tel == f'+{ph}':
             break
 
@@ -243,11 +251,14 @@ def save_data(col_name, value, tel):
             sheet.update_cell(row_num, col_num, value)
             break
 
+
 def google_search(search_term, api_key, cse_id, **kwargs):
     """ Function for using Google Search API"""
     service = build("customsearch", "v1", developerKey=api_key)
     res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
     return res['items']
+
+
 # def print_mars_photos():
 #     from redis import Redis
 #     from rq import Queue
@@ -261,14 +272,13 @@ def google_search(search_term, api_key, cse_id, **kwargs):
 #         #get_mars_photo(1 + i)
 #         q.enqueue(get_mars_photo, 1 + i)
 #     print('After')
-#print_mars_photos()
+# print_mars_photos()
 
 
 def update_reminder(id):
-
     # get smart reminder by ID
-    smr = SmartReminder.get(SmartReminder.id==id)
-    #smr = SmartReminder()
+    smr = SmartReminder.get(SmartReminder.id == id)
+    # smr = SmartReminder()
     r = SMTwo.first_review(3)
     if smr.last_time is None:
         # first review
