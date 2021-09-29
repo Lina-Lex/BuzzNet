@@ -10,7 +10,9 @@ from googleapiclient.discovery import build
 from flaskapp.settings import *
 from flaskapp.tools.util import *
 from flaskapp.models.ivr_model import *
-from flaskapp.settings import GOOGLE_API_KEY, GOOGLE_CSE_ID, GOOGLE_CSE_MAX_NUM
+from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
+                               GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH)
+
 
 def out_bound_call (tel):
     """ Function for making outbound call"""
@@ -73,7 +75,7 @@ def profile_detail():
     """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "Users"
     sheetName = "Existing"
@@ -162,7 +164,7 @@ def call_to_check_bld():
 
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), UP, DOWN]
@@ -178,7 +180,7 @@ def check_new_user(tel=''):
     """ Function for checking type of User (NEW/EXISTING) """
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -200,7 +202,7 @@ def save_new_user(tel='', tab=''):
     """ Function for saving NEW user in google spreadsheet"""
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = 'Users'
@@ -217,7 +219,7 @@ def save_data(col_name, value, tel):
     """ Function for saving data to google spreadsheet """
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"

@@ -21,7 +21,7 @@ GOOGLE_CSE_ID = os.environ.get("GOOGLE_CSE_ID", "")
 GOOGLE_CSE_MAX_NUM = 3
 
 # Path to the json file with Google service account credentials
-GOOGLE_SA_JSON_PATH = os.environ.get("GOOGLE_SA_JSON_PATH", "") # cred_json
+GOOGLE_SA_JSON_PATH = os.environ.get("GOOGLE_SA_JSON_PATH", "")
 
 
 # ---------- Google docs IDs -----------------------

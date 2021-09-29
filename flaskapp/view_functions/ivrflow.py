@@ -14,7 +14,8 @@ from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
                                  getTemporaryUserData
                                  )
 
-from flaskapp.settings import ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER
+from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
+                               GOOGLE_SA_JSON_PATH)
 
 
 def voice_joined():
@@ -72,7 +73,7 @@ def username():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -97,7 +98,7 @@ def check_client_type():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -131,7 +132,7 @@ def call_to_friend():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -190,7 +191,7 @@ def call_to_operator():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -219,7 +220,7 @@ def save_blood_pressure():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "health_metrics"
     sheetName = "blood_pressure"
@@ -251,7 +252,7 @@ def save_feedback_service():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "feedback"
     sheetName = "service"
@@ -272,7 +273,7 @@ def save_feedback():
         phone = request.args.get('phone')
         msg = request.args.get('msg')
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
         client = gspread.authorize(creds)
         spreadsheetName = "feedback"
         sheetName = "service"
