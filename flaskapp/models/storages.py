@@ -36,6 +36,8 @@ postgres_conn = PostgresqlDatabase(
 
 
 class GoogleSpreadSheet:
+    """Helper class to interact with Google Spreadsheets via API"""
+
     gc = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
 
     def __init__(self, document_id='', sheet_name=''):
@@ -49,6 +51,10 @@ class GoogleSpreadSheet:
         self.worksheet = self.spreadsheet.worksheet(self.sheet_name)
 
     def append_row_to_sheet(self, row):
+        """Tries to append a row to the corresponding spreadsheet/sheet_name
+        and returns True if success, otherwise returns False
+        """
+
         if self.worksheet is None:
             self.open_spreadsheet()
 
@@ -56,6 +62,8 @@ class GoogleSpreadSheet:
             self.worksheet.append_row(row)
         except gspread.exceptions.APIError:
             try:
+                # If connection is closed (e.g. timed out),
+                # lets try to reopen it!
                 self.gc.login()
                 self.open_spreadsheet()
                 self.worksheet.append_row(row)
