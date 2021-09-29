@@ -1,18 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+from BuzzNet.flaskapp.settings import POSTGRESQL_USER
 import gspread
 import logging
-from ..settings import (GOOGLE_SA_JSON_PATH,  # type: ignore
-                        GOOGLE_USERS_SHEET_NAME_EXISTING,
-                        GOOGLE_USERS_SHEET_NAME_CALLS,
-                        GOOGLE_USERS_SPREADSHEET_ID)
+from peewee import PostgresqlDatabase
+from flaskapp.settings import (
+    GOOGLE_SA_JSON_PATH,
+    GOOGLE_USERS_SHEET_NAME_EXISTING,
+    GOOGLE_USERS_SHEET_NAME_CALLS,
+    GOOGLE_USERS_SPREADSHEET_ID,
+    POSTGRESQL_DB_NAME,
+    POSTGRESQL_HOST,
+    POSTGRESQL_PORT,
+    POSTGRESQL_PASSWORD,
+    POSTGRESQL_TEST_DB_NAME,
+    TEST_ENVIRONMENT
+)
 
 
-__all__ = ('gs_users_existing', 'gs_users_calls')
+__all__ = ('gs_users_existing', 'gs_users_calls', 'postgres_conn')
 
 
 logger = logging.getLogger(__name__)
+
+
+postgres_conn = PostgresqlDatabase(
+    database=POSTGRESQL_TEST_DB_NAME if
+    TEST_ENVIRONMENT else POSTGRESQL_DB_NAME,
+    user=POSTGRESQL_USER,
+    password=POSTGRESQL_PASSWORD,
+    host=POSTGRESQL_HOST,
+    port=POSTGRESQL_PORT
+)
 
 
 class GoogleSpreadSheet:
