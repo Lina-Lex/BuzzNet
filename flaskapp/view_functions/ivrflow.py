@@ -5,8 +5,9 @@ from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskapp.core.ivr_core import *
+from flaskapp.core.ivr_core import google_search
 from flaskapp.models.ivr_model import *
+from flaskapp.settings import ORDINAL_NUMBERS
 
 
 def voice_joined():
@@ -283,23 +284,28 @@ def save_feedback():
     return ('0')
 
 
-def search():
-    """ Function for answering search results on phrase from Client"""
+def search_via_google():
+    """ Prepare search results on the term provided by client
+
+    The function performs searching using Google Custom Search Engine,
+    returns #<GOOGLE_CSE_MAX_NUM> search items (see settings file)
+    and prepare the result for retrieving to an user.
+
+    Result is presented as a Flask's Response object
+    with the application/json mimetype.
+
+    """
+
     req = request.values
     req_str = req.get('str')
+    results = google_search(req_str)
 
-    results = google_search(req_str, my_api_key, my_cse_id, num=10)
-    it = 0
-    str = ''
-    for result in results:
-        # title=result.get('title')
-        res = result.get('snippet')
-        # name = result.get('displayLink')
-        str = str + f'{lst_num[it]} result: {res}".\n'
-        it = it + 1
-        if it == 3: break
-    x = {"search_result": str}
-    return (jsonify(x))
+    output = '\n'.join(
+        [f'{ORDINAL_NUMBERS[it]}. result: "{res}"'
+         for it, res in enumerate(results)]
+    )
+
+    return jsonify({"search_result": output})
 
 
 def get_next_reminder():

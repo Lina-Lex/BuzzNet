@@ -10,7 +10,7 @@ from flaskapp.view_functions.ivrflow import (
     save_blood_pressure,
     save_feedback_service,
     save_feedback,
-    search,
+    search_via_google,
     get_next_reminder,
     voice_joined,
     voice,
@@ -34,7 +34,7 @@ IVRFlow.route("/call_to_operator", methods=['GET', 'POST'])(call_to_operator)
 IVRFlow.route("/save_blood_pressure", methods=['GET', 'POST'])(save_blood_pressure)
 IVRFlow.route("/save_feedback_service", methods=['GET', 'POST'])(save_feedback_service)
 IVRFlow.route("/save_feedback", methods=['GET', 'POST'])(save_feedback)
-IVRFlow.route("/search", methods=['GET', 'POST'])(search)
+IVRFlow.route("/search", methods=['GET', 'POST'])(search_via_google)
 IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
 IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)
 IVRFlow.route("/privacy", methods=['GET', 'POST'])(get_privacy)
