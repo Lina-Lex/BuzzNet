@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 from flaskapp.settings import *
 from flaskapp.tools.util import *
 from flaskapp.models.ivr_model import *
-
+from flaskapp.settings import GOOGLE_API_KEY, GOOGLE_CSE_ID, GOOGLE_CSE_MAX_NUM
 
 def out_bound_call (tel):
     """ Function for making outbound call"""
@@ -243,25 +243,25 @@ def save_data(col_name, value, tel):
             sheet.update_cell(row_num, col_num, value)
             break
 
-def google_search(search_term, api_key, cse_id, **kwargs):
-    """ Function for using Google Search API"""
-    service = build("customsearch", "v1", developerKey=api_key)
-    res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
-    return res['items']
-# def print_mars_photos():
-#     from redis import Redis
-#     from rq import Queue
-#
-#     from mars import get_mars_photo
-#
-#     q = Queue(connection=Redis())
-#
-#     print('Before')
-#     for i in range(10):
-#         #get_mars_photo(1 + i)
-#         q.enqueue(get_mars_photo, 1 + i)
-#     print('After')
-#print_mars_photos()
+
+def google_search(search_term):
+    """ Search a term using Google Custom Search Engine
+
+    :param search_term: a term to search for;
+    :type search_term: str
+
+    NOTE
+    ----
+        see: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
+    """
+
+    service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+    res = service.cse().list(
+        q=search_term,
+        cx=GOOGLE_CSE_ID,
+        num=GOOGLE_CSE_MAX_NUM
+    ).execute()
+    return res.get('items', '')
 
 
 def update_reminder(id):

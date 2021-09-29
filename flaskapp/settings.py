@@ -12,8 +12,13 @@ TWILIO_OPT_PHONE_NUMBER = os.environ.get("TWILIO_OPT_PHONE_NUMBER", "") #optiona
 
 # ---------- Google API Configs --------------------
 
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")  # my_api_key
-GOOGLE_CUSTOM_SEARCH_ID = os.environ.get("GOOGLE_CUSTOM_SEARCH_ID", "")  # my_cse_id
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+
+# Google custom search ID
+GOOGLE_CSE_ID = os.environ.get("GOOGLE_CSE_ID", "")
+
+# Max number of items to return when do searching
+GOOGLE_CSE_MAX_NUM = 3
 
 # Path to the json file with Google service account credentials
 GOOGLE_SA_JSON_PATH = os.environ.get("GOOGLE_SA_JSON_PATH", "") # cred_json
