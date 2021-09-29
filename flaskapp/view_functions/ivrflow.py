@@ -2,6 +2,7 @@ import os
 import gspread
 import datetime
 import json
+import functools
 from flask import request, jsonify, url_for
 from flask import Response
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
@@ -345,10 +346,12 @@ def get_next_reminder():
     )
 
 
+@functools.cache
 def get_term_cond():
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
 
 
+@functools.cache
 def get_privacy():
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
 
