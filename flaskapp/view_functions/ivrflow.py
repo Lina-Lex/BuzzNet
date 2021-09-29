@@ -348,11 +348,13 @@ def get_next_reminder():
 
 @functools.cache
 def get_term_cond():
+    """ Returns terms and conditions represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
 
 
 @functools.cache
 def get_privacy():
+    """ Returns Privacy-policy document represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
 
 
