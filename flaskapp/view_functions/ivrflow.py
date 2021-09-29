@@ -9,7 +9,7 @@ from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
 from oauth2client.service_account import ServiceAccountCredentials
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
-                                    check_new_user, update_reminder)
+                                    is_user_new, update_reminder)
 from flaskapp.models.ivr_model import Patient, SmartReminder, Reminder, conn
 from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
                                  getTemporaryUserData, get_txt_from_url
@@ -46,8 +46,7 @@ def voice():
     """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
-    user = check_new_user(tel)
-    if user == 'Exist':
+    if not is_user_new(tel):
         resp.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
         save_new_user(tel, 'Calls')

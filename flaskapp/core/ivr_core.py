@@ -11,7 +11,10 @@ from flaskapp.settings import *
 from flaskapp.tools.util import *
 from flaskapp.models.ivr_model import *
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
-                               GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH)
+                               GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
+                               GOOGLE_USERS_SPREADSHEET_ID,
+                               GOOGLE_USERS_SHEET_NAME_EXISTING
+                               )
 
 
 def out_bound_call (tel):
@@ -19,8 +22,7 @@ def out_bound_call (tel):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    status = check_new_user(tel)
-    if (status != 'New'):
+    if is_user_new(tel):
         execution = client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
@@ -36,8 +38,7 @@ def call_flow(flow_sid, tel=''):
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
     if tel != '':
-        status = check_new_user(tel)
-        if (status != 'New'):
+        if is_user_new(tel):
             print (f'start call for existing User {tel}')
             execution = client.studio \
                 .flows(flow_sid) \
@@ -176,26 +177,23 @@ def call_to_check_bld():
 
     sheet.append_row(new_row)
     time.sleep(5)
-def check_new_user(tel=''):
-    """ Function for checking type of User (NEW/EXISTING) """
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-    all_sheet = sheet.get_all_values()
-    phone_lst = []
-    for a in all_sheet:phone_lst.append(a[0])
-    tel_not_plus = str(tel[1:15])
-    if tel_not_plus in phone_lst:
-        return 'Exist'
-    else:
-        return 'New'
+def is_user_new(phone_number=''):
+    """Check if the user already registered in the System
+
+    :param phone_number: User's phone number, defaults to ''
+    :type phone_number: str, optional
+    :return: False if the user already registered and True otherwise
+    :rtype: True or False
+    """
+
+    client = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
+    spreadsheet = client.open_by_key(GOOGLE_USERS_SPREADSHEET_ID)
+    sheet = spreadsheet.worksheet(GOOGLE_USERS_SHEET_NAME_EXISTING)
+    all_sheets = sheet.get_all_values()
+    cleaned_phone_number = phone_number.replace('+', '').strip()
+    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])
 
 
 def save_new_user(tel='', tab=''):
