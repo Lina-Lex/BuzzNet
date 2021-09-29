@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-from BuzzNet.flaskapp.settings import POSTGRESQL_USER
 import gspread
 import logging
 from peewee import PostgresqlDatabase
@@ -12,6 +11,7 @@ from flaskapp.settings import (
     GOOGLE_USERS_SPREADSHEET_ID,
     POSTGRESQL_DB_NAME,
     POSTGRESQL_HOST,
+    POSTGRESQL_USER,
     POSTGRESQL_PORT,
     POSTGRESQL_PASSWORD,
     POSTGRESQL_TEST_DB_NAME,
