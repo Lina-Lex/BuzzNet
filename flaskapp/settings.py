@@ -84,3 +84,8 @@ if ON_HEROKU:
     POSTGRESQL_PASSWORD = url.password
     POSTGRESQL_HOST = url.hostname
     POSTGRESQL_PORT = url.port
+
+# ---------
+
+# Set to True for testing (use testing database)
+TEST_ENVIRONMENT = False
