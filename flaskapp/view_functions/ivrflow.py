@@ -1,13 +1,20 @@
 import os
+import gspread
+import datetime
+import json
 from flask import request, jsonify, url_for
 from flask import Response
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
 from twilio.rest import Client as Client
-import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskapp.core.ivr_core import google_search
-from flaskapp.models.ivr_model import *
-from flaskapp.settings import ORDINAL_NUMBERS
+from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
+                                    check_new_user, update_reminder)
+from flaskapp.models.ivr_model import Patient, SmartReminder, Reminder, conn
+from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
+                                 getTemporaryUserData
+                                 )
+
+from flaskapp.settings import ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER
 
 
 def voice_joined():
@@ -26,7 +33,7 @@ def voice_joined():
                  'At your request, we will remind you to measure blood pressure or blood sugar, and we will collect this data for you. You can use them when you visit your doctor if needed. \n'
                  'We provide social support through friendly calls to friends and our operators. \n'
                  'After forwarding call you will access to our community.')
-        resp.dial(optional_number)
+        resp.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
         resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
         resp.hangup()
@@ -39,7 +46,7 @@ def voice():
     tel = request.values['From']
     user = check_new_user(tel)
     if user == 'Exist':
-        resp.dial(optional_number)
+        resp.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
         save_new_user(tel, 'Calls')
         gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
@@ -74,7 +81,6 @@ def username():
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
     x = {}
     for row in rows:
@@ -100,7 +106,6 @@ def check_client_type():
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
     x = {}
     for row in rows:
@@ -120,7 +125,6 @@ def save_client_type():
 
 def call_to_friend():
     """ Function for making call to the friend according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
@@ -180,7 +184,6 @@ def end_call():
 
 def call_to_operator():
     """ Function for making call to the operator according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
@@ -202,7 +205,7 @@ def call_to_operator():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {'operator': row.get('operator')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def save_blood_pressure():
@@ -226,7 +229,7 @@ def save_blood_pressure():
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback_service():
@@ -259,7 +262,7 @@ def save_feedback_service():
     sheet.append_row(new_row)
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback():
@@ -333,17 +336,15 @@ def get_next_reminder():
         update_reminder(s['reminder_id'])
         conn.commit()
     conn.close()
-    x = {"text": f' Lets listen interesting fact of the day...{result} ...Thank you.'}
-    return (jsonify(x))
+    return jsonify(
+        {
+            "text":
+            f' Lets listen interesting fact of the day...{result} ...Thank you.'
+        }
+    )
 
 
 def get_txt_from_url(url):
-    # import urllib  # the lib that handles the url stuff
-    # file = urllib.request.urlopen(url)
-    #
-    # for line in file:
-    #     decoded_line = line.decode("utf-8")
-    #     print(decoded_line)
 
     import urllib
     from bs4 import BeautifulSoup
@@ -353,7 +354,7 @@ def get_txt_from_url(url):
     text = soup.get_text()
 
     x = {"text1": text[0:15002], "text2": text[15002:30000]}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def get_term_cond():
