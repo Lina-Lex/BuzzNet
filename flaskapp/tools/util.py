@@ -2,6 +2,7 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import datetime
+from flask import jsonify
 import pandas as pd
 from pytz import timezone
 import phonenumbers
@@ -135,3 +136,25 @@ def call_duration_from_api(phone):
             duration += int(record.duration)
         return duration
     raise ValueError("No valid phone number found")
+
+
+def get_txt_from_url(url):
+    """Retrieve text from a given url and split it into two parts
+    wrapped as Flask response object
+
+    :param url: an url to read a text block from
+    :type url: str
+    :return: Flask Response object with application/json mimetype
+    :rtype: Flask Response object
+    """
+
+    import urllib
+    from bs4 import BeautifulSoup
+
+    # FIXME: What if .read take a long time to get the data... , or 404?
+    html = urllib.request.urlopen(url).read()
+    soup = BeautifulSoup(html)
+    text = soup.get_text()
+
+    # NOTE: Do we need to define these magic numbers in config file, e.g. 15002?
+    return jsonify({"text1": text[0:15002], "text2": text[15002:30000]})

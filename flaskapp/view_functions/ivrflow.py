@@ -11,7 +11,7 @@ from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     check_new_user, update_reminder)
 from flaskapp.models.ivr_model import Patient, SmartReminder, Reminder, conn
 from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
-                                 getTemporaryUserData
+                                 getTemporaryUserData, get_txt_from_url
                                  )
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
@@ -343,19 +343,6 @@ def get_next_reminder():
             f' Lets listen interesting fact of the day...{result} ...Thank you.'
         }
     )
-
-
-def get_txt_from_url(url):
-
-    import urllib
-    from bs4 import BeautifulSoup
-
-    html = urllib.request.urlopen(url).read()
-    soup = BeautifulSoup(html)
-    text = soup.get_text()
-
-    x = {"text1": text[0:15002], "text2": text[15002:30000]}
-    return jsonify(x)
 
 
 def get_term_cond():
