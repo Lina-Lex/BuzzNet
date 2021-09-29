@@ -47,6 +47,9 @@ POSTGRESQL_PASSWORD = os.environ.get("POSTGRESQL_PASSWORD", "")
 POSTGRESQL_HOST = '127.0.0.1'
 POSTGRESQL_PORT = 5432
 
+POSTGRESQL_TEST_DB_NAME = 'goanddo_test'
+
+
 # Heroku specific settings
 POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 # --------------------------------------------------
@@ -71,25 +74,13 @@ ORDINAL_NUMBERS = [
 
 # -- Override some values for Heroku environment ---
 
-#=====================
-# if 'HEROKU' in os.environ:
-#     import urllib.parse
-#     import psycopg2
-#     urllib.parse.uses_netloc.append('postgres')
-#     url = urllib.parse.urlparse(os.environ["DATABASE_URL"])
-#     conn = PostgresqlDatabase(database=url.path[1:], user=url.username, password=url.password, host=url.hostname, port=url.port)
-#     db_proxy.initialize(conn)
-# else:
-#     conn = PostgresqlDatabase('goanddo', user='postgres', password=postgreSQLpass, host='127.0.0.1', port=5432)
-#     db_proxy.initialize(conn)
-
-
-
-# if 'HEROKU' in os.environ:
-#     print ('nothing')
-# else:
-#     postgreSQLpass = os.environ['postgreSQLpass']
-
-
-
-#import pprint
+if ON_HEROKU:
+    # TODO: Put URL parsing function into helper function
+    import urllib.parse
+    urllib.parse.uses_netloc.append('postgres')
+    url = urllib.parse.urlparse(POSTGRESQL_URL)
+    POSTGRESQL_DB_NAME = url.path[1:]
+    POSTGRESQL_USER = url.username
+    POSTGRESQL_PASSWORD = url.password
+    POSTGRESQL_HOST = url.hostname
+    POSTGRESQL_PORT = url.port
