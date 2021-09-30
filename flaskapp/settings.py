@@ -58,7 +58,6 @@ POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 # True if we run the script on Heroku, otherwise False.
 ON_HEROKU = 'HEROKU' in os.environ
 
-# lst_num
 ORDINAL_NUMBERS = [
     'first',
     'second',
@@ -71,6 +70,8 @@ ORDINAL_NUMBERS = [
     'ninth',
     'tenth'
 ]
+
+
 
 # -- Override some values for Heroku environment ---
 
