@@ -4,10 +4,10 @@ import os
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
-TWILIO_MAIN_PHONE_NUMBER = os.environ.get("TWILIO_MAIN_PHONE_NUMBER", "") # main_number
+TWILIO_MAIN_PHONE_NUMBER = os.environ.get("TWILIO_MAIN_PHONE_NUMBER", "")
 
 # Optional phone number
-TWILIO_OPT_PHONE_NUMBER = os.environ.get("TWILIO_OPT_PHONE_NUMBER", "") #optional_number
+TWILIO_OPT_PHONE_NUMBER = os.environ.get("TWILIO_OPT_PHONE_NUMBER", "")
 
 
 # ---------- Google API Configs --------------------

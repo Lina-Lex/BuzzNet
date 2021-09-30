@@ -13,7 +13,8 @@ from flaskapp.models.ivr_model import *
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
                                GOOGLE_USERS_SPREADSHEET_ID,
-                               GOOGLE_USERS_SHEET_NAME_EXISTING
+                               GOOGLE_USERS_SHEET_NAME_EXISTING,
+                               TWILIO_MAIN_PHONE_NUMBER
                                )
 
 
@@ -26,12 +27,12 @@ def out_bound_call (tel):
         execution = client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
-            .create(to=tel, from_=main_number)
+            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
     else:
         execution = client.studio \
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
-            .create(to=tel, from_=main_number)
+            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
 def call_flow(flow_sid, tel=''):
     """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
@@ -43,7 +44,7 @@ def call_flow(flow_sid, tel=''):
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
             # wait for getting data from studio flow
             steps = client.studio.flows(flow_sid) \
                 .executions(execution.sid) \
@@ -54,7 +55,7 @@ def call_flow(flow_sid, tel=''):
             execution = client.studio \
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
 
 
             # while len(steps) < 12:
@@ -126,7 +127,7 @@ def call_to_check_bld():
     execution = client.studio \
         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions \
-        .create(to='+16692419870', from_=main_number)
+        .create(to='+16692419870', from_=TWILIO_MAIN_PHONE_NUMBER)
 
     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions(execution.sid) \
