@@ -1,4 +1,7 @@
-from peewee import *  # noqa
+import datetime
+from peewee import (AutoField, TextField, DateTimeField, TimeField, Proxy,
+                    Model, ForeignKeyField)
+from playhouse.postgres_ext import BinaryJSONField
 from flaskapp.models.storages import postgress_conn
 
 db_proxy = Proxy()
@@ -10,27 +13,43 @@ class BaseModel(Model):
         database = db_proxy  # connection with database
 
 
-# NOTE:  Dynamic db-switching is absolutely non-necessary
-# here (between local and heroku postgres);
+# NOTE:  Dynamic db-switching is absolutely unnecessary
 # However, this construction will be useful when testing
 db_proxy.initialize(postgress_conn)
 
 
 # Patient model
-class Patient(BaseModel):
-    id = AutoField(column_name='ID')
-    phone = TextField(column_name='phone', null=True)
-    username = TextField(column_name='username', null=True)
-    gender = TextField(column_name='gender', null=True)
-    timezone = TextField(column_name='timezone', null=True)
-    callstart = TimeField(column_name='callstart', null=True)
-    callend = TimeField(column_name='callend', null=True)
-    type = TextField(column_name='type', null=True)
-    created = DateTimeField(column_name='created', null=True)
-    updated = DateTimeField(column_name='updated', null=True)
+class User(BaseModel):
+    id        = AutoField()
+    phone     = TextField(null=True)
+    username  = TextField(null=True)
+    gender    = TextField(null=True)
+    timezone  = TextField(null=True)
+    type      = TextField(null=True)
+    created   = DateTimeField(default=datetime.datetime.now, null=True)
+    updated   = DateTimeField(null=True)
 
     class Meta:
-        table_name = 'patient'
+        table_name = 'users'
+
+
+class Call(BaseModel):
+    id         = AutoField()
+    call_start = DateTimeField()
+    call_end   = DateTimeField()
+    user       = ForeignKeyField(User, backref='calls', on_delete='CASCADE')
+
+    class Meta:
+        table_name = 'calls'
+
+
+class HealthMetric(BaseModel):
+    id = AutoField()
+    user = ForeignKeyField(User, backref='health_metrics', on_delete='CASCADE')
+    data = BinaryJSONField()
+
+    class Meta:
+        table_name = 'health_metrics'
 
 
 # Reminder
