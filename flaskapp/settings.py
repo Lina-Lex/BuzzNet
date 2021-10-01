@@ -49,6 +49,11 @@ POSTGRESQL_PORT = 5432
 
 POSTGRESQL_TEST_DB_NAME = 'goanddo_test'
 
+POSTGRES_MAX_CONNECTIONS = 32
+
+# The number of seconds allowed to any of connections to postgres
+POSTGRES_STALE_TIMEOUT = 300
+
 
 # Heroku specific settings
 POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")

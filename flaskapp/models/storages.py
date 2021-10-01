@@ -3,7 +3,7 @@
 
 import gspread
 import logging
-from peewee import PostgresqlDatabase
+from playhouse.pool import PooledPostgresqlExtDatabase
 from flaskapp.settings import (
     GOOGLE_SA_JSON_PATH,
     GOOGLE_USERS_SHEET_NAME_EXISTING,
@@ -15,23 +15,27 @@ from flaskapp.settings import (
     POSTGRESQL_PORT,
     POSTGRESQL_PASSWORD,
     POSTGRESQL_TEST_DB_NAME,
+    POSTGRES_MAX_CONNECTIONS,
+    POSTGRES_STALE_TIMEOUT,
     TEST_ENVIRONMENT
 )
 
 
-__all__ = ('gs_users_existing', 'gs_users_calls', 'postgres_conn')
+__all__ = ('gs_users_existing', 'gs_users_calls', 'postgres_db')
 
 
 logger = logging.getLogger(__name__)
 
 
-postgres_conn = PostgresqlDatabase(
+postgres_db = PooledPostgresqlExtDatabase(
     database=POSTGRESQL_TEST_DB_NAME if
     TEST_ENVIRONMENT else POSTGRESQL_DB_NAME,
     user=POSTGRESQL_USER,
     password=POSTGRESQL_PASSWORD,
     host=POSTGRESQL_HOST,
-    port=POSTGRESQL_PORT
+    port=POSTGRESQL_PORT,
+    max_connections=POSTGRES_MAX_CONNECTIONS,
+    stale_timeout=POSTGRES_STALE_TIMEOUT
 )
 
 
