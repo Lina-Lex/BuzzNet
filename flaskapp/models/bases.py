@@ -3,7 +3,7 @@
 
 import datetime
 from peewee import Proxy, Model, DateTimeField
-from flaskapp.models.storages import postgress_conn
+from flaskapp.models.storages import postgress_db
 
 db_proxy = Proxy()
 
@@ -24,7 +24,7 @@ class DatesMixin(Model):
 
 # NOTE:  Dynamic db-switching is absolutely unnecessary
 # However, this construction will be useful when testing
-db_proxy.initialize(postgress_conn)
+db_proxy.initialize(postgress_db)
 
 
 
