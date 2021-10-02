@@ -9,7 +9,7 @@ import os
 from googleapiclient.discovery import build
 from flaskapp.settings import *
 from flaskapp.tools.util import *
-from flaskapp.models.ivr_model import *
+from flaskapp.models.ivr_models import *
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
                                GOOGLE_USERS_SPREADSHEET_ID,
