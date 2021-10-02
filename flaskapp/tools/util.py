@@ -10,12 +10,11 @@ from phonenumbers import geocoder
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.rest import Client
+from flaskapp.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 
 recipient_list = ['goandtodo@googlegroups.com']
 
 sender_mail = 'heartvoices.org@gmail.com'
-account_sid = os.environ['TWILIO_ACCOUNT_SID']
-auth_token = os.environ['TWILIO_AUTH_TOKEN']
 
 
 def send_mail(mail_type, phone, feedback=''):
@@ -127,7 +126,7 @@ def call_duration_from_api(phone):
     twilio and sum up the duration for the day and return it.
     """
     if phone:
-        client = Client(account_sid, auth_token)
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         date = datetime.datetime.today()
         calls = client.calls.list(from_=str(phone),
                                   start_time_after=datetime.datetime(date.year, date.month, date.day, 0, 0, 0))
