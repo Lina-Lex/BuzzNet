@@ -1,11 +1,9 @@
-import datetime
 from peewee import (AutoField, TextField, DateTimeField,
                     CharField, ForeignKeyField, FloatField,
                     IntegerField)
 
 from flaskapp.models.bases import BaseModel, DatesMixin
 from playhouse.postgres_ext import BinaryJSONField
-from flaskapp.models.storages import postgress_db
 
 
 class User(DatesMixin, BaseModel):
@@ -50,13 +48,12 @@ class Call(DatesMixin, BaseModel):
 
 class HealthMetric(DatesMixin, BaseModel):
     id         = AutoField()               # noqa: E221
+    data       = BinaryJSONField()         # noqa: E221
     user       = ForeignKeyField(          # noqa: E221
         User,
         backref='health_metrics',
         on_delete='CASCADE'
     )
-
-    data       = BinaryJSONField()         # noqa: E221
 
     class Meta:
         table_name = 'health_metrics'
