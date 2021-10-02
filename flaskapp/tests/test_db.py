@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 2:46:02 pm
+Last Modified: Saturday, October 2nd 2021, 3:07:53 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -35,7 +35,10 @@ from flaskapp.models.utils import create_tables
 from flaskapp.models.storages import postgres_db
 
 
-def test_create_tables(monkeypatch):
+def test_create_and_drop_tables():
+    postgres_db.drop_tables([PhoneNumber, Reminder, SmartReminder, Call, User])
+    tables = postgres_db.get_tables()
+    assert len(tables) == 0
     create_tables([User, Call, PhoneNumber, Reminder, SmartReminder])
     tables_created = postgres_db.get_tables()
     assert 'users' in tables_created
