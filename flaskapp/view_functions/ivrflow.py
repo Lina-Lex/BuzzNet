@@ -10,7 +10,7 @@ from twilio.rest import Client as Client
 from oauth2client.service_account import ServiceAccountCredentials
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
-from flaskapp.models.ivr_model import Patient, SmartReminder, Reminder, conn
+from flaskapp.models.ivr_models import User, SmartReminder, Reminder
 from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
                                  getTemporaryUserData, get_txt_from_url
                                  )
