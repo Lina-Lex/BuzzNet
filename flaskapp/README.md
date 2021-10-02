@@ -36,7 +36,7 @@ flaskapp/
 │   ├── data/
 │   ├── templates/
 │   └── util.py
-└── view_functions/
+└── views/
     ├── authenticate.py
     ├── ivrflow.py
 

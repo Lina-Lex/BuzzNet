@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flaskapp.view_functions.authenticate import get_otp,validate_otp
+from flaskapp.views.authenticate import get_otp,validate_otp
 
 Auth = Blueprint('Auth',__name__)
 
