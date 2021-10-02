@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 2:12:17 pm
+Last Modified: Saturday, October 2nd 2021, 2:46:02 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -30,10 +30,9 @@ from flaskapp.models.ivr_models import (User,
                                         Reminder,
                                         SmartReminder,
                                         Call,
-                                        PhoneNumber,
-                                        postgres_db)
+                                        PhoneNumber)
 from flaskapp.models.utils import create_tables
-
+from flaskapp.models.storages import postgres_db
 
 
 def test_create_tables(monkeypatch):
