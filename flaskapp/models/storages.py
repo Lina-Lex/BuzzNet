@@ -42,7 +42,7 @@ postgres_db = PooledPostgresqlExtDatabase(
 class GoogleSpreadSheet:
     """Helper class to interact with Google Spreadsheets via API"""
 
-    gc = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
+    #gc = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
 
     def __init__(self, document_id='', sheet_name=''):
         self.document_id = document_id
