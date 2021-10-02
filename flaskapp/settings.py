@@ -43,7 +43,7 @@ GOOGLE_HEALTH_DB_SHEET_NAME = "blood_pressure"
 # ------------ DATABASE CONFIGURATION --------------
 POSTGRESQL_DB_NAME = 'goanddo'
 POSTGRESQL_USER = 'postgres'
-POSTGRESQL_PASSWORD = os.environ.get("POSTGRESQL_PASSWORD", "")
+POSTGRESQL_PASSWORD = os.environ.get("POSTGRESQL_PASSWORD", "123")
 POSTGRESQL_HOST = '127.0.0.1'
 POSTGRESQL_PORT = 5432
 
@@ -94,4 +94,4 @@ if ON_HEROKU:
 # ---------
 
 # Set to True for testing (use testing database)
-TEST_ENVIRONMENT = False
+TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", True)
