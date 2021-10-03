@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:00:16 pm
+Last Modified: Sunday, October 3rd 2021, 4:54:24 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -34,6 +34,7 @@ import json
 from twilio.rest import Client as Client
 import os
 from googleapiclient.discovery import build
+from flaskapp.models.storages import gs_users_existing, gs_users_calls
 from flaskapp.settings import *
 from flaskapp.tools.util import *
 from flaskapp.models.ivr_models import *
@@ -216,10 +217,7 @@ def is_user_new(phone_number=''):
     :rtype: True or False
     """
 
-    client = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
-    spreadsheet = client.open_by_key(GOOGLE_USERS_SPREADSHEET_ID)
-    sheet = spreadsheet.worksheet(GOOGLE_USERS_SHEET_NAME_EXISTING)
-    all_sheets = sheet.get_all_values()
+    all_sheets = gs_users_existing.get_all_values()
     cleaned_phone_number = phone_number.replace('+', '').strip()
     return not any([True for a in all_sheets if cleaned_phone_number == a[0]])
 
