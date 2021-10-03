@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 5:24:01 pm
+Last Modified: Sunday, October 3rd 2021, 10:51:50 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -196,5 +196,9 @@ def cleanup_phone_number(phone_number):
     :rtype: str
     """
 
-    # NOTE: Probably will change in the future
-    return phone_number.replace(' ', '').replace('-', '').replace('+', '')
+    result = phone_number.replace(' ', '').replace('-', '').replace('+', '')
+    try:
+        int(result)
+    except Exception:
+        raise ValueError(f"Phone number {phone_number} couldn't be cleaned.")
+    return result
