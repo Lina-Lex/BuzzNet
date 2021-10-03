@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:24 pm
+Last Modified: Sunday, October 3rd 2021, 5:07:42 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -182,5 +182,5 @@ def get_txt_from_url(url):
     soup = BeautifulSoup(html)
     text = soup.get_text()
 
-    # NOTE: Do we need to define these magic numbers in config file, e.g. 15002?
+    # NOTE: Do we need to define these magic numbers in the config file, e.g. 15002?
     return jsonify({"text1": text[0:15002], "text2": text[15002:30000]})
