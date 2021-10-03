@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 4:54:24 pm
+Last Modified: Sunday, October 3rd 2021, 6:08:34 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -224,20 +224,17 @@ def is_user_new(phone_number=''):
 
 def save_new_user(tel='', tab=''):
     """ Function for saving NEW user in google spreadsheet"""
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
 
-    spreadsheetName = 'Users'
-    sheetName = tab
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
+    # --- store data to google spreadsheet ( TODO: drop gs support)
+    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing' else gs_users_calls
     new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
-    sheet.append_row(new_row)
+    gs_proxy_sheet.append_row(new_row)
+
+    # --- store new user and related call 
+    # TODO: Save new user to postgres db (implementation)
+
     send_mail("NEW USER", phone=tel)
+
 
 def save_data(col_name, value, tel):
     """ Function for saving data to google spreadsheet """
