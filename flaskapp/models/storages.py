@@ -18,7 +18,7 @@ Created Date: Wednesday September 29th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:02:52 pm
+Last Modified: Sunday, October 3rd 2021, 4:56:11 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -27,6 +27,7 @@ Copyright (c) 2021
 
 import gspread
 import logging
+from functools import wraps
 from playhouse.pool import PooledPostgresqlExtDatabase
 from flaskapp.settings import (
     GOOGLE_SA_JSON_PATH,
@@ -63,10 +64,36 @@ postgres_db = PooledPostgresqlExtDatabase(
 )
 
 
+def ensure_gc_opened(method):
+    """ Ensures that connection to Google API is open for any of actions
+    performed on behalf of GoogleSpreadSheed (proxy) class
+    """
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        try:
+            result = method(self, *args, **kwargs) or True
+        except gspread.exceptions.APIError:
+            try:
+                # If connection is closed (e.g. timed out),
+                # lets try to reopen it!
+                self.gc.login()
+                self.open_spreadsheet()
+                result = method(self, *args, **kwargs) or True
+            except gspread.exceptions.APIError:
+                logger.error(f"Error raised while appending data to {self.sheet_name}.")  # noqa: E501
+                result = False
+        except Exception as e:
+            logger.error(f"Exception raised while accessing google spreadsheet: {e}.")  # noqa: E501
+            result = False
+        return result
+    return wrapper
+
+
 class GoogleSpreadSheet:
     """Helper class to interact with Google Spreadsheets via API"""
 
-    #gc = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
+    gc = gspread.service_account(filename=GOOGLE_SA_JSON_PATH)
 
     def __init__(self, document_id='', sheet_name=''):
         self.document_id = document_id
@@ -78,27 +105,16 @@ class GoogleSpreadSheet:
         self.spreadsheet = self.gc.open_by_key(self.document_id)
         self.worksheet = self.spreadsheet.worksheet(self.sheet_name)
 
+    @ensure_gc_opened
+    def get_all_value(self):
+        return self.worksheet.get_all_values()
+
+    @ensure_gc_opened
     def append_row_to_sheet(self, row):
         """Tries to append a row to the corresponding spreadsheet/sheet_name
         and returns True if success, otherwise returns False
         """
-
-        if self.worksheet is None:
-            self.open_spreadsheet()
-
-        try:
-            self.worksheet.append_row(row)
-        except gspread.exceptions.APIError:
-            try:
-                # If connection is closed (e.g. timed out),
-                # lets try to reopen it!
-                self.gc.login()
-                self.open_spreadsheet()
-                self.worksheet.append_row(row)
-            except gspread.exceptions.APIError:
-                logger.error(f"Error raised while appending data to {self.sheet_name}.")  # noqa: 501
-                return False
-        return True
+        self.woorksheet.append_row(row)
 
 
 # interacts with users spreadsheet / Existing tab
