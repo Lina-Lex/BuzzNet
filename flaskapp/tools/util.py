@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 5:07:42 pm
+Last Modified: Sunday, October 3rd 2021, 5:24:01 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -112,7 +112,7 @@ def getTemporaryUserData():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     # add credentials to the account
     creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
-    # authorize the clientsheet 
+    # authorize the clientsheet
     client = gspread.authorize(creds)
     # get the instance of the Spreadsheet
     sheet = client.open_by_url(
@@ -184,3 +184,17 @@ def get_txt_from_url(url):
 
     # NOTE: Do we need to define these magic numbers in the config file, e.g. 15002?
     return jsonify({"text1": text[0:15002], "text2": text[15002:30000]})
+
+
+def cleanup_phone_number(phone_number):
+    """Remove any punctuation signs from the phone number string
+
+    :param phone_number: raw phone number
+    :type phone_number: str
+
+    :return: cleaned phone number
+    :rtype: str
+    """
+
+    # NOTE: Probably will change in the future
+    return phone_number.replace(' ', '').replace('-', '').replace('+', '')
