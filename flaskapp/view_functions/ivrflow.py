@@ -7,6 +7,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from flaskapp.core.ivr_core import *
 from flaskapp.models.ivr_model import *
+from flaskapp.view_functions.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
 
 def voice_joined():
@@ -361,16 +362,20 @@ def get_privacy():
 def get_profile():
     req = request.json
     phone = req.get("Phone Number")
-    pat = Patient.get(Patient.phone == phone)
-    print(pat.id, pat.phone)
-    patient = dict()
-    patient["Phone Number"] = pat.phone
-    patient["time zone"] = pat.timezone
-    patient["call time"] = str(pat.callstart)
-    patient["username"] = pat.username
-    patient["type"] = pat.type
-    print(patient)
-    return jsonify(patient)
+    auth, message = is_user_authenticated(phone)
+    print(auth, message)
+    if auth:
+        pat = Patient.get(Patient.phone == phone)
+        patient = dict()
+        patient["Phone Number"] = pat.phone
+        patient["time zone"] = pat.timezone
+        patient["call time"] = str(pat.callstart)
+        patient["username"] = pat.username
+        patient["type"] = pat.type
+        print(patient)
+        return jsonify(patient)
+    else:
+        return message
 
 # http://127.0.0.1:5000/new_user?username=testuser&&type=patient&&timezone=US/Pacific&&calltime=5:30:00&&phone=123-456-789
 def new_user():
