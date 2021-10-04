@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:07:53 pm
+Last Modified: Monday, October 4th 2021, 10:32:34 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -43,3 +43,7 @@ def test_create_and_drop_tables():
     tables_created = postgres_db.get_tables()
     assert 'users' in tables_created
     assert 'calls' in tables_created
+    assert 'reminders' in tables_created
+    assert 'phone_numbers' in tables_created
+    assert 'health_metrics' in tables_created
+    assert 'smart_reminders' in tables_created

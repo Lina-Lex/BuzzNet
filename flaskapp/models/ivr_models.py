@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:02:43 pm
+Last Modified: Monday, October 4th 2021, 10:32:14 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -108,4 +108,4 @@ class SmartReminder(DatesMixin, BaseModel):
     next_time = DateTimeField(column_name='nexttime', null=True)
 
     class Meta:
-        table_name = 'smartreminders'
+        table_name = 'smart_reminders'
