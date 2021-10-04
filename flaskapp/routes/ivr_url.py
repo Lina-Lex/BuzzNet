@@ -36,6 +36,7 @@ IVRFlow.route("/save_feedback_service", methods=['GET', 'POST'])(save_feedback_s
 IVRFlow.route("/save_feedback", methods=['GET', 'POST'])(save_feedback)
 IVRFlow.route("/search", methods=['GET', 'POST'])(search)
 IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
+IVRFlow.route("/new_user", methods=['GET', 'POST'])(new_user)
 IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)
 IVRFlow.route("/privacy", methods=['GET', 'POST'])(get_privacy)
 IVRFlow.route("/authenticate/get_profile", methods=['GET', 'POST'])(get_profile)

@@ -8,7 +8,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from flaskapp.core.ivr_core import *
 from flaskapp.models.ivr_model import *
 from flaskapp.view_functions.authenticate import is_user_authenticated
-
+from playhouse.shortcuts import model_to_dict
 
 def voice_joined():
     """ Function for making joined call """
@@ -377,4 +377,9 @@ def get_profile():
     else:
         return message
 
-
+# http://127.0.0.1:5000/new_user?username=testuser&&type=patient&&timezone=US/Pacific&&calltime=5:30:00&&phone=123-456-789
+def new_user():
+    all_args = request.args.to_dict()
+    rec1 = Patient.create(**all_args)
+    rec1.save()
+    return {"success" : 200, "newuser" : model_to_dict(rec1)}
