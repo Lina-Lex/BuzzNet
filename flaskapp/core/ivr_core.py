@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Tuesday, October 5th 2021, 9:44:55 pm
+Last Modified: Tuesday, October 5th 2021, 9:52:09 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -227,10 +227,15 @@ def is_user_new(phone_number=''):
 
 
 def save_new_user(phone_number='', tab=''):
-    """ Function for saving NEW user in google spreadsheet
+    """Function for saving NEW user in google spreadsheet
     and ProstgreSQL database.
 
     Once objects are created this function sends notification email.
+
+    :param phone_number: phone number, defaults to ''
+    :type phone_number: str, optional
+    :param tab: sheet name for google docs, defaults to ''
+    :type tab: str, optional
     """
 
     cleaned_phone_number = cleanup_phone_number(phone_number)
