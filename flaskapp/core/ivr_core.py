@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 6:08:34 pm
+Last Modified: Tuesday, October 5th 2021, 9:44:55 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -33,6 +33,7 @@ import datetime
 import json
 from twilio.rest import Client as Client
 import os
+import logging
 from googleapiclient.discovery import build
 from flaskapp.models.storages import gs_users_existing, gs_users_calls
 from flaskapp.settings import *
@@ -44,6 +45,9 @@ from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_USERS_SHEET_NAME_EXISTING,
                                TWILIO_MAIN_PHONE_NUMBER
                                )
+
+
+logger = logging.getLogger(__name__)
 
 
 def out_bound_call (tel):
@@ -222,18 +226,45 @@ def is_user_new(phone_number=''):
     return not any([True for a in all_sheets if cleaned_phone_number == a[0]])
 
 
-def save_new_user(tel='', tab=''):
-    """ Function for saving NEW user in google spreadsheet"""
+def save_new_user(phone_number='', tab=''):
+    """ Function for saving NEW user in google spreadsheet
+    and ProstgreSQL database.
+
+    Once objects are created this function sends notification email.
+    """
+
+    cleaned_phone_number = cleanup_phone_number(phone_number)
 
     # --- store data to google spreadsheet ( TODO: drop gs support)
     gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing' else gs_users_calls
-    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
-    gs_proxy_sheet.append_row(new_row)
 
-    # --- store new user and related call 
-    # TODO: Save new user to postgres db (implementation)
+    # FIXME: Awkward and hardcoded values in new_row variable (changes needed)
+    new_row = [
+        cleaned_phone_number,'','','','','','','','','','','',
+        json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str),
+        '19258609793','19258609793'
+    ]
 
-    send_mail("NEW USER", phone=tel)
+    gs_proxy_sheet.append_row_to_sheet(new_row)
+    logger.info("Informational row about new user"
+                f"added to gspread: sheetname=({tab})")
+
+    # --- store new user and related call
+
+    try:
+        phone_obj = PhoneNumber.get_or_create(
+            phone_number=cleaned_phone_number
+        )
+        user_obj = User.get_or_create(phone_number=phone_obj)
+        logger.info(f"User object ({user_obj.id}) and "
+                    f"corresponding phone object ({phone_obj.id})"
+                    f"are created (phone: {phone_number}).")
+    except Exception as e:
+        logger.error(f"Exception raised during DB operation: {e}")
+
+    logger.info(f"Sending notification email for phone num.={phone_number}.")
+    send_mail("NEW USER", phone=phone_number)
+    logger.info(f"Notification email for phone num.={phone_number} was sent.")
 
 
 def save_data(col_name, value, tel):
