@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:07 pm
+Last Modified: Tuesday, October 5th 2021, 8:32:45 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,7 +26,7 @@ Copyright (c) 2021
 
 
 import os
-
+import flaskapp.setenvs
 # ---------- Twilio configuration ------------------
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
@@ -54,7 +54,7 @@ GOOGLE_SA_JSON_PATH = os.environ.get("GOOGLE_SA_JSON_PATH", "")
 # ---------- Google docs IDs -----------------------
 
 GOOGLE_USERS_SPREADSHEET_NAME = "Users"
-GOOGLE_USERS_SPREADSHEET_ID = ""
+GOOGLE_USERS_SPREADSHEET_ID = "1rmfzTtQnQwzZHhPciTFmKIXju2b_ScH5mVvXhG_mlkM"
 GOOGLE_USERS_SHEET_NAME_EXISTING = "Existing"
 GOOGLE_USERS_SHEET_NAME_CALLS = "Calls"
 
@@ -121,4 +121,4 @@ if ON_HEROKU:
 # ---------
 
 # Set to True for testing (use testing database)
-TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", True)
+TEST_ENVIRONMENT = "TEST_ENVIRONMENT" in os.environ
