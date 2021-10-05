@@ -18,7 +18,7 @@ Created Date: Sunday October 3rd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 10:49:12 pm
+Last Modified: Monday, October 4th 2021, 7:10:03 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -35,4 +35,4 @@ def test_cleanup_phone_number():
 
     with pytest.raises(ValueError):
         # Should raise an exception for malformed phone numbers
-        sample_phone_number('+1fsdr2135323423')
+        cleanup_phone_number('+1fsdr2135323423')
