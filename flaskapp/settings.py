@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Tuesday, October 5th 2021, 8:32:45 pm
+Last Modified: Wednesday, October 6th 2021, 9:40:10 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -85,6 +85,13 @@ POSTGRES_STALE_TIMEOUT = 300
 # Heroku specific settings
 POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 # --------------------------------------------------
+
+
+# ------------- Auth configuraion ------------------
+
+OTP_DURATION = os.environ.get('OTP_DURATION', 60)
+
+
 
 # -----------  Helper constants --------------------
 # True if we run the script on Heroku, otherwise False.
