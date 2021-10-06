@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 4th 2021, 10:32:14 am
+Last Modified: Wednesday, October 6th 2021, 10:17:40 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -92,6 +92,14 @@ class Reminder(BaseModel):
 
     class Meta:
         table_name = 'reminders'
+
+
+class OTPStorage(DatesMixin, BaseModel):
+    otp_password = CharField(max_length=15, default=)
+    phone_number = CharField(max_length=30)
+
+    class Meta:
+        table_name = 'otp_passwords'
 
 
 class SmartReminder(DatesMixin, BaseModel):
