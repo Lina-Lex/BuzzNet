@@ -18,7 +18,7 @@ Created Date: Thursday September 30th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:02:35 pm
+Last Modified: Wednesday, October 6th 2021, 9:48:28 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -44,6 +44,11 @@ class DatesMixin(BaseModel):
         default=datetime.datetime.now,
         null=True
     )
+
+    def save(self, *args, **kwargs):
+        self.update = datetime.datetime.now()
+        super().save(*args, **kwargs)
+        
 
 # NOTE:  Dynamic db-switching is absolutely unnecessary
 # However, this construction will be useful when testing
