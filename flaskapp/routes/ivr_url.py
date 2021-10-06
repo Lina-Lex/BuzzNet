@@ -1,5 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Saturday, October 2nd 2021, 3:00:29 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 from flask import Blueprint
-from flaskapp.view_functions.ivrflow import (
+from flaskapp.views.ivrflow import (
     username,
     check_client_type,
     save_client_type,
@@ -10,7 +37,7 @@ from flaskapp.view_functions.ivrflow import (
     save_blood_pressure,
     save_feedback_service,
     save_feedback,
-    search,
+    search_via_google,
     get_next_reminder,
     voice_joined,
     voice,
@@ -34,7 +61,7 @@ IVRFlow.route("/call_to_operator", methods=['GET', 'POST'])(call_to_operator)
 IVRFlow.route("/save_blood_pressure", methods=['GET', 'POST'])(save_blood_pressure)
 IVRFlow.route("/save_feedback_service", methods=['GET', 'POST'])(save_feedback_service)
 IVRFlow.route("/save_feedback", methods=['GET', 'POST'])(save_feedback)
-IVRFlow.route("/search", methods=['GET', 'POST'])(search)
+IVRFlow.route("/search", methods=['GET', 'POST'])(search_via_google)
 IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
 IVRFlow.route("/new_user", methods=['GET', 'POST'])(new_user)
 IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)

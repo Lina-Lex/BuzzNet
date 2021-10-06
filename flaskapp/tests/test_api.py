@@ -14,16 +14,42 @@ and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
 
-Created Date: Sunday September 26th 2021
+Created Date: Saturday October 2nd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:35 pm
+Last Modified: Saturday, October 2nd 2021, 2:56:01 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
+import time
+from flaskapp.views.ivrflow import get_term_cond, get_privacy
+from flaskapp import app
+from flask import Response
 
-from .otpstore import send_otp , verify_otp
-from .otpstore import purgeOtpDb
+
+def test_get_term_cond():
+    with app.app_context():
+        result = get_term_cond()
+    assert isinstance(result, Response) is True
+    assert result.status_code == 200
+
+
+def test_get_privacy():
+    with app.app_context():
+        result = get_privacy()
+    assert isinstance(result, Response) is True
+    assert result.status_code == 200
+
+
+def test_get_privacy_caching():
+    with app.app_context():
+        start = time.time()
+        result1 = get_privacy()
+        end = time.time()
+        result2 = get_privacy()
+        final = time.time()
+    assert final - end >= end - start
+    assert result1 == result2

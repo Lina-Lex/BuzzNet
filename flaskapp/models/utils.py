@@ -14,16 +14,29 @@ and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
 
-Created Date: Sunday September 26th 2021
+Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:35 pm
+Last Modified: Saturday, October 2nd 2021, 3:03:00 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
-from .otpstore import send_otp , verify_otp
-from .otpstore import purgeOtpDb
+from flaskapp.models.storages import postgres_db
+
+
+def create_tables(tables=None):
+    """Create specific tables if they do not exist
+
+    :param tables: a list of tables (items are subclasses of peewee.Model),
+                   defaults to None
+    :type tables: List[peewee.Model], optional
+    """
+
+    if tables:
+        with postgres_db:
+            postgres_db.create_tables(tables)
+

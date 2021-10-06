@@ -1,3 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Tuesday, October 5th 2021, 9:52:09 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 from oauth2client.service_account import ServiceAccountCredentials
 from supermemo2 import SMTwo
 import gspread
@@ -6,10 +33,21 @@ import datetime
 import json
 from twilio.rest import Client as Client
 import os
+import logging
 from googleapiclient.discovery import build
+from flaskapp.models.storages import gs_users_existing, gs_users_calls
 from flaskapp.settings import *
 from flaskapp.tools.util import *
-from flaskapp.models.ivr_model import *
+from flaskapp.models.ivr_models import *
+from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
+                               GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
+                               GOOGLE_USERS_SPREADSHEET_ID,
+                               GOOGLE_USERS_SHEET_NAME_EXISTING,
+                               TWILIO_MAIN_PHONE_NUMBER
+                               )
+
+
+logger = logging.getLogger(__name__)
 
 
 def out_bound_call (tel):
@@ -17,30 +55,28 @@ def out_bound_call (tel):
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    status = check_new_user(tel)
-    if (status != 'New'):
+    if is_user_new(tel):
         execution = client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
-            .create(to=tel, from_=main_number)
+            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
     else:
         execution = client.studio \
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
-            .create(to=tel, from_=main_number)
+            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
 def call_flow(flow_sid, tel=''):
     """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
     auth_token = os.environ['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
     if tel != '':
-        status = check_new_user(tel)
-        if (status != 'New'):
+        if is_user_new(tel):
             print (f'start call for existing User {tel}')
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
             # wait for getting data from studio flow
             steps = client.studio.flows(flow_sid) \
                 .executions(execution.sid) \
@@ -51,7 +87,7 @@ def call_flow(flow_sid, tel=''):
             execution = client.studio \
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
 
 
             # while len(steps) < 12:
@@ -73,7 +109,7 @@ def profile_detail():
     """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "Users"
     sheetName = "Existing"
@@ -123,7 +159,7 @@ def call_to_check_bld():
     execution = client.studio \
         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions \
-        .create(to='+16692419870', from_=main_number)
+        .create(to='+16692419870', from_=TWILIO_MAIN_PHONE_NUMBER)
 
     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions(execution.sid) \
@@ -162,7 +198,7 @@ def call_to_check_bld():
 
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), UP, DOWN]
@@ -174,50 +210,73 @@ def call_to_check_bld():
 
     sheet.append_row(new_row)
     time.sleep(5)
-def check_new_user(tel=''):
-    """ Function for checking type of User (NEW/EXISTING) """
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
-
-    spreadsheetName = "Users"
-    sheetName = "Existing"
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-    all_sheet = sheet.get_all_values()
-    phone_lst = []
-    for a in all_sheet:phone_lst.append(a[0])
-    tel_not_plus = str(tel[1:15])
-    if tel_not_plus in phone_lst:
-        return 'Exist'
-    else:
-        return 'New'
 
 
-def save_new_user(tel='', tab=''):
-    """ Function for saving NEW user in google spreadsheet"""
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+def is_user_new(phone_number=''):
+    """Check if the user already registered in the System
 
-    spreadsheetName = 'Users'
-    sheetName = tab
+    :param phone_number: User's phone number, defaults to ''
+    :type phone_number: str, optional
+    :return: False if the user already registered and True otherwise
+    :rtype: True or False
+    """
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
+    all_sheets = gs_users_existing.get_all_values()
+    cleaned_phone_number = phone_number.replace('+', '').strip()
+    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])
 
-    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
-    sheet.append_row(new_row)
-    send_mail("NEW USER", phone=tel)
+
+def save_new_user(phone_number='', tab=''):
+    """Function for saving NEW user in google spreadsheet
+    and ProstgreSQL database.
+
+    Once objects are created this function sends notification email.
+
+    :param phone_number: phone number, defaults to ''
+    :type phone_number: str, optional
+    :param tab: sheet name for google docs, defaults to ''
+    :type tab: str, optional
+    """
+
+    cleaned_phone_number = cleanup_phone_number(phone_number)
+
+    # --- store data to google spreadsheet ( TODO: drop gs support)
+    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing' else gs_users_calls
+
+    # FIXME: Awkward and hardcoded values in new_row variable (changes needed)
+    new_row = [
+        cleaned_phone_number,'','','','','','','','','','','',
+        json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str),
+        '19258609793','19258609793'
+    ]
+
+    gs_proxy_sheet.append_row_to_sheet(new_row)
+    logger.info("Informational row about new user"
+                f"added to gspread: sheetname=({tab})")
+
+    # --- store new user and related call
+
+    try:
+        phone_obj = PhoneNumber.get_or_create(
+            phone_number=cleaned_phone_number
+        )
+        user_obj = User.get_or_create(phone_number=phone_obj)
+        logger.info(f"User object ({user_obj.id}) and "
+                    f"corresponding phone object ({phone_obj.id})"
+                    f"are created (phone: {phone_number}).")
+    except Exception as e:
+        logger.error(f"Exception raised during DB operation: {e}")
+
+    logger.info(f"Sending notification email for phone num.={phone_number}.")
+    send_mail("NEW USER", phone=phone_number)
+    logger.info(f"Notification email for phone num.={phone_number} was sent.")
+
 
 def save_data(col_name, value, tel):
     """ Function for saving data to google spreadsheet """
     # PUT DATA TO SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -243,25 +302,25 @@ def save_data(col_name, value, tel):
             sheet.update_cell(row_num, col_num, value)
             break
 
-def google_search(search_term, api_key, cse_id, **kwargs):
-    """ Function for using Google Search API"""
-    service = build("customsearch", "v1", developerKey=api_key)
-    res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
-    return res['items']
-# def print_mars_photos():
-#     from redis import Redis
-#     from rq import Queue
-#
-#     from mars import get_mars_photo
-#
-#     q = Queue(connection=Redis())
-#
-#     print('Before')
-#     for i in range(10):
-#         #get_mars_photo(1 + i)
-#         q.enqueue(get_mars_photo, 1 + i)
-#     print('After')
-#print_mars_photos()
+
+def google_search(search_term):
+    """ Search a term using Google Custom Search Engine
+
+    :param search_term: a term to search for;
+    :type search_term: str
+
+    NOTE
+    ----
+        see: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
+    """
+
+    service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+    res = service.cse().list(
+        q=search_term,
+        cx=GOOGLE_CSE_ID,
+        num=GOOGLE_CSE_MAX_NUM
+    ).execute()
+    return res.get('items', '')
 
 
 def update_reminder(id):

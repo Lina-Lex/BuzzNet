@@ -1,14 +1,52 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Wednesday, October 6th 2021, 8:41:21 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 import os
+import gspread
+import datetime
+import json
+import functools
 from flask import request, jsonify, url_for
 from flask import Response
-from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
-from twilio.rest import Client as Client
-import gspread
+from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say
+from twilio.rest import Client
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskapp.core.ivr_core import *
-from flaskapp.models.ivr_model import *
 from flaskapp.view_functions.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
+from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
+                                    is_user_new, update_reminder)
+from flaskapp.models.ivr_models import User, SmartReminder, Reminder
+from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
+                                 getTemporaryUserData, get_txt_from_url
+                                 )
+
+from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
+                               GOOGLE_SA_JSON_PATH)
+
 
 def voice_joined():
     """ Function for making joined call """
@@ -26,7 +64,7 @@ def voice_joined():
                  'At your request, we will remind you to measure blood pressure or blood sugar, and we will collect this data for you. You can use them when you visit your doctor if needed. \n'
                  'We provide social support through friendly calls to friends and our operators. \n'
                  'After forwarding call you will access to our community.')
-        resp.dial(optional_number)
+        resp.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
         resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
         resp.hangup()
@@ -37,9 +75,8 @@ def voice():
     """ Function for answering from any call to Main Number of the IVR """
     resp = VoiceResponse()
     tel = request.values['From']
-    user = check_new_user(tel)
-    if user == 'Exist':
-        resp.dial(optional_number)
+    if not is_user_new(tel):
+        resp.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
         save_new_user(tel, 'Calls')
         gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
@@ -65,7 +102,7 @@ def username():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -74,7 +111,6 @@ def username():
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
     x = {}
     for row in rows:
@@ -91,7 +127,7 @@ def check_client_type():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -100,7 +136,6 @@ def check_client_type():
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    all_sheet = sheet.get_all_values()
     rows = sheet.get_all_records()
     x = {}
     for row in rows:
@@ -120,14 +155,13 @@ def save_client_type():
 
 def call_to_friend():
     """ Function for making call to the friend according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -180,14 +214,13 @@ def end_call():
 
 def call_to_operator():
     """ Function for making call to the operator according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -202,7 +235,7 @@ def call_to_operator():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {'operator': row.get('operator')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def save_blood_pressure():
@@ -216,7 +249,7 @@ def save_blood_pressure():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "health_metrics"
     sheetName = "blood_pressure"
@@ -226,7 +259,7 @@ def save_blood_pressure():
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback_service():
@@ -248,7 +281,7 @@ def save_feedback_service():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "feedback"
     sheetName = "service"
@@ -259,7 +292,7 @@ def save_feedback_service():
     sheet.append_row(new_row)
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback():
@@ -269,7 +302,7 @@ def save_feedback():
         phone = request.args.get('phone')
         msg = request.args.get('msg')
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
         client = gspread.authorize(creds)
         spreadsheetName = "feedback"
         sheetName = "service"
@@ -284,23 +317,28 @@ def save_feedback():
     return ('0')
 
 
-def search():
-    """ Function for answering search results on phrase from Client"""
+def search_via_google():
+    """ Prepare search results on the term provided by client
+
+    The function performs searching using Google Custom Search Engine,
+    returns #<GOOGLE_CSE_MAX_NUM> search items (see settings file)
+    and prepare the result for retrieving to an user.
+
+    Result is presented as a Flask's Response object
+    with the application/json mimetype.
+
+    """
+
     req = request.values
     req_str = req.get('str')
+    results = google_search(req_str)
 
-    results = google_search(req_str, my_api_key, my_cse_id, num=10)
-    it = 0
-    str = ''
-    for result in results:
-        # title=result.get('title')
-        res = result.get('snippet')
-        # name = result.get('displayLink')
-        str = str + f'{lst_num[it]} result: {res}".\n'
-        it = it + 1
-        if it == 3: break
-    x = {"search_result": str}
-    return (jsonify(x))
+    output = '\n'.join(
+        [f'{ORDINAL_NUMBERS[it]}. result: "{res}"'
+         for it, res in enumerate(results)]
+    )
+
+    return jsonify({"search_result": output})
 
 
 def get_next_reminder():
@@ -328,34 +366,23 @@ def get_next_reminder():
         update_reminder(s['reminder_id'])
         conn.commit()
     conn.close()
-    x = {"text": f' Lets listen interesting fact of the day...{result} ...Thank you.'}
-    return (jsonify(x))
+    return jsonify(
+        {
+            "text":
+            f' Lets listen interesting fact of the day...{result} ...Thank you.'
+        }
+    )
 
 
-def get_txt_from_url(url):
-    # import urllib  # the lib that handles the url stuff
-    # file = urllib.request.urlopen(url)
-    #
-    # for line in file:
-    #     decoded_line = line.decode("utf-8")
-    #     print(decoded_line)
-
-    import urllib
-    from bs4 import BeautifulSoup
-
-    html = urllib.request.urlopen(url).read()
-    soup = BeautifulSoup(html)
-    text = soup.get_text()
-
-    x = {"text1": text[0:15002], "text2": text[15002:30000]}
-    return (jsonify(x))
-
-
+@functools.cache
 def get_term_cond():
+    """ Returns terms and conditions represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
 
 
+@functools.cache
 def get_privacy():
+    """ Returns Privacy-policy document represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
 
 

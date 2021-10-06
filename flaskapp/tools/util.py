@@ -1,7 +1,35 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Sunday, October 3rd 2021, 10:51:50 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import datetime
+from flask import jsonify
 import pandas as pd
 from pytz import timezone
 import phonenumbers
@@ -9,12 +37,11 @@ from phonenumbers import geocoder
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.rest import Client
+from flaskapp.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 
 recipient_list = ['goandtodo@googlegroups.com']
 
 sender_mail = 'heartvoices.org@gmail.com'
-account_sid = os.environ['TWILIO_ACCOUNT_SID']
-auth_token = os.environ['TWILIO_AUTH_TOKEN']
 
 
 def send_mail(mail_type, phone, feedback=''):
@@ -85,7 +112,7 @@ def getTemporaryUserData():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     # add credentials to the account
     creds = ServiceAccountCredentials.from_json_keyfile_name('data/master_key.json', scope)
-    # authorize the clientsheet 
+    # authorize the clientsheet
     client = gspread.authorize(creds)
     # get the instance of the Spreadsheet
     sheet = client.open_by_url(
@@ -126,7 +153,7 @@ def call_duration_from_api(phone):
     twilio and sum up the duration for the day and return it.
     """
     if phone:
-        client = Client(account_sid, auth_token)
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         date = datetime.datetime.today()
         calls = client.calls.list(from_=str(phone),
                                   start_time_after=datetime.datetime(date.year, date.month, date.day, 0, 0, 0))
@@ -135,3 +162,43 @@ def call_duration_from_api(phone):
             duration += int(record.duration)
         return duration
     raise ValueError("No valid phone number found")
+
+
+def get_txt_from_url(url):
+    """Retrieve text from a given url and split it into two parts
+    wrapped as Flask response object
+
+    :param url: an url to read a text block from
+    :type url: str
+    :return: Flask Response object with application/json mimetype
+    :rtype: Flask Response object
+    """
+
+    import urllib
+    from bs4 import BeautifulSoup
+
+    # FIXME: What if .read take a long time to get the data... , or 404?
+    html = urllib.request.urlopen(url).read()
+    soup = BeautifulSoup(html)
+    text = soup.get_text()
+
+    # NOTE: Do we need to define these magic numbers in the config file, e.g. 15002?
+    return jsonify({"text1": text[0:15002], "text2": text[15002:30000]})
+
+
+def cleanup_phone_number(phone_number):
+    """Remove any punctuation signs from the phone number string
+
+    :param phone_number: raw phone number
+    :type phone_number: str
+
+    :return: cleaned phone number
+    :rtype: str
+    """
+
+    result = phone_number.replace(' ', '').replace('-', '').replace('+', '')
+    try:
+        int(result)
+    except Exception:
+        raise ValueError(f"Phone number {phone_number} couldn't be cleaned.")
+    return result
