@@ -18,31 +18,22 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:43 pm
+Last Modified: Wednesday, October 6th 2021, 9:38:46 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
-
 import random
-import string
-import math
-
-def generate_otp(otp_len = 6)-> str:
-    # generates a random string of numbers based on the provided length
-    val =[]
-    if otp_len > 9 or otp_len <= 0:
-        msg = f"Invalid otp length {otp_len}"
-        raise RuntimeError(msg)
-    for i in range(otp_len):
-        val.append(str(math.floor(random.random()*10)))
-    random.shuffle(val)
-    val.reverse()
-    random.shuffle(val)
-    return ''.join(val)
 
 
-def generateRandomeString():
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(10))
+def generate_otp(otp_len=6):
+    """ Generate One Time Password (OTP)
+
+    :param otp_len: OTP length, defaults to 6
+    :type otp_len: int, optional
+    :return: generated OTP
+    :rtype: str
+    """
+
+    return ''.join(str(random.randint(0, 9)) for _ in range(otp_len))
