@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Wednesday, October 6th 2021, 10:17:40 pm
+Last Modified: Thursday, October 7th 2021, 10:09:16 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -30,6 +30,7 @@ from peewee import (AutoField, TextField, DateTimeField,
                     IntegerField)
 
 from flaskapp.models.bases import BaseModel, DatesMixin
+from flaskapp.tools.authtools.authgen import generate_otp
 from playhouse.postgres_ext import BinaryJSONField
 
 
@@ -95,7 +96,7 @@ class Reminder(BaseModel):
 
 
 class OTPStorage(DatesMixin, BaseModel):
-    otp_password = CharField(max_length=15, default=)
+    otp_password = CharField(max_length=15, default=generate_otp)
     phone_number = CharField(max_length=30)
 
     class Meta:
