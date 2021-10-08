@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:02:28 pm
+Last Modified: Friday, October 8th 2021, 12:21:21 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,10 +26,16 @@ Copyright (c) 2021
 
 
 from flask import Blueprint
-from flaskapp.views.authenticate import get_otp,validate_otp
+from flaskapp.views.authenticate import send_otp, validate_otp
 
-Auth = Blueprint('Auth',__name__)
+Auth = Blueprint('Auth', __name__)
 
-Auth.route('/get_otp',methods=['POST'])(get_otp)
-Auth.route('/validate_otp',methods=['POST'])(validate_otp)
+
+# FIXME: endpoint /get_otp doesn't return any otp on response,
+# so, `get_otp` name isn't appropriate; Its about sending otp to the user,
+# and we should consider to rename get_otp to send_otp or something like this;
+# However, we have related mobile app which uses this OTP functionality,
+# so currently we need to leave this interface as is.
+Auth.route('/get_otp', methods=['POST'])(send_otp)
+Auth.route('/validate_otp', methods=['POST'])(validate_otp)
 
