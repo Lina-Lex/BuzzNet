@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Wednesday, October 6th 2021, 9:40:10 pm
+Last Modified: Friday, October 8th 2021, 10:35:34 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -90,7 +90,7 @@ POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 # ------------- Auth configuraion ------------------
 
 OTP_DURATION = os.environ.get('OTP_DURATION', 60)
-
+OTP_PASSWORD_LENGTH = 6
 
 
 # -----------  Helper constants --------------------
