@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Thursday, October 7th 2021, 10:09:16 pm
+Last Modified: Friday, October 8th 2021, 7:12:35 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -29,6 +29,7 @@ from peewee import (AutoField, TextField, DateTimeField,
                     CharField, ForeignKeyField, FloatField,
                     IntegerField)
 
+from flaskapp.settings import OTP_PASSWORD_LENGTH
 from flaskapp.models.bases import BaseModel, DatesMixin
 from flaskapp.tools.authtools.authgen import generate_otp
 from playhouse.postgres_ext import BinaryJSONField
@@ -95,12 +96,32 @@ class Reminder(BaseModel):
         table_name = 'reminders'
 
 
-class OTPStorage(DatesMixin, BaseModel):
-    otp_password = CharField(max_length=15, default=generate_otp)
-    phone_number = CharField(max_length=30)
+class OTPPassword(DatesMixin, BaseModel):
+    """ Storage for OTP passwords """
+
+    id           = AutoField()                              # noqa: E221
+    phone_number = CharField(max_length=30)                 # noqa: E221
+    otp_password = CharField(                               # noqa: E221
+        max_length=15,
+        default=lambda x: generate_otp(OTP_PASSWORD_LENGTH)
+    )
 
     class Meta:
         table_name = 'otp_passwords'
+
+
+class UsersKeypair(BaseModel):
+    """Storage for private and public keys associated with the User
+    """
+
+    # TODO: Public and Private keys generator needed
+    id          = AutoField()                       # noqa: E221
+    private_key = CharField(null=False)
+    public_key  = CharField(null=False)             # noqa: E221
+    user        = ForeignKeyField(User, null=True)  # noqa: E221
+
+    class Meta:
+        table_name = 'users_keypairs'
 
 
 class SmartReminder(DatesMixin, BaseModel):
