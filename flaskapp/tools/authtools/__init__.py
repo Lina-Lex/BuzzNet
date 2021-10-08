@@ -18,12 +18,8 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:01:35 pm
+Last Modified: Friday, October 8th 2021, 11:59:31 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
-
-
-from .otpstore import send_otp , verify_otp
-from .otpstore import purgeOtpDb
