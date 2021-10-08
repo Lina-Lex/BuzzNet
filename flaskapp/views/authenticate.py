@@ -18,7 +18,7 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 8th 2021, 6:21:19 pm
+Last Modified: Friday, October 8th 2021, 7:20:06 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -40,7 +40,6 @@ def send_otp():
     :return: Raise Exception or return status dictionary
     :rtype: Any
     """
-    '''Phone number should be a string in format +<country code><number>'''
 
     if request.method == 'POST':
         try:
