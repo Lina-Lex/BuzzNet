@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 1:51:26 pm
+Last Modified: Saturday, October 9th 2021, 2:22:19 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -127,48 +127,43 @@ def call_flow(flow_sid, phone_number=''):
 
 
 def profile_detail():
-    """ Function for gathering profile information from the Client"""
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
-    spreadsheetName = "Users"
-    sheetName = "Existing"
+    """Function for gathering profile information from the Client
+    """
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-    #all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
+    def logged_call_flow(flow_sid, phone_number, what):
+        logger.info(f"Getting {what} from {phone_number}...")
+        call_flow(flow_sid, phone_number)
 
-    row_num = 0
-    for r in rows:
-        ph = r.get('Phone Number')
+    # FIXME: Should be moved to settings or somewhere else...
+    call_flow_mapper = {
+        'dob':    "FWa23b5f2570ae23e2e1d68448378af0d0",
+        'gender': "FWa23b5f2570ae23e2e1d68448378af0d0",
 
-        for v in r:
-            val = r.get(v)
-            if val == '':
-                if v in ('dob', 'gender'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FWa23b5f2570ae23e2e1d68448378af0d0', str(ph))
-                    break
-                elif v in ('weight', 'height'):
-                    print(f'getting {v} from {ph}')
-                    call_flow ('FW6661af875fa71bfcc36030d653e745ec', str(ph))
-                    break
-                elif v in ('activity', 'hobby'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FW8db981daac5317452c78944626de52ac', str(ph))
-                    break
-                elif v in ('time zone', 'call time'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FWac7f7be3dcc167fed511d4c08cf76f8c', str(ph))
-                    break
-                elif v in ('emergency phone', 'emergency name'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FW21a0b56a4c5d0d9635f9f86616036b9c', str(ph))
-                    break
+        'weight': "FW6661af875fa71bfcc36030d653e745ec",
+        'height': "FW6661af875fa71bfcc36030d653e745ec",
+
+        'activity': "FW8db981daac5317452c78944626de52ac",
+        'hobby':    "FW8db981daac5317452c78944626de52ac",
+
+        'time zone':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
+        'call time':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
+
+        'emergency phone': "FW21a0b56a4c5d0d9635f9f86616036b9c",
+        'emergency name':  "FW21a0b56a4c5d0d9635f9f86616036b9c"
+    }
+
+    for row in gs_users_existing.get_all_records():
+        phone_number = row.get('Phone Number')
+
+        for feature_name, value in row.items():
+            if not value:
+                flow_sid = call_flow_mapper.get(feature_name, '')
+                if flow_sid:
+                    logged_call_flow(flow_sid, phone_number, feature_name)
             else:
-                print(f'for {ph}:{v} is good')
+                logger.info(f'Value of {feature_name} for {phone_number}:\
+                    {value},  is already defined')
+
 
 def call_to_check_bld():
     """ Function for checking blood pressure and saving results to google spreadsheet """
