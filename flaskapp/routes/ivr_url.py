@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:00:29 pm
+Last Modified: Saturday, October 9th 2021, 12:43:03 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -44,7 +44,8 @@ from flaskapp.views.ivrflow import (
     after_call,
     get_term_cond,
     get_privacy,
-    get_profile
+    get_profile,
+    new_user
 )
 IVRFlow=Blueprint('IVRFlow',__name__)
 
