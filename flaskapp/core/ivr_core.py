@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Tuesday, October 5th 2021, 9:52:09 pm
+Last Modified: Saturday, October 9th 2021, 1:28:14 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -43,28 +43,35 @@ from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
                                GOOGLE_USERS_SPREADSHEET_ID,
                                GOOGLE_USERS_SHEET_NAME_EXISTING,
-                               TWILIO_MAIN_PHONE_NUMBER
+                               TWILIO_MAIN_PHONE_NUMBER,
+                               TWILIO_ACCOUNT_SID,
+                               TWILIO_AUTH_TOKEN
                                )
 
 
 logger = logging.getLogger(__name__)
 
 
-def out_bound_call (tel):
-    """ Function for making outbound call"""
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    if is_user_new(tel):
-        execution = client.studio \
+def out_bound_call(phone_number=''):
+    """ Function for making outbound call
+
+    :param phone_number: the phone number to call to, defaults to ''
+    :type phone_number: str
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    if is_user_new(phone_number):
+        client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
-            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
+            .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
     else:
-        execution = client.studio \
+        client.studio \
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
-            .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
+            .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+
+
 def call_flow(flow_sid, tel=''):
     """ Function for calling any flow from Twilio Studion """
     account_sid = os.environ['TWILIO_ACCOUNT_SID']
