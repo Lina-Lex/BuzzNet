@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 4th 2021, 10:32:34 am
+Last Modified: Saturday, October 9th 2021, 1:03:34 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,7 +26,7 @@ Copyright (c) 2021
 
 
 import pytest
-from flaskapp.models.ivr_models import (User,
+from flaskapp.models.ivr_models import (HealthMetric, User,
                                         Reminder,
                                         SmartReminder,
                                         Call,
@@ -36,10 +36,12 @@ from flaskapp.models.storages import postgres_db
 
 
 def test_create_and_drop_tables():
-    postgres_db.drop_tables([PhoneNumber, Reminder, SmartReminder, Call, User])
+    postgres_db.drop_tables([SmartReminder, HealthMetric,
+                             PhoneNumber, Reminder, Call, User])
     tables = postgres_db.get_tables()
     assert len(tables) == 0
-    create_tables([User, Call, PhoneNumber, Reminder, SmartReminder])
+    create_tables([User, Call, PhoneNumber, Reminder, SmartReminder,
+                   HealthMetric])
     tables_created = postgres_db.get_tables()
     assert 'users' in tables_created
     assert 'calls' in tables_created
