@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 1:28:14 pm
+Last Modified: Saturday, October 9th 2021, 1:51:26 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -60,58 +60,72 @@ def out_bound_call(phone_number=''):
     """
 
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    if is_user_new(phone_number):
+
+    # FIXME: I don't like hardcoded twilio flow ids; we need to
+    # handle this somehow
+
+    if not is_user_new(phone_number):
+        logger.info(
+            f"Put existing user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
+            phone number: {phone_number}"
+        )
         client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
             .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
     else:
+        logger.info(
+            f"Put new user to flow (id = FW21a0b56a4c5d0d9635f9f86616036b9c), \
+            phone number: {phone_number}"
+        )
         client.studio \
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
             .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
 
 
-def call_flow(flow_sid, tel=''):
-    """ Function for calling any flow from Twilio Studion """
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    if tel != '':
-        if is_user_new(tel):
-            print (f'start call for existing User {tel}')
+def call_flow(flow_sid, phone_number=''):
+    """Function for calling any flow from Twilio Studio
+
+    :param flow_sid: internal id of twilio flow
+    :type flow_sid: str
+    :param phone_number: a phone number to call to, defaults to ''
+    :type phone_number: str, optional
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    if phone_number:
+        if not is_user_new(phone_number):
+            logger.info(
+                    f"Put existing user to flow (id = {flow_sid}), \
+                    phone number: {phone_number}"
+                )
+
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
-                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
+                .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+
             # wait for getting data from studio flow
-            steps = client.studio.flows(flow_sid) \
+            client.studio.flows(flow_sid) \
                 .executions(execution.sid) \
                 .steps \
                 .list(limit=20)
         else:
-            print(f'start call for new User {tel}')
-            execution = client.studio \
+            logger.info(
+                    f"Put new user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
+                    phone number: {phone_number}"
+                )
+            client.studio \
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
-                .create(to=tel, from_=TWILIO_MAIN_PHONE_NUMBER)
+                .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+    else:
+        logger.warning("Empty phone number provided;\
+                       I am silent, but you should discover why...")
 
 
-            # while len(steps) < 12:
-            #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #         .executions(execution.sid) \
-            #         .steps \
-            #         .list(limit=20)
-            #     time.sleep(5)
-            #     print(len(steps))
-            #
-            # last_step_sid = steps[0].sid
-            # execution_step_context = client.studio \
-            #     .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #     .executions(execution.sid) \
-            #     .steps(last_step_sid) \
-            #     .step_context() \
-            #     .fetch()
 def profile_detail():
     """ Function for gathering profile information from the Client"""
     # check data in spreadsheet
