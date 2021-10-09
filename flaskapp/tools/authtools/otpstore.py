@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 8th 2021, 7:13:33 pm
+Last Modified: Saturday, October 9th 2021, 12:38:35 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -111,7 +111,7 @@ class OTPValidator:
         return verified
 
 
-def get_authentication(phone) -> Any:
+def get_authentication(phone):
     with sqlite3.connect('otp.db') as db:
         cursor = db.cursor()
         cursor.execute("SELECT Verify FROM otp_info WHERE Phone =?", (phone,))
