@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Wednesday, October 6th 2021, 8:41:21 pm
+Last Modified: Saturday, October 9th 2021, 12:37:58 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -35,7 +35,7 @@ from flask import Response
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say
 from twilio.rest import Client
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskapp.view_functions.authenticate import is_user_authenticated
+from flaskapp.views.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
