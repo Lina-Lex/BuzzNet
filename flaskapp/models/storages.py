@@ -18,7 +18,7 @@ Created Date: Wednesday September 29th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 4:56:11 pm
+Last Modified: Saturday, October 9th 2021, 1:53:50 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -108,6 +108,10 @@ class GoogleSpreadSheet:
     @ensure_gc_opened
     def get_all_value(self):
         return self.worksheet.get_all_values()
+
+    @ensure_gc_opened
+    def get_all_records(self):
+        return self.worksheet.get_all_records()
 
     @ensure_gc_opened
     def append_row_to_sheet(self, row):
