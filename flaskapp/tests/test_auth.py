@@ -18,7 +18,7 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Wednesday, October 6th 2021, 9:56:57 pm
+Last Modified: Saturday, October 9th 2021, 1:14:46 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -31,5 +31,5 @@ from flaskapp.tools.authtools.authgen import generate_otp
 def test_generate_otp():
     password = generate_otp(10)
     assert len(password) == 10
-    assert isinstance(password, str) is True
-    
+    assert isinstance(password, str)
+    assert password.isnumeric()
