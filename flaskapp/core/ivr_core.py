@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 1:15:39 pm
+Last Modified: Sunday, October 10th 2021, 1:54:00 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -39,7 +39,8 @@ from googleapiclient.discovery import build
 from flaskapp.models.storages import gs_users_existing, gs_users_calls
 from flaskapp.settings import *
 from flaskapp.tools.util import *
-from flaskapp.models.ivr_models import User, PhoneNumber, HealthMetric
+from flaskapp.models.ivr_models import (User, PhoneNumber, HealthMetric,
+                                        SmartReminder)
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
                                GOOGLE_USERS_SPREADSHEET_ID,
@@ -371,22 +372,30 @@ def google_search(search_term):
 
 
 def update_reminder(id):
+    """Update reminder by id
+
+    :param id: reminder's id
+    :type id: int
+    """
 
     # get smart reminder by ID
-    smr = SmartReminder.get(SmartReminder.id==id)
-    #smr = SmartReminder()
-    r = SMTwo.first_review(3)
-    if smr.last_time is None:
+    smart_reminder = SmartReminder.get(SmartReminder.id == id)
+
+    if smart_reminder.last_time is None:
         # first review
-        r = SMTwo.first_review(3)
-        print(r)
+        review = SMTwo.first_review(3)
     else:
         # next review
-        r = SMTwo(smr.easiness, smr.interval, smr.repetitions).review(3)
-        print(r)
-    smr.interval = r.interval
-    smr.easiness = r.easiness
-    smr.repetitions = r.repetitions
-    smr.last_time = datetime.datetime.now()
-    smr.next_time = r.review_date
-    smr.save()
+        review = SMTwo(
+            smart_reminder.easiness,
+            smart_reminder.interval,
+            smart_reminder.repetitions
+        ).review(3)
+
+    logger.info(f"Review: {review}")
+    smart_reminder.interval = review.interval
+    smart_reminder.easiness = review.easiness
+    smart_reminder.repetitions = review.repetitions
+    smart_reminder.last_time = datetime.datetime.now()
+    smart_reminder.next_time = review.review_date
+    smart_reminder.save()
