@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 8th 2021, 7:12:35 pm
+Last Modified: Sunday, October 10th 2021, 6:05:17 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -125,17 +125,22 @@ class UsersKeypair(BaseModel):
 
 
 class SmartReminder(DatesMixin, BaseModel):
-    id = AutoField()
-    patient  = ForeignKeyField(User, backref='smart_remainders')  # noqa: E221
-    reminder = ForeignKeyField(Reminder, backref='smart_remainders')
+    id          = AutoField()                                 # noqa: E221
+    patient     = ForeignKeyField(User,                       # noqa: E221
+                                  backref='smart_remainders')
+    reminder    = ForeignKeyField(Reminder,                   # noqa: E221
+                                  backref='smart_remainders')
 
-    easiness = FloatField(null=True)   # TODO: default value needed
+    easiness    = FloatField(null=True, default=2.3)          # noqa: E221
 
-    interval = IntegerField(column_name='interval', null=True)
+    interval    = IntegerField(column_name='interval',        # noqa: E221
+                               null=True)
     repetitions = IntegerField(column_name='repetitions', null=True)
 
-    last_time = DateTimeField(column_name='lasttime', null=True)
-    next_time = DateTimeField(column_name='nexttime', null=True)
+    last_time   = DateTimeField(column_name='lasttime',       # noqa: E221
+                                null=True)
+    next_time   = DateTimeField(column_name='nexttime',       # noqa: E221
+                                null=True)
 
     class Meta:
         table_name = 'smart_reminders'
