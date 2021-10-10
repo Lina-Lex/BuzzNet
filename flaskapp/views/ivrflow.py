@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 6:54:23 pm
+Last Modified: Sunday, October 10th 2021, 9:13:19 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -41,7 +41,8 @@ from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
 from flaskapp.models.ivr_models import User, SmartReminder, Reminder
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
-                                  getTemporaryUserData, get_txt_from_url)
+                                  getTemporaryUserData, get_txt_from_url,
+                                  cleanup_phone_number)
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
@@ -84,11 +85,12 @@ def after_call():
     """ Function for saving data after call to spreadsheet """
 
     voice_response = VoiceResponse()
-    req = request.values
+    request_values = request.values
     current_date = datetime.datetime.now()
-    for r in req:
-        save_data(r, req.get(r), req.get('phone'), date=current_date)
-    return str(voice_response)
+    phone_number = cleanup_phone_number(request_values.get('phone'))
+    for key, val in request_values.items():
+        save_data(key, val, phone_number, date=current_date)
+    return str(voice_response)   # FIXME: Do we really need to apply str here?
 
 
 def username():
