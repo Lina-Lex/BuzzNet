@@ -18,34 +18,31 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 2:06:55 pm
+Last Modified: Sunday, October 10th 2021, 2:42:13 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
-from oauth2client.service_account import ServiceAccountCredentials
 from supermemo2 import SMTwo
 import numpy as np
-import gspread
 import time
 import datetime
 import json
 from twilio.rest import Client
-import os
 import logging
 from googleapiclient.discovery import build
-from flaskapp.models.storages import gs_users_existing, gs_users_calls
+from flaskapp.models.storages import (gs_users_existing, gs_users_calls,
+                                      gs_health_metric_data)
 from flaskapp.tools.utils import cleanup_phone_number, send_mail
 from flaskapp.models.ivr_models import (User, PhoneNumber, HealthMetric,
                                         SmartReminder)
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
-                               GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
+                               GOOGLE_CSE_MAX_NUM,
                                TWILIO_MAIN_PHONE_NUMBER,
                                TWILIO_ACCOUNT_SID,
-                               TWILIO_AUTH_TOKEN
-                               )
+                               TWILIO_AUTH_TOKEN)
 
 
 logger = logging.getLogger(__name__)
@@ -164,12 +161,18 @@ def profile_detail():
                     {value},  is already defined')
 
 
+# FIXME: highly desirable to rename this function to something meaning...
+# update_blood_pressure etc.
 def call_to_check_bld():
-    """ Function for checking blood pressure and saving results to google spreadsheet """
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    # call studio flow from Python app
+    """Function for checking blood pressure and saving results to
+    google spreadsheet
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    # FIXME: All hardcoded flow ids should be placed to settings
+    # (or somewhere else) and called by human-readable names,
+    # e.g. MY_FLOW_THAT_DO_SOMETHING = 'flow_id'
 
     execution = client.studio \
         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
@@ -180,25 +183,18 @@ def call_to_check_bld():
         .executions(execution.sid) \
         .steps \
         .list(limit=20)
+
+    # FIXME: I don't understand what 20 and 12 magic numbers mean;
+    # These number should be defined in settings file,
+    # and have meaningful names
+
     while len(steps) < 12:
         steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
             .executions(execution.sid) \
             .steps \
             .list(limit=20)
-        time.sleep(5)
-        print(len(steps))
-    # sid = execution.sid
-    # execution_step = client.studio \
-    #                         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-    #                         .executions('FN76531ee7fcda3617d99bec690d915045') \
-    #                         .steps \
-    #                         .fetch()
-
-    # call specific Flow and Execution only for understanding and deveopment
-    # execution = client.studio \
-    #                   .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-    #                   .executions('FN76531ee7fcda3617d99bec690d915045') \
-    #                   .fetch()
+        time.sleep(5)  # NOTE: Do we really need this?
+        logger.info(f"The number of steps: {len(steps)}.")
 
     last_step_sid = steps[0].sid
     execution_step_context = client.studio \
@@ -208,23 +204,28 @@ def call_to_check_bld():
         .step_context() \
         .fetch()
 
-    UP = execution_step_context.context['flow']['variables'].get('UP')
-    DOWN = execution_step_context.context['flow']['variables'].get('DOWN')
+    # FIXME: I don't like 'UP' and 'DOWN' terms at all;
+    systolic_blood_pressure = \
+        execution_step_context.context['flow']['variables'].get('UP')
+    diastolic_blood_pressure = \
+        execution_step_context.context['flow']['variables'].get('DOWN')
 
-    # PUT DATA TO SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
+    # NOTE: probably we need some validation systolic and diastolic
+    # blood pressure values:
+    # 1) systolic > diastolic ;
+    # 2) systolic shouldn't be too low (e.g. 30 mm probably very low)
+    # 3) diastolic shouldn't be very high;
+    # 4) systolic shouldn't be very high, e.g. 250 mm is too high...
 
-    new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), UP, DOWN]
-    spreadsheetName = "Ekaterina"
-    sheetName = "Blood_Preassure"
+    # store data to gs-spreadsheet using proxy object
+    gs_health_metric_data.append_row_to_sheet([
+        json.dumps(datetime.datetime.now(),
+                   indent=4, sort_keys=True, default=str),
+        systolic_blood_pressure,
+        diastolic_blood_pressure
+    ])
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
-    sheet.append_row(new_row)
-    time.sleep(5)
+    time.sleep(5)  # NOTE: Is this really necessary (not sure...)
 
 
 def is_user_new(phone_number=''):
@@ -259,13 +260,14 @@ def save_new_user(phone_number='', tab=''):
     cleaned_phone_number = cleanup_phone_number(phone_number)
 
     # --- store data to google spreadsheet ( TODO: drop gs support)
-    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing' else gs_users_calls
+    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing'\
+        else gs_users_calls
 
     # FIXME: Awkward and hardcoded values in new_row variable (changes needed)
     new_row = [
-        cleaned_phone_number,'','','','','','','','','','','',
-        json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str),
-        '19258609793','19258609793'
+        cleaned_phone_number, '', '', '', '', '', '', '', '', '', '', '',
+        json.dumps(datetime.datetime.now(), indent=4, sort_keys=True,
+                   default=str), '19258609793', '19258609793'
     ]
 
     gs_proxy_sheet.append_row_to_sheet(new_row)

@@ -18,7 +18,7 @@ Created Date: Wednesday September 29th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 6:49:37 pm
+Last Modified: Sunday, October 10th 2021, 2:30:34 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -34,6 +34,8 @@ from flaskapp.settings import (
     GOOGLE_USERS_SHEET_NAME_EXISTING,
     GOOGLE_USERS_SHEET_NAME_CALLS,
     GOOGLE_USERS_SPREADSHEET_ID,
+    GOOGLE_HEALTH_DB_SPREADSHEET_ID,
+    GOOGLE_HEALTH_DB_SHEET_NAME,
     POSTGRESQL_DB_NAME,
     POSTGRESQL_HOST,
     POSTGRESQL_USER,
@@ -129,11 +131,18 @@ class GoogleSpreadSheet:
 gs_users_existing = GoogleSpreadSheet(
     GOOGLE_USERS_SPREADSHEET_ID,
     GOOGLE_USERS_SHEET_NAME_EXISTING
-    )
+)
 
 
 # interacts with users spreadsheet / Calls tab
 gs_users_calls = GoogleSpreadSheet(
     GOOGLE_USERS_SPREADSHEET_ID,
     GOOGLE_USERS_SHEET_NAME_CALLS
-    )
+)
+
+
+# stores blood pressure data
+gs_health_metric_data = GoogleSpreadSheet(
+    GOOGLE_HEALTH_DB_SPREADSHEET_ID,
+    GOOGLE_HEALTH_DB_SHEET_NAME
+)
