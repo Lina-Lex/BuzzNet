@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 12:43:03 pm
+Last Modified: Sunday, October 10th 2021, 9:24:27 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -27,7 +27,7 @@ Copyright (c) 2021
 
 from flask import Blueprint
 from flaskapp.views.ivrflow import (
-    username,
+    get_username,
     check_client_type,
     save_client_type,
     call_to_friend,
@@ -52,7 +52,7 @@ IVRFlow=Blueprint('IVRFlow',__name__)
 IVRFlow.route("/voice_joined", methods=['GET', 'POST'])(voice_joined)
 IVRFlow.route("/voice", methods=['GET', 'POST'])(voice)
 IVRFlow.route("/after_call", methods=['GET', 'POST'])(after_call)
-IVRFlow.route("/username", methods=['GET', 'POST'])(username)
+IVRFlow.route("/username", methods=['GET', 'POST'])(get_username)
 IVRFlow.route("/check_client_type", methods=['GET', 'POST'])(check_client_type)
 IVRFlow.route("/save_client_type", methods=['GET', 'POST'])(save_client_type)
 IVRFlow.route("/call_to_friend", methods=['GET', 'POST'])(call_to_friend)

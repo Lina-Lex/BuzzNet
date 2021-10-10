@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 9:13:19 pm
+Last Modified: Sunday, October 10th 2021, 9:28:11 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -39,10 +39,11 @@ from flaskapp.views.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
-from flaskapp.models.ivr_models import User, SmartReminder, Reminder
+from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
                                   getTemporaryUserData, get_txt_from_url,
                                   cleanup_phone_number)
+from flaskapp.models.storages import gs_users_existing
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
@@ -93,29 +94,25 @@ def after_call():
     return str(voice_response)   # FIXME: Do we really need to apply str here?
 
 
-def username():
+def get_username():
     """ Function for getting Name of the Client from google spreadsheet """
-    req = request.values
-    phone = req.get('phone')
 
-    # GET username from SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
-
-    spreadsheetName = "Users"
-    sheetName = "Existing"
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
-    rows = sheet.get_all_records()
-    x = {}
+    request_values = request.values
+    phone_number = cleanup_phone_number(request_values.get('phone'))
+    rows = gs_users_existing.get_all_records()
     for row in rows:
-        tel = row.get('Phone Number')
-        if phone == f'+{tel}':
+        # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
+        tel = cleanup_phone_number(row.get('Phone Number'))
+        if phone_number == tel:
             x = {"username": row.get('username')}
-    return (jsonify(x))
+
+    user = PhoneNumber.select().join(User).where(
+        PhoneNumber.number == phone_number
+    )
+
+    # FIXME: data from postgres have precedence
+    # should be removed when gs-support will be dropped
+    return jsonify(user.username or x)
 
 
 def check_client_type():
