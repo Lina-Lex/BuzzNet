@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 12:37:58 pm
+Last Modified: Sunday, October 10th 2021, 2:09:50 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -40,7 +40,7 @@ from playhouse.shortcuts import model_to_dict
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
 from flaskapp.models.ivr_models import User, SmartReminder, Reminder
-from flaskapp.tools.util import (send_mail, matchFromDf, TimeZoneHelper,
+from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
                                  getTemporaryUserData, get_txt_from_url
                                  )
 

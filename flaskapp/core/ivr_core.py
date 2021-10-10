@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 1:54:00 pm
+Last Modified: Sunday, October 10th 2021, 2:06:55 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -32,19 +32,16 @@ import gspread
 import time
 import datetime
 import json
-from twilio.rest import Client as Client
+from twilio.rest import Client
 import os
 import logging
 from googleapiclient.discovery import build
 from flaskapp.models.storages import gs_users_existing, gs_users_calls
-from flaskapp.settings import *
-from flaskapp.tools.util import *
+from flaskapp.tools.utils import cleanup_phone_number, send_mail
 from flaskapp.models.ivr_models import (User, PhoneNumber, HealthMetric,
                                         SmartReminder)
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
-                               GOOGLE_USERS_SPREADSHEET_ID,
-                               GOOGLE_USERS_SHEET_NAME_EXISTING,
                                TWILIO_MAIN_PHONE_NUMBER,
                                TWILIO_ACCOUNT_SID,
                                TWILIO_AUTH_TOKEN
@@ -240,8 +237,11 @@ def is_user_new(phone_number=''):
     """
 
     all_sheets = gs_users_existing.get_all_values()
-    cleaned_phone_number = phone_number.replace('+', '').strip()
-    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])
+    cleaned_phone_number = cleanup_phone_number(phone_number)
+    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])\
+        or not PhoneNumber.select().where(
+            PhoneNumber.number == cleaned_phone_number
+        ).exists()
 
 
 def save_new_user(phone_number='', tab=''):
@@ -359,7 +359,7 @@ def google_search(search_term):
 
     NOTE
     ----
-        see: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
+        see: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list   # noqa: E501
     """
 
     service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)

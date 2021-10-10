@@ -18,14 +18,14 @@ Created Date: Sunday October 3rd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 4th 2021, 7:10:03 pm
+Last Modified: Sunday, October 10th 2021, 2:09:44 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 import pytest
-from flaskapp.tools.util import cleanup_phone_number
+from flaskapp.tools.utils import cleanup_phone_number
 
 
 def test_cleanup_phone_number():
