@@ -18,13 +18,14 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 6:05:17 pm
+Last Modified: Sunday, October 10th 2021, 6:17:50 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
+import uuid
 from peewee import (AutoField, TextField, DateTimeField,
                     CharField, ForeignKeyField, FloatField,
                     IntegerField)
@@ -89,7 +90,7 @@ class HealthMetric(DatesMixin, BaseModel):
 
 
 class Reminder(BaseModel):
-    id   = AutoField()                      # noqa: E221
+    id   = AutoField()   # noqa: E221
     text = TextField(column_name='text', null=True)
 
     class Meta:
@@ -110,18 +111,17 @@ class OTPPassword(DatesMixin, BaseModel):
         table_name = 'otp_passwords'
 
 
-class UsersKeypair(BaseModel):
-    """Storage for private and public keys associated with the User
-    """
+class UserToken(DatesMixin, BaseModel):
+    """ Per-user token storage """
 
-    # TODO: Public and Private keys generator needed
     id          = AutoField()                       # noqa: E221
-    private_key = CharField(null=False)
-    public_key  = CharField(null=False)             # noqa: E221
     user        = ForeignKeyField(User, null=True)  # noqa: E221
+    token       = CharField(max_length=32,          # noqa: E221
+                            null=False,
+                            default=uuid.uuid4().hex)
 
     class Meta:
-        table_name = 'users_keypairs'
+        table_name = 'user_tokens'
 
 
 class SmartReminder(DatesMixin, BaseModel):
