@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 9:28:11 pm
+Last Modified: Sunday, October 10th 2021, 9:35:25 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -99,6 +99,8 @@ def get_username():
 
     request_values = request.values
     phone_number = cleanup_phone_number(request_values.get('phone'))
+
+    # TODO: gs-support should be dropped
     rows = gs_users_existing.get_all_records()
     for row in rows:
         # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
@@ -115,29 +117,28 @@ def get_username():
     return jsonify(user.username or x)
 
 
-def check_client_type():
-    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
-    req = request.values
-    phone = req.get('phone')
+def get_client_type():
+    """ Function for checking Type of the Client from google spreadsheet
+    (Client, Volunteer, Client and Volunteer, QA Engineer
+    """
 
-    # GET username from SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
+    request_values = request.values
+    phone_number = cleanup_phone_number(request_values.get('phone'))
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
-    rows = sheet.get_all_records()
-    x = {}
+    # TODO: gs-support should be dropped
+    rows = gs_users_existing.get_all_records()
     for row in rows:
-        tel = row.get('Phone Number')
-        if phone == f'+{tel}':
+        # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
+        tel = cleanup_phone_number(row.get('Phone Number'))
+        if phone_number == tel:
             x = {"type": row.get('type')}
-    return (jsonify(x))
+
+    user = PhoneNumber.select().join(User).where(
+        PhoneNumber.number == phone_number
+    )
+
+    # FIXME: should be changed when gs-support will be dropped
+    return jsonify(user.type or x)
 
 
 def save_client_type():

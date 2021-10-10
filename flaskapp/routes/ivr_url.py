@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 9:24:27 pm
+Last Modified: Sunday, October 10th 2021, 9:30:50 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -28,7 +28,7 @@ Copyright (c) 2021
 from flask import Blueprint
 from flaskapp.views.ivrflow import (
     get_username,
-    check_client_type,
+    get_client_type,
     save_client_type,
     call_to_friend,
     find_friend_timezone,
@@ -53,7 +53,7 @@ IVRFlow.route("/voice_joined", methods=['GET', 'POST'])(voice_joined)
 IVRFlow.route("/voice", methods=['GET', 'POST'])(voice)
 IVRFlow.route("/after_call", methods=['GET', 'POST'])(after_call)
 IVRFlow.route("/username", methods=['GET', 'POST'])(get_username)
-IVRFlow.route("/check_client_type", methods=['GET', 'POST'])(check_client_type)
+IVRFlow.route("/check_client_type", methods=['GET', 'POST'])(get_client_type)
 IVRFlow.route("/save_client_type", methods=['GET', 'POST'])(save_client_type)
 IVRFlow.route("/call_to_friend", methods=['GET', 'POST'])(call_to_friend)
 IVRFlow.route("/find_friend_timezone", methods=['GET', 'POST'])(find_friend_timezone)
