@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 2:22:19 pm
+Last Modified: Sunday, October 10th 2021, 1:15:39 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -27,6 +27,7 @@ Copyright (c) 2021
 
 from oauth2client.service_account import ServiceAccountCredentials
 from supermemo2 import SMTwo
+import numpy as np
 import gspread
 import time
 import datetime
@@ -38,7 +39,7 @@ from googleapiclient.discovery import build
 from flaskapp.models.storages import gs_users_existing, gs_users_calls
 from flaskapp.settings import *
 from flaskapp.tools.util import *
-from flaskapp.models.ivr_models import *
+from flaskapp.models.ivr_models import User, PhoneNumber, HealthMetric
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM, GOOGLE_SA_JSON_PATH,
                                GOOGLE_USERS_SPREADSHEET_ID,
@@ -288,35 +289,65 @@ def save_new_user(phone_number='', tab=''):
     logger.info(f"Notification email for phone num.={phone_number} was sent.")
 
 
-def save_data(col_name, value, tel):
-    """ Function for saving data to google spreadsheet """
-    # PUT DATA TO SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
-    client = gspread.authorize(creds)
+def save_data_to_postgres(feature_name, value, phone_number, date):
+    """Save data to Prostgres database
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
+    :param feature_name: feature name to be saved
+    :type feature_name: str
+    :param value: feature value to be stored
+    :type value: Any
+    :param phone_number: user's phone number
+    :type phone_number: str
+    """
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
+    query = \
+        PhoneNumber.select().join(User).where(
+            PhoneNumber.number == phone_number
+        )
 
-    all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
-    row_num = 0
-    for r in all_sheet:
-        row_num = row_num + 1
-        ph = r[0] #find the Phone Number
-        if tel == f'+{ph}':
-            break
+    first_occurrence = query.first()
 
-    col_num = 0
-    for c in all_sheet[0]:
-        col_num = col_num + 1
-        if col_name == c:
-            print(row_num, col_num, col_name, value)
-            sheet.update_cell(row_num, col_num, value)
-            break
+    if first_occurrence:
+        health_metric = HealthMetric.select().where(
+            (HealthMetric.user == first_occurrence.user) &
+            (HealthMetric.updated == date)
+        )
+        bson_field = health_metric.data
+        if bson_field.get(feature_name, None) is not None:
+            raise ValueError(f"Feature {feature_name} already defined "
+                             f"for phone={phone_number} at date={date}.")
+        else:
+            bson_field[feature_name] = value
+            health_metric.data = bson_field
+            health_metric.save()
+
+
+def save_data(col_name, value, phone_number, date=None):
+    """Function for saving data to google spreadsheet
+
+    :param col_name: column name in google spreadsheet
+    :type col_name: str
+    :param value: value to be stored
+    :type value: str
+    :param phone_number: user's phone number
+    :type phone_number: str
+    """
+
+    phone_number = cleanup_phone_number(phone_number)
+
+    # TODO: gs-support should be dropped
+    all_data = gs_users_existing.get_all_records()
+    all_data = np.array(all_data)
+    phone_num_index = np.argmax(all_data[:, 0] == phone_number)
+    col_name_index = np.argmax(all_data[0, :] == col_name)
+    gs_users_existing.update_cell(phone_num_index, col_name_index, value)
+
+    save_data_to_postgres(
+        col_name,
+        value,
+        phone_number,
+        date=date or datetime.datetime.now()
+    )
 
 
 def google_search(search_term):
