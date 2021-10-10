@@ -384,6 +384,7 @@ def new_user():
     rec1.save()
     return {"success" : 200, "newuser" : model_to_dict(rec1)}
 
+
 def unsubscribe():
     user_info = request.args.to_dict()
     ph = user_info.get('phone')
