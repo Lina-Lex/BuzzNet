@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 2:09:50 pm
+Last Modified: Sunday, October 10th 2021, 6:54:23 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -41,58 +41,54 @@ from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
 from flaskapp.models.ivr_models import User, SmartReminder, Reminder
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
-                                 getTemporaryUserData, get_txt_from_url
-                                 )
+                                  getTemporaryUserData, get_txt_from_url)
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
+from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING
 
 
 def voice_joined():
     """ Function for making joined call """
-    resp = VoiceResponse()
-    tel = request.form['From']
-    answer = request.form['SpeechResult']
-    if 'Yes' in answer:
-        save_new_user(tel, 'Existing')
-        resp.say('Thanks for joining us. \n'
-                 'We are glad to welcome you to our social network. \n'
-                 'Heart Voices is a unique platform where you can make friends with the same interests.\n'
-                 'With us, you can use Google search through your phone. \n'
-                 'You can take advantage of the unique smart reminder feature. \n'
-                 'Our system will remind you every day of important events for you, it can be a daily medication intake, the need to do something, or a reminder that you really want to learn a new language.\n'
-                 'At your request, we will remind you to measure blood pressure or blood sugar, and we will collect this data for you. You can use them when you visit your doctor if needed. \n'
-                 'We provide social support through friendly calls to friends and our operators. \n'
-                 'After forwarding call you will access to our community.')
-        resp.dial(TWILIO_OPT_PHONE_NUMBER)
+    voice_response = VoiceResponse()
+    phone_number = request.form['From']
+    answer = request.form['SpeechResult'].lower().strip()
+    if 'yes' in answer:
+        save_new_user(phone_number, 'Existing')
+        voice_response.say(THANKS_FOR_JOIN)
+        voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
-        resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
-        resp.hangup()
-    return (str(resp))
+        voice_response.say(f"We got your answer {answer}."
+                           "We hope you will back us later. Take care.")
+        voice_response.hangup()
+    return str(voice_response)
 
 
 def voice():
     """ Function for answering from any call to Main Number of the IVR """
-    resp = VoiceResponse()
-    tel = request.values['From']
-    if not is_user_new(tel):
-        resp.dial(TWILIO_OPT_PHONE_NUMBER)
+
+    voice_response = VoiceResponse()
+    phone_number = request.values['From']
+    if not is_user_new(phone_number):
+        voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
-        save_new_user(tel, 'Calls')
-        gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
-        gather.say(
-            'Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
-        resp.append(gather)
-    return str(resp)
+        save_new_user(phone_number, 'Calls')
+        gather = Gather(input='speech dtmf',
+                        action='/voice_joined', timeout=3, num_digits=1)
+        gather.say(WELCOME_GREETING)
+        voice_response.append(gather)
+    return str(voice_response)
 
 
 def after_call():
     """ Function for saving data after call to spreadsheet """
-    resp = VoiceResponse()
+
+    voice_response = VoiceResponse()
     req = request.values
+    current_date = datetime.datetime.now()
     for r in req:
-        save_data(r, req.get(r), req.get('phone'))
-    return str(resp)
+        save_data(r, req.get(r), req.get('phone'), date=current_date)
+    return str(voice_response)
 
 
 def username():
