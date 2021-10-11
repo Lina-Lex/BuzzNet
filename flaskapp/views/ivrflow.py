@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 9:35:25 pm
+Last Modified: Monday, October 11th 2021, 4:09:53 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -47,7 +47,7 @@ from flaskapp.models.storages import gs_users_existing
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
-from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING
+from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING, GOOD_BYE
 
 
 def voice_joined():
@@ -200,10 +200,9 @@ def find_friend_timezone():
 
 def end_call():
     """Thank user & hang up."""
+
     response = VoiceResponse()
-    response.say(
-        "Thank you for using the Heart Voices IVR System! " + "Your voice makes a difference. Goodbye."
-    )
+    response.say(GOOD_BYE)
     response.hangup()
     return Response(str(response), 200, mimetype="application/xml")
 
