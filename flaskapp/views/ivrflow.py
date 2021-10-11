@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 11th 2021, 4:09:53 pm
+Last Modified: Monday, October 11th 2021, 4:49:41 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -43,7 +43,7 @@ from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminde
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
                                   getTemporaryUserData, get_txt_from_url,
                                   cleanup_phone_number)
-from flaskapp.models.storages import gs_users_existing
+from flaskapp.models.storages import gs_users_existing, gs_health_metric_data
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
@@ -91,7 +91,7 @@ def after_call():
     phone_number = cleanup_phone_number(request_values.get('phone'))
     for key, val in request_values.items():
         save_data(key, val, phone_number, date=current_date)
-    return str(voice_response)   # FIXME: Do we really need to apply str here?
+    return str(voice_response)
 
 
 def get_username():
@@ -142,11 +142,26 @@ def get_client_type():
 
 
 def save_client_type():
-    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
-    resp = VoiceResponse()
-    req = request.values
-    save_data('type', req.get('client_type'), req.get('phone'))
-    return str(resp)
+    """Function for saving client type to google
+    spreadsheet and postgres
+
+    Client Types: Client, Volunteer,Client and Volunteer, QA Engineer
+
+    :return: VoiceReponse instance (empty xml-like document)
+    :rtype: str
+    """
+    voice_response = VoiceResponse()
+    request_values = request.values
+    date = datetime.datetime.now()
+
+    save_data(
+        'type',
+        request_values.get('client_type'),
+        request_values.get('phone'),
+        date=date
+    )
+
+    return str(voice_response)
 
 
 def call_to_friend():
@@ -250,6 +265,8 @@ def save_blood_pressure():
     sheetName = "blood_pressure"
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
+
+    
 
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
