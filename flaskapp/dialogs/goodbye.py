@@ -14,15 +14,16 @@ and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
 
-Created Date: Sunday October 10th 2021
+Created Date: Monday October 11th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 11th 2021, 3:52:05 pm
+Last Modified: Monday, October 11th 2021, 3:51:39 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
-from flaskapp.dialogs.greetings import THANKS_FOR_JOIN, WELCOME_GREETING
-from flaskapp.dialogs.goodbye import GOOD_BYE
+
+GOOD_BYE = """Thank you for using the Heart Voices IVR System!
+Your voice makes a difference. Goodbye."""
