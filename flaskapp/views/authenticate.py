@@ -18,7 +18,7 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 8th 2021, 7:20:06 pm
+Last Modified: Thursday, October 14th 2021, 7:25:02 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -93,7 +93,8 @@ def validate_otp():
         abort(405, "Only POST methods are allowed")
 
 
-def is_user_authenticated(phone) -> (bool, str):
+# TODO: should be removed in the nearest feature (currently, orphaned function)
+def is_user_authenticated(phone): # -> (bool, str): -- temporarily dropped, Tuple(bool, str)
     verify, message = None, None
     res = get_authentication(phone)
     if res is not None:
