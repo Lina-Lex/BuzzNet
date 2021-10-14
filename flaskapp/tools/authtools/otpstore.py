@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Thursday, October 14th 2021, 7:25:07 pm
+Last Modified: Thursday, October 14th 2021, 7:37:49 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -32,7 +32,7 @@ from flaskapp.settings import (OTP_DURATION,
                                TWILIO_AUTH_TOKEN,
                                TWILIO_MAIN_PHONE_NUMBER)
 from flaskapp.models.ivr_models import OTPPassword
-from flaskapp.tools.util import cleanup_phone_number
+from flaskapp.tools.utils import cleanup_phone_number
 from logging import getLogger
 
 logger = getLogger(__name__)
