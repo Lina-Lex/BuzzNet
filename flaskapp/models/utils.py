@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 2nd 2021, 3:03:00 pm
+Last Modified: Friday, October 15th 2021, 10:00:18 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,6 +26,9 @@ Copyright (c) 2021
 
 
 from flaskapp.models.storages import postgres_db
+from flaskapp.models.ivr_models import (User, UserToken, HealthMetric,
+                                        Call, SmartReminder, Reminder,
+                                        OTPPassword, PhoneNumber)
 
 
 def create_tables(tables=None):
@@ -40,3 +43,10 @@ def create_tables(tables=None):
         with postgres_db:
             postgres_db.create_tables(tables)
 
+
+def init_db():
+    """Create all necessary tables for the project
+    """
+
+    create_tables([User, UserToken, HealthMetric, Call, Reminder, SmartReminder,
+                   OTPPassword, PhoneNumber])
