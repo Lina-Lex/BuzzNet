@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 8:01:53 pm
+Last Modified: Friday, October 15th 2021, 11:13:35 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,9 +26,10 @@ Copyright (c) 2021
 
 import pytest
 import datetime
-from flaskapp.core.ivr_core import save_data_to_postgres
+from flaskapp.core.ivr_core import save_data_to_postgres, save_new_user
 from flaskapp.models.ivr_models import User, HealthMetric, PhoneNumber
 from flaskapp.models.utils import init_db, drop_all_tables
+from flaskapp.tools.utils import cleanup_phone_number
 
 
 @pytest.fixture(scope='module')
@@ -90,3 +91,24 @@ def test_save_data_to_postgres():
     assert hm_objs.count() == 2
     assert hm_objs[0].data['sbp'] in [100, 101]
     assert hm_objs[1].data['sbp'] in [100, 101]
+
+
+@pytest.mark.usefixtures("init_test_db")
+def test_save_new_user(mocker): # TODO: mocker doesn't work... 
+    def mocked_google_proxy_obj():
+        ...
+    mocked_google_proxy_obj.append_row_to_sheet = lambda x: None
+    mocker.patch(
+        'flaskapp.core.ivr_core.send_mail',
+        lambda x, y: None
+    )
+
+    mocker.patch(
+        'flaskapp.core.ivr_core.gs_users_existing',
+        mocked_google_proxy_obj
+    )
+    user_phone_number = "+123456"
+    save_new_user(phone_number=user_phone_number)
+    assert PhoneNumber.select().where(
+        PhoneNumber.number == cleanup_phone_number(user_phone_number)
+    ).exists()
