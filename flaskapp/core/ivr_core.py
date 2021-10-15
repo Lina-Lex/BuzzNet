@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 2:42:13 pm
+Last Modified: Friday, October 15th 2021, 3:57:07 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -295,6 +295,11 @@ def save_new_user(phone_number='', tab=''):
 def save_data_to_postgres(feature_name, value, phone_number, date):
     """Save data to Prostgres database
 
+    if feature_name is a field name of User model,
+    function override its value with new (value);
+    otherwise, it create related HealthMetric object
+    and save data to its bson field (data field).
+
     :param feature_name: feature name to be saved
     :type feature_name: str
     :param value: feature value to be stored
@@ -308,21 +313,43 @@ def save_data_to_postgres(feature_name, value, phone_number, date):
             PhoneNumber.number == phone_number
         )
 
-    first_occurrence = query.first()
+    if query.exists():
+        first_occurrence = query.first()
 
-    if first_occurrence:
+        # If feature_name is in User's field names, write its immediately
+        if feature_name in User._meta.sorted_field_names:
+            logger.info(
+                "Feature name is in User model; its value will be overriden. "
+                f"{feature_name} = {value}; phone_number = {phone_number}"
+            )
+            setattr(first_occurrence.user, feature_name, value)
+            first_occurrence.user.save()
+            return
+
         health_metric = HealthMetric.select().where(
             (HealthMetric.user == first_occurrence.user) &
             (HealthMetric.updated == date)
         )
-        bson_field = health_metric.data
+
+        if health_metric.exists():
+            health_obj = health_metric.first()
+        else:
+            health_obj = HealthMetric.create(user=first_occurrence.user,
+                                             date=datetime.datetime.now())
+
+        bson_field = health_obj.data
         if bson_field.get(feature_name, None) is not None:
             raise ValueError(f"Feature {feature_name} already defined "
-                             f"for phone={phone_number} at date={date}.")
+                             f"for phone={phone_number} for date={date}.")
         else:
             bson_field[feature_name] = value
-            health_metric.data = bson_field
-            health_metric.save()
+            health_obj.data = bson_field
+            health_obj.save()
+
+    else:
+        logger.error(f"Phone number ({phone_number}) is unknown;"
+                     f"couldn't associate data: {feature_name} = {value}.")
+
 
 
 def save_data(col_name, value, phone_number, date=None):
