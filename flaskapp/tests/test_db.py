@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 11:17:55 am
+Last Modified: Friday, October 15th 2021, 11:44:29 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -41,7 +41,7 @@ def test_create_and_drop_tables():
     assert len(tables) == 0
     init_db()
     tables_created = postgres_db.get_tables()
-    assert len(tables) > 0
+    assert len(tables_created) > 0
     assert 'users' in tables_created
     assert 'calls' in tables_created
     assert 'reminders' in tables_created
