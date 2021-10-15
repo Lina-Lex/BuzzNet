@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 6:17:50 pm
+Last Modified: Friday, October 15th 2021, 10:07:33 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -39,11 +39,20 @@ from playhouse.postgres_ext import BinaryJSONField
 class User(DatesMixin, BaseModel):
     """ General user model """
 
+    STATUSES = (
+        ('A', 'Active'),
+        ('B', 'Blocked'),
+        ('D', 'Deleted')
+    )
+
     id        = AutoField()                             # noqa: E221
     username  = TextField(null=True)                    # noqa: E221
     gender    = CharField(max_length=1, null=True)      # noqa: E221
     timezone  = CharField(max_length=50, null=True)     # noqa: E221
     type      = CharField(max_length=1, null=True)      # noqa: E221
+    status    = CharField(max_length=1,                 # noqa: E221
+                          default='A',
+                          choices=STATUSES)
 
     class Meta:
         table_name = 'users'
