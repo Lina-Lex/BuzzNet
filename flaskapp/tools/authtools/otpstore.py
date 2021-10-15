@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Thursday, October 14th 2021, 7:37:49 pm
+Last Modified: Friday, October 15th 2021, 9:34:01 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -60,7 +60,7 @@ class OTPValidator:
                     from_=TWILIO_MAIN_PHONE_NUMBER,
                     body=message
                 )
-            except (TwilioRestException) as e:
+            except TwilioRestException as e:
                 logger.error(f'[X] Fatal error,[X] Detailed error:- ({e}) ')
                 return False
             except TwilioException as e:
