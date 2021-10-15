@@ -18,7 +18,7 @@ Created Date: Thursday September 30th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Wednesday, October 6th 2021, 9:48:28 pm
+Last Modified: Friday, October 15th 2021, 6:22:03 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -46,7 +46,7 @@ class DatesMixin(BaseModel):
     )
 
     def save(self, *args, **kwargs):
-        self.update = datetime.datetime.now()
+        self.updated = datetime.datetime.now()
         super().save(*args, **kwargs)
         
 
