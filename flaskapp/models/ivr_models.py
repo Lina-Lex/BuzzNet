@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 10:10:41 am
+Last Modified: Friday, October 15th 2021, 11:40:52 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -36,14 +36,15 @@ from flaskapp.tools.authtools.authgen import generate_otp
 from playhouse.postgres_ext import BinaryJSONField
 
 
-class User(DatesMixin, BaseModel):
-    """ General user model """
-
-    STATUSES = (
+USER_STATUSES = (
         ('A', 'Active'),
         ('B', 'Blocked'),
         ('D', 'Deleted')
     )
+
+
+class User(DatesMixin, BaseModel):
+    """ General user model """
 
     id        = AutoField()                             # noqa: E221
     username  = TextField(null=True)                    # noqa: E221
@@ -52,7 +53,7 @@ class User(DatesMixin, BaseModel):
     type      = CharField(max_length=1, null=True)      # noqa: E221
     status    = CharField(max_length=1,                 # noqa: E221
                           default='A',
-                          choices=User.STATUSES)        # noqa: F821
+                          choices=USER_STATUSES)
 
     class Meta:
         table_name = 'users'
