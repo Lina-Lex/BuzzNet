@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 4:08:25 pm
+Last Modified: Friday, October 15th 2021, 7:45:38 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -333,28 +333,30 @@ def save_data_to_postgres(
 
         health_metric = HealthMetric.select().where(
             (HealthMetric.user == first_occurrence.user) &
-            (HealthMetric.updated == date)
+            (HealthMetric.created == date)
         )
 
         if health_metric.exists():
             health_obj = health_metric.first()
         else:
-            health_obj = HealthMetric.create(user=first_occurrence.user,
-                                             date=datetime.datetime.now())
+            health_obj = HealthMetric.create(user=first_occurrence.user)
+            if date:
+                health_obj.created = date
 
         bson_field = health_obj.data
-        if bson_field.get(feature_name, None) is not None:
+        if bson_field and bson_field.get(feature_name, None) is not None:
             raise ValueError(f"Feature {feature_name} already defined "
                              f"for phone={phone_number} for date={date}.")
-        else:
+        elif bson_field is not None:
             bson_field[feature_name] = value
-            health_obj.data = bson_field
-            health_obj.save()
+        else:
+            bson_field = {feature_name: value}
+        health_obj.data = bson_field
+        health_obj.save()
 
     else:
         logger.error(f"Phone number ({phone_number}) is unknown;"
                      f"couldn't associate data: {feature_name} = {value}.")
-
 
 
 def save_data(col_name, value, phone_number, date=None):
