@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 4:07:40 pm
+Last Modified: Friday, October 15th 2021, 4:08:25 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -293,11 +293,11 @@ def save_new_user(phone_number='', tab=''):
 
 
 def save_data_to_postgres(
-    feature_name,
-    value,
-    phone_number,
-    date=datetime.datetime.now()
-    ):
+        feature_name,
+        value,
+        phone_number,
+        date=datetime.datetime.now()
+):
     """Save data to Prostgres database
 
     if feature_name is a field name of User model,
