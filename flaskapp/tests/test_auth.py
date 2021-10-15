@@ -18,14 +18,18 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 9th 2021, 1:14:46 pm
+Last Modified: Friday, October 15th 2021, 10:47:36 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
+import datetime
+from flaskapp.models.ivr_models import OTPPassword
 from flaskapp.tools.authtools.authgen import generate_otp
+from flaskapp.tools.authtools.otpstore import OTPValidator
+from flaskapp.tools.utils import cleanup_phone_number
 
 
 def test_generate_otp():
@@ -33,3 +37,46 @@ def test_generate_otp():
     assert len(password) == 10
     assert isinstance(password, str)
     assert password.isnumeric()
+
+
+def test_OTPValidator(mocker):
+    user_phone_number = '+1123456123'
+    cleaned_user_number = cleanup_phone_number(user_phone_number)
+
+    # ----  mock twilio-related method (we hope twilio works well)
+    def mock_send_message_by_twilio(self,  phone_number='',  message=''):
+        return True if phone_number.isnumeric() and message else False
+
+    mocker.patch(
+        'flaskapp.tools.authtools.otpstore.OTPValidator.send_message_by_twilio',  # noqa: E501
+        mock_send_message_by_twilio
+    )
+
+    # drop all OTPPassowrds with test phone number
+    OTPPassword.delete().where(
+        OTPPassword.phone_number == cleaned_user_number
+    )
+
+    otp_validator = OTPValidator()
+
+    pre_generation_time = datetime.datetime.now()
+    # --- Test send_otp method
+    assert otp_validator.send_otp(user_phone_number)
+
+    # --- Once send_otp method called, OTP-password instance should be created
+    assert OTPPassword.select().where(
+        OTPPassword.phone_number == cleaned_user_number
+    ).exists()
+
+    # --- creation date of the otp password should be in a specific interval
+    otp_query = OTPPassword.select().where(
+        OTPPassword.phone_number == cleaned_user_number &
+        OTPPassword.created > pre_generation_time &
+        OTPPassword.created < datetime.datetime.now()
+    )
+
+    assert otp_query.exists()
+
+    # --- test verify_otp helper method
+    otp_object = otp_query.first()
+    assert otp_validator.verify_otp(otp_object.otp_passowrd)
