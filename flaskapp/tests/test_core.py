@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 7:57:59 pm
+Last Modified: Friday, October 15th 2021, 8:01:53 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -33,9 +33,11 @@ from flaskapp.models.utils import init_db, drop_all_tables
 
 @pytest.fixture(scope='module')
 def init_test_db():
+    # SetUp...
     drop_all_tables()
     init_db()
     yield
+    # TearDown...
     drop_all_tables()
 
 
