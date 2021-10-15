@@ -18,18 +18,19 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 10:47:36 am
+Last Modified: Friday, October 15th 2021, 11:47:44 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
-
+import pytest
 import datetime
 from flaskapp.models.ivr_models import OTPPassword
 from flaskapp.tools.authtools.authgen import generate_otp
 from flaskapp.tools.authtools.otpstore import OTPValidator
 from flaskapp.tools.utils import cleanup_phone_number
+
 
 
 def test_generate_otp():
@@ -39,6 +40,7 @@ def test_generate_otp():
     assert password.isnumeric()
 
 
+@pytest.fixture
 def test_OTPValidator(mocker):
     user_phone_number = '+1123456123'
     cleaned_user_number = cleanup_phone_number(user_phone_number)
