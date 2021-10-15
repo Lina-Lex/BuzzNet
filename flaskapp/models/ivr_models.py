@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 10:07:33 am
+Last Modified: Friday, October 15th 2021, 10:10:41 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -52,7 +52,7 @@ class User(DatesMixin, BaseModel):
     type      = CharField(max_length=1, null=True)      # noqa: E221
     status    = CharField(max_length=1,                 # noqa: E221
                           default='A',
-                          choices=STATUSES)
+                          choices=User.STATUSES)        # noqa: F821
 
     class Meta:
         table_name = 'users'
