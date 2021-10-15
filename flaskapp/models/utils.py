@@ -18,7 +18,7 @@ Created Date: Friday October 1st 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 10:00:18 am
+Last Modified: Friday, October 15th 2021, 11:01:24 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -48,5 +48,13 @@ def init_db():
     """Create all necessary tables for the project
     """
 
-    create_tables([User, UserToken, HealthMetric, Call, Reminder, SmartReminder,
-                   OTPPassword, PhoneNumber])
+    create_tables([User, UserToken, HealthMetric, Call, Reminder,
+                   SmartReminder, OTPPassword, PhoneNumber])
+
+
+def drop_all_tables():
+    """Drop all tables related to the project
+    """
+
+    postgres_db.drop_tables([User, UserToken, HealthMetric, Call, Reminder,
+                             SmartReminder, OTPPassword, PhoneNumber])
