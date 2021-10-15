@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 7:48:20 pm
+Last Modified: Friday, October 15th 2021, 7:57:59 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -72,3 +72,19 @@ def test_save_data_to_postgres():
     # reload user (updated) instance from db
     user = type(user).get(user._pk_expr())
     assert user.type == 'S'
+
+
+    # Save health objects at different date
+    save_data_to_postgres(
+        'sbp',
+        101,
+        user_phone_number,
+        date=datetime.datetime.now()
+    )
+
+    hm_objs = HealthMetric.select().where(
+        (HealthMetric.user == user) & (HealthMetric.created >= current_date)
+    )
+    assert hm_objs.count() == 2
+    assert hm_objs[0].data['sbp'] in [100, 101]
+    assert hm_objs[1].data['sbp'] in [100, 101]
