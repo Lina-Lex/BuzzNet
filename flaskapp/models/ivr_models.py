@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 11:40:52 am
+Last Modified: Friday, October 15th 2021, 4:39:52 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -87,9 +87,9 @@ class Call(DatesMixin, BaseModel):
 
 
 class HealthMetric(DatesMixin, BaseModel):
-    id         = AutoField()               # noqa: E221
-    data       = BinaryJSONField()         # noqa: E221
-    user       = ForeignKeyField(          # noqa: E221
+    id         = AutoField()                 # noqa: E221
+    data       = BinaryJSONField(null=True)  # noqa: E221
+    user       = ForeignKeyField(            # noqa: E221
         User,
         backref='health_metrics',
         on_delete='CASCADE'
