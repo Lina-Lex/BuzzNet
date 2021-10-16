@@ -18,7 +18,7 @@ Created Date: Wednesday October 6th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 11:47:44 am
+Last Modified: Saturday, October 16th 2021, 8:26:20 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -32,16 +32,14 @@ from flaskapp.tools.authtools.otpstore import OTPValidator
 from flaskapp.tools.utils import cleanup_phone_number
 
 
-
 def test_generate_otp():
     password = generate_otp(10)
     assert len(password) == 10
     assert isinstance(password, str)
     assert password.isnumeric()
 
-
 @pytest.fixture
-def test_OTPValidator(mocker):
+def test_OTPValidator(monkeypatch):
     user_phone_number = '+1123456123'
     cleaned_user_number = cleanup_phone_number(user_phone_number)
 
@@ -49,7 +47,7 @@ def test_OTPValidator(mocker):
     def mock_send_message_by_twilio(self,  phone_number='',  message=''):
         return True if phone_number.isnumeric() and message else False
 
-    mocker.patch(
+    monkeypatch.setattr(
         'flaskapp.tools.authtools.otpstore.OTPValidator.send_message_by_twilio',  # noqa: E501
         mock_send_message_by_twilio
     )

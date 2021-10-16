@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 11:13:35 pm
+Last Modified: Saturday, October 16th 2021, 8:22:17 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -94,16 +94,20 @@ def test_save_data_to_postgres():
 
 
 @pytest.mark.usefixtures("init_test_db")
-def test_save_new_user(mocker): # TODO: mocker doesn't work... 
+def test_save_new_user(monkeypatch):
     def mocked_google_proxy_obj():
         ...
     mocked_google_proxy_obj.append_row_to_sheet = lambda x: None
-    mocker.patch(
+
+    def mocked_send_mail(msg, phone=''):
+        return True if msg and phone else False
+
+    monkeypatch.setattr(
         'flaskapp.core.ivr_core.send_mail',
-        lambda x, y: None
+        mocked_send_mail
     )
 
-    mocker.patch(
+    monkeypatch.setattr(
         'flaskapp.core.ivr_core.gs_users_existing',
         mocked_google_proxy_obj
     )
