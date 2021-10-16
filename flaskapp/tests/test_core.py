@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 16th 2021, 11:19:30 am
+Last Modified: Saturday, October 16th 2021, 11:33:39 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -29,7 +29,8 @@ import datetime
 import peewee
 from flaskapp.core.ivr_core import (save_data_to_postgres, save_new_user,
                                     update_reminder)
-from flaskapp.models.ivr_models import SmartReminder, User, HealthMetric, PhoneNumber
+from flaskapp.models.ivr_models import (Reminder, SmartReminder, User,
+                                        HealthMetric, PhoneNumber)
 from flaskapp.models.utils import init_db, drop_all_tables
 from flaskapp.tools.utils import cleanup_phone_number
 
@@ -132,11 +133,16 @@ def test_update_reminder():
     with pytest.raises(peewee.DoesNotExist):
         update_reminder(10)
 
-    smart_reminder = SmartReminder.create(easiness=2.6)
+    user = User.create()
+    reminder = Reminder.create()
+    smart_reminder = SmartReminder.create(
+        easiness=2.6, user=user, reminder=reminder
+    )
 
     assert smart_reminder.next_time is None
     update_reminder(smart_reminder.id)
 
-    # reload data after update
+    # reload data after update, something should change...
+    # (NOTE: probably need some more tests)
     smart_reminder = type(smart_reminder).get(smart_reminder._pk_expr())
     assert smart_reminder.next_time is not None
