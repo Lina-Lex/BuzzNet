@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 7:45:38 pm
+Last Modified: Saturday, October 16th 2021, 8:21:57 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -275,10 +275,9 @@ def save_new_user(phone_number='', tab=''):
                 f"added to gspread: sheetname=({tab})")
 
     # --- store new user and related call
-
     try:
         phone_obj = PhoneNumber.get_or_create(
-            phone_number=cleaned_phone_number
+            number=cleaned_phone_number
         )
         user_obj = User.get_or_create(phone_number=phone_obj)
         logger.info(f"User object ({user_obj.id}) and "
@@ -286,7 +285,6 @@ def save_new_user(phone_number='', tab=''):
                     f"are created (phone: {phone_number}).")
     except Exception as e:
         logger.error(f"Exception raised during DB operation: {e}")
-
     logger.info(f"Sending notification email for phone num.={phone_number}.")
     send_mail("NEW USER", phone=phone_number)
     logger.info(f"Notification email for phone num.={phone_number} was sent.")
