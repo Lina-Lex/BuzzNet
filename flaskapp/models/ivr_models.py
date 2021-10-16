@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Friday, October 15th 2021, 4:39:52 pm
+Last Modified: Saturday, October 16th 2021, 11:24:04 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -136,7 +136,7 @@ class UserToken(DatesMixin, BaseModel):
 
 class SmartReminder(DatesMixin, BaseModel):
     id          = AutoField()                                 # noqa: E221
-    patient     = ForeignKeyField(User,                       # noqa: E221
+    user        = ForeignKeyField(User,                       # noqa: E221
                                   backref='smart_remainders')
     reminder    = ForeignKeyField(Reminder,                   # noqa: E221
                                   backref='smart_remainders')
