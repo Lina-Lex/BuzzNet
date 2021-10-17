@@ -18,14 +18,14 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 10th 2021, 9:30:50 pm
+Last Modified: Sunday, October 17th 2021, 7:50:49 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
-from flask import Blueprint
+from flaskapp.routes.bluprints import TwilioBluprint, MobileAPIBluprint
 from flaskapp.views.ivrflow import (
     get_username,
     get_client_type,
@@ -47,24 +47,47 @@ from flaskapp.views.ivrflow import (
     get_profile,
     new_user
 )
-IVRFlow=Blueprint('IVRFlow',__name__)
 
-IVRFlow.route("/voice_joined", methods=['GET', 'POST'])(voice_joined)
-IVRFlow.route("/voice", methods=['GET', 'POST'])(voice)
-IVRFlow.route("/after_call", methods=['GET', 'POST'])(after_call)
-IVRFlow.route("/username", methods=['GET', 'POST'])(get_username)
-IVRFlow.route("/check_client_type", methods=['GET', 'POST'])(get_client_type)
-IVRFlow.route("/save_client_type", methods=['GET', 'POST'])(save_client_type)
-IVRFlow.route("/call_to_friend", methods=['GET', 'POST'])(call_to_friend)
-IVRFlow.route("/find_friend_timezone", methods=['GET', 'POST'])(find_friend_timezone)
-IVRFlow.route('/end_call', methods=['GET', 'POST'])(end_call)
-IVRFlow.route("/call_to_operator", methods=['GET', 'POST'])(call_to_operator)
-IVRFlow.route("/save_blood_pressure", methods=['GET', 'POST'])(save_blood_pressure)
-IVRFlow.route("/save_feedback_service", methods=['GET', 'POST'])(save_feedback_service)
-IVRFlow.route("/save_feedback", methods=['GET', 'POST'])(save_feedback)
-IVRFlow.route("/search", methods=['GET', 'POST'])(search_via_google)
-IVRFlow.route("/get_next_reminder", methods=['GET', 'POST'])(get_next_reminder)
-IVRFlow.route("/new_user", methods=['GET', 'POST'])(new_user)
-IVRFlow.route("/term_cond", methods=['GET', 'POST'])(get_term_cond)
-IVRFlow.route("/privacy", methods=['GET', 'POST'])(get_privacy)
-IVRFlow.route("/authenticate/get_profile", methods=['GET', 'POST'])(get_profile)
+IVRFlowBlueprint = TwilioBluprint('IVRFlowBlueprint', __name__)
+MobileBluprint = MobileAPIBluprint('MobileAPIBluprint', __name__)
+
+
+IVRFlowBlueprint.bulk_register(
+    (
+        voice_joined,
+        voice,
+        after_call,
+        get_username,
+        save_client_type,
+        find_friend_timezone,
+        end_call,
+        save_blood_pressure,
+        save_feedback_service
+    ),
+
+)
+
+
+MobileBluprint.bulk_register(
+    (
+        get_username,
+        get_client_type,
+        call_to_friend,
+        call_to_operator,
+        save_feedback,
+        search_via_google,
+        get_next_reminder,
+        new_user,
+        get_term_cond,
+        get_privacy,
+        get_profile
+    ),
+    {
+        'get_username': 'username',
+        'get_client_type': 'check_client_type',
+        'search_via_google': 'search',
+        'get_term_cond': 'term_cond',
+        'get_privacy': 'privacy',
+        'get_profile': '/authenticate/get_profile'
+    }
+)
