@@ -18,7 +18,7 @@ Created Date: Saturday October 2nd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 2:45:05 pm
+Last Modified: Sunday, October 17th 2021, 10:06:41 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -47,6 +47,13 @@ def client():
 def test_get_term_cond():
     result = get_term_cond()
     assert isinstance(result, Response) is True
+    assert result.status_code == 200
+
+
+def test_get_term_cond_request(client):
+    result = client.get(
+        url_for('MobileAPIBluprint.get_term_cond')
+    )
     assert result.status_code == 200
 
 
