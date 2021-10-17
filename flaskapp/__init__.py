@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 2:36:36 pm
+Last Modified: Sunday, October 17th 2021, 7:55:29 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,7 +26,7 @@ Copyright (c) 2021
 
 
 from flask import Flask
-from flaskapp.routes.ivr_url import IVRFlowBlueprint
+from flaskapp.routes.ivr_url import IVRFlowBlueprint, MobileBluprint
 from flaskapp.routes.auth import AuthBlueprint
 from flaskapp.routes.error_handlers import error_handler_factory
 
@@ -59,9 +59,10 @@ def create_app():
         )
 
     ###############################
-    ##### Register blueprients #####  noqa:266
+    ##### Register blueprients ##### noqa: E266
 
     app.register_blueprint(IVRFlowBlueprint)
+    app.register_blueprint(MobileBluprint)
     app.register_blueprint(AuthBlueprint, url_prefix='/authenticate')
 
     return app
