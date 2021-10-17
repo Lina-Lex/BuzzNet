@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 16th 2021, 8:21:57 am
+Last Modified: Saturday, October 16th 2021, 8:20:26 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -372,10 +372,11 @@ def save_data(col_name, value, phone_number, date=None):
 
     # TODO: gs-support should be dropped
     all_data = gs_users_existing.get_all_records()
-    all_data = np.array(all_data)
-    phone_num_index = np.argmax(all_data[:, 0] == phone_number)
-    col_name_index = np.argmax(all_data[0, :] == col_name)
-    gs_users_existing.update_cell(phone_num_index, col_name_index, value)
+    if all_data:
+        all_data = np.array(all_data)
+        phone_num_index = np.argmax(all_data[:, 0] == phone_number)
+        col_name_index = np.argmax(all_data[0, :] == col_name)
+        gs_users_existing.update_cell(phone_num_index, col_name_index, value)
 
     save_data_to_postgres(
         col_name,
