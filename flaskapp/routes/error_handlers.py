@@ -18,7 +18,7 @@ Created Date: Sunday October 17th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 2:35:43 pm
+Last Modified: Sunday, October 17th 2021, 8:07:16 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -36,6 +36,11 @@ def error_handler_factory(
     """
 
     def error_handler(error):
+        # NOTE: I completely don't unserstand why we need to return
+        # such dictionary and status code when error occurrs
+        # (it is too complex!);
+        # However, to retain the interface (probably, mobile app
+        # relies on it), I leave it as is.
         return {
             "status_code": status_code,
             "exit_code": exit_code,
