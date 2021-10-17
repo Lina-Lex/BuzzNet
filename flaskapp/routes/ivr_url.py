@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 8:15:52 pm
+Last Modified: Sunday, October 17th 2021, 8:19:47 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -63,7 +63,7 @@ MobileBluprint = MobileAPIBluprint('MobileAPIBluprint', __name__)
 IVRFlowBlueprint.after_request(ensure_twilio_voice_response)
 
 IVRFlowBlueprint.bulk_register(
-    (
+    *(
         voice_joined,
         voice,
         after_call,
@@ -79,7 +79,7 @@ IVRFlowBlueprint.bulk_register(
 
 
 MobileBluprint.bulk_register(
-    (
+    *(
         get_username,
         get_client_type,
         call_to_friend,

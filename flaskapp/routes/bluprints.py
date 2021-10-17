@@ -18,7 +18,7 @@ Created Date: Sunday October 17th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 8:16:00 pm
+Last Modified: Sunday, October 17th 2021, 9:30:18 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -43,9 +43,10 @@ class BaseBlueprint(Blueprint):
         """
         default_methods = ['GET', 'POST']
         for view in views:
-            methods = route_methods.get(view.__name__, default_methods)
-            url = route_urls.get(view.__name__, f"/{view.__name__}")
-            self.route(url, methods=methods)(view)
+            if callable(view):
+                methods = route_methods.get(view.__name__, default_methods)
+                url = route_urls.get(view.__name__, f"/{view.__name__}")
+                self.route(url, methods=methods)(view)
 
 
 class TwilioBluprint(BaseBlueprint):
