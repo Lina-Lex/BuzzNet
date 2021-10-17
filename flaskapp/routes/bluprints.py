@@ -18,7 +18,7 @@ Created Date: Sunday October 17th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 8:08:06 pm
+Last Modified: Sunday, October 17th 2021, 8:16:00 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -26,7 +26,6 @@ Copyright (c) 2021
 
 
 from flask import Blueprint
-from twilio.twiml.voice_response import VoiceResponse
 
 
 class BaseBlueprint(Blueprint):
@@ -51,15 +50,6 @@ class BaseBlueprint(Blueprint):
 
 class TwilioBluprint(BaseBlueprint):
     ...
-
-
-def ensure_twilio_voice_response(response):
-    if not response.get_data(as_text=True).strip():
-        response.set_data(str(VoiceResponse()))
-    return response
-
-
-TwilioBluprint.after_request(ensure_twilio_voice_response)
 
 
 class MobileAPIBluprint(BaseBlueprint):
