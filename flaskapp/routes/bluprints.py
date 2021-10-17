@@ -18,7 +18,7 @@ Created Date: Sunday October 17th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 7:22:52 pm
+Last Modified: Sunday, October 17th 2021, 8:08:06 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -33,7 +33,7 @@ class BaseBlueprint(Blueprint):
     """Bluprint routes factory
     """
 
-    def bulk_register(self, *args, route_urls=dict(), route_methods=dict()):
+    def bulk_register(self, *views, route_urls=dict(), route_methods=dict()):
         """Bulk routes registeration
 
         :param route_urls: customize view url , defaults to dict()
@@ -43,7 +43,7 @@ class BaseBlueprint(Blueprint):
         :type route_methods: dict, optional
         """
         default_methods = ['GET', 'POST']
-        for view in args:
+        for view in views:
             methods = route_methods.get(view.__name__, default_methods)
             url = route_urls.get(view.__name__, f"/{view.__name__}")
             self.route(url, methods=methods)(view)
