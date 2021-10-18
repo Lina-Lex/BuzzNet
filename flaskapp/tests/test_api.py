@@ -18,7 +18,7 @@ Created Date: Saturday October 2nd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 10:06:41 pm
+Last Modified: Monday, October 18th 2021, 9:11:36 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -85,6 +85,8 @@ def test_save_client_type(monkeypatch):
         'flaskapp.core.ivr_core.gs_users_existing',
         mocked_google_proxy_obj
     )
+
+    # TODO: test is not completed
 
     # with app.app_context():
     #     save_client_url = url_for('save_client_type')
