@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 16th 2021, 11:24:04 am
+Last Modified: Tuesday, October 19th 2021, 9:35:54 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -42,13 +42,22 @@ USER_STATUSES = (
         ('D', 'Deleted')
     )
 
+GENDER_CHOICES = (
+    ('M', 'Man'),   # NOTE: May be male/female more appropriate?
+    ('W', 'Woman')
+)
+
 
 class User(DatesMixin, BaseModel):
     """ General user model """
 
     id        = AutoField()                             # noqa: E221
     username  = TextField(null=True)                    # noqa: E221
-    gender    = CharField(max_length=1, null=True)      # noqa: E221
+    gender    = CharField(                              # noqa: E221
+        max_length=1,
+        null=True,
+        choices=GENDER_CHOICES
+    )
     timezone  = CharField(max_length=50, null=True)     # noqa: E221
     type      = CharField(max_length=1, null=True)      # noqa: E221
     status    = CharField(max_length=1,                 # noqa: E221
