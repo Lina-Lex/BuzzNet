@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 11th 2021, 4:49:41 pm
+Last Modified: Monday, October 25th 2021, 8:56:51 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -422,3 +422,12 @@ def new_user():
     rec1 = Patient.create(**all_args)
     rec1.save()
     return {"success" : 200, "newuser" : model_to_dict(rec1)}
+
+
+def unsubscribe():
+    user_info = request.args.to_dict()
+    ph = user_info.get('phone')
+    del_row  = Patient.delete().where(Patient.phone == ph)
+    if del_row > 0:
+        return {"success":200,"message":"user unsubscribed"}
+    return {"message":"user not found","failed":400}

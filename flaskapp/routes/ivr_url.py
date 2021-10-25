@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 8:19:47 pm
+Last Modified: Monday, October 25th 2021, 8:57:17 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -46,7 +46,8 @@ from flaskapp.views.ivrflow import (
     get_term_cond,
     get_privacy,
     get_profile,
-    new_user
+    new_user,
+    unsubscribe
 )
 
 
@@ -88,6 +89,7 @@ MobileBluprint.bulk_register(
         search_via_google,
         get_next_reminder,
         new_user,
+        unsubscribe,
         get_term_cond,
         get_privacy,
         get_profile
