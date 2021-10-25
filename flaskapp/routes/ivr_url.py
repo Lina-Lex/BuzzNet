@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 25th 2021, 8:57:17 pm
+Last Modified: Monday, October 25th 2021, 9:39:53 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -63,8 +63,17 @@ MobileBluprint = MobileAPIBluprint('MobileAPIBluprint', __name__)
 
 IVRFlowBlueprint.after_request(ensure_twilio_voice_response)
 
+
+# Bulk registration of views is essintialy
+# possbile because in our case the url-enpoints have
+# the same names as function names, e.g.
+# voice_joined -> /voice_joined
+# voice        -> /voice
+# ... etc
+# However, this default behavior could be overriden
+# see the usege of MobileBlueprint.bulk_register.
+# See details in `bulk_register` docstring.
 IVRFlowBlueprint.bulk_register(
-    *(
         voice_joined,
         voice,
         after_call,
@@ -74,13 +83,10 @@ IVRFlowBlueprint.bulk_register(
         end_call,
         save_blood_pressure,
         save_feedback_service
-    ),
-
 )
 
 
 MobileBluprint.bulk_register(
-    *(
         get_username,
         get_client_type,
         call_to_friend,
@@ -92,14 +98,20 @@ MobileBluprint.bulk_register(
         unsubscribe,
         get_term_cond,
         get_privacy,
-        get_profile
-    ),
-    {
-        'get_username': 'username',
-        'get_client_type': 'check_client_type',
-        'search_via_google': 'search',
-        'get_term_cond': 'term_cond',
-        'get_privacy': 'privacy',
-        'get_profile': '/authenticate/get_profile'
-    }
+        get_profile,
+
+        # Some view names aren't the same as url-endpoint names,
+        # so we provide additional information in `route_urls`,
+        # i.e. `get_username` view function
+        # will be associated to `/username` enpoint,
+        # default behavior of `bulk_register` is overriden by
+        # mapping variable `route_urls`.
+        route_urls={
+            'get_username': 'username',
+            'get_client_type': 'check_client_type',
+            'search_via_google': 'search',
+            'get_term_cond': 'term_cond',
+            'get_privacy': 'privacy',
+            'get_profile': 'authenticate/get_profile'
+        }
 )
