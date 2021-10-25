@@ -18,7 +18,7 @@ Created Date: Friday October 15th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Saturday, October 16th 2021, 11:33:39 am
+Last Modified: Monday, October 25th 2021, 9:21:19 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -31,22 +31,7 @@ from flaskapp.core.ivr_core import (save_data_to_postgres, save_new_user,
                                     update_reminder)
 from flaskapp.models.ivr_models import (Reminder, SmartReminder, User,
                                         HealthMetric, PhoneNumber)
-from flaskapp.models.utils import init_db, drop_all_tables
 from flaskapp.tools.utils import cleanup_phone_number
-
-
-@pytest.fixture(scope='module')
-def init_test_db():
-    """Database initialization fixture
-
-    Executes once a time for all tests in this module.
-    """
-    # SetUp...
-    drop_all_tables()
-    init_db()
-    yield   # Here we started to execute tests
-    # TearDown...  # drop all test tables were created during tests
-    drop_all_tables()
 
 
 @pytest.mark.usefixtures("init_test_db")

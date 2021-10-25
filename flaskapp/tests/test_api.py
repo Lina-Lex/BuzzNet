@@ -18,7 +18,7 @@ Created Date: Saturday October 2nd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 18th 2021, 9:11:36 pm
+Last Modified: Monday, October 25th 2021, 9:28:40 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -27,20 +27,9 @@ Copyright (c) 2021
 
 import pytest
 import time
-from flaskapp.views.ivrflow import get_term_cond, get_privacy
-from flaskapp import create_app
+from flaskapp.views.ivrflow import get_term_cond, get_privacy, unsubscribe
+from flaskapp.models.ivr_models import User, PhoneNumber
 from flask import Response, url_for
-
-
-@pytest.fixture(scope='module')
-def client():
-    flask_app = create_app()
-
-    # Create a test client using the Flask application configured for testing
-    with flask_app.test_client() as testing_client:
-        # Establish an application context
-        with flask_app.app_context():
-            yield testing_client  # this is where the testing happens!
 
 
 @pytest.mark.usefixtures("client")
@@ -73,6 +62,12 @@ def test_get_privacy_caching():
     final = time.time()
     assert final - end >= end - start
     assert result1 == result2
+
+
+@pytest.mark.usefixtures("init_test_db", "client")
+def test_unsubscribe():
+    ...
+    # TODO: Should be implemented!
 
 
 def test_save_client_type(monkeypatch):
