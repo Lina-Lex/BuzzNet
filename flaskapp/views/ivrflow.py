@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 25th 2021, 8:56:51 pm
+Last Modified: Monday, October 25th 2021, 9:05:13 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -359,11 +359,11 @@ def get_next_reminder():
     tel = str(phone[1:15])  # exclude +
 
     # conn.connect()
-    # get Patient ID by the phone
-    pat = Patient.get(Patient.phone == tel)
+    # get User ID by the phone
+    pat = User.get(User.phone == tel)
     print(pat.id, pat.phone)
 
-    # get SmartReminders by Patient ID
+    # get SmartReminders by User ID
     # smr = SmartReminder.get(SmartReminder.id==pat.id)
     query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
     smr_selected = query.dicts().execute()
@@ -404,7 +404,7 @@ def get_profile():
     auth, message = is_user_authenticated(phone)
     print(auth, message)
     if auth:
-        pat = Patient.get(Patient.phone == phone)
+        pat = User.get(User.phone == phone)
         patient = dict()
         patient["Phone Number"] = pat.phone
         patient["time zone"] = pat.timezone
@@ -419,15 +419,15 @@ def get_profile():
 # http://127.0.0.1:5000/new_user?username=testuser&&type=patient&&timezone=US/Pacific&&calltime=5:30:00&&phone=123-456-789
 def new_user():
     all_args = request.args.to_dict()
-    rec1 = Patient.create(**all_args)
+    rec1 = User.create(**all_args)
     rec1.save()
-    return {"success" : 200, "newuser" : model_to_dict(rec1)}
+    return {"success": 200, "newuser": model_to_dict(rec1)}
 
 
 def unsubscribe():
     user_info = request.args.to_dict()
     ph = user_info.get('phone')
-    del_row  = Patient.delete().where(Patient.phone == ph)
+    del_row  = User.delete().where(User.phone == ph)
     if del_row > 0:
-        return {"success":200,"message":"user unsubscribed"}
-    return {"message":"user not found","failed":400}
+        return {"success": 200, "message": "user unsubscribed"}
+    return {"message": "user not found", "failed": 400}
