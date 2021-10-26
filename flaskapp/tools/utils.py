@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 3rd 2021, 10:51:50 pm
+Last Modified: Tuesday, October 26th 2021, 10:23:40 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -35,6 +35,7 @@ from pytz import timezone
 import phonenumbers
 from phonenumbers import geocoder
 import gspread
+from twilio.twiml.voice_response import VoiceResponse
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.rest import Client
 from flaskapp.settings import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
@@ -202,3 +203,12 @@ def cleanup_phone_number(phone_number):
     except Exception:
         raise ValueError(f"Phone number {phone_number} couldn't be cleaned.")
     return result
+
+
+def ensure_twilio_voice_response(response):
+    """Ensures that Twilio-related views returns valid VoiceResponse object
+    """
+
+    if not response.get_data(as_text=True).strip():
+        response.set_data(str(VoiceResponse()))
+    return response

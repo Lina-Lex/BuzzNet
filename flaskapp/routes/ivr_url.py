@@ -18,15 +18,15 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 25th 2021, 9:39:53 pm
+Last Modified: Tuesday, October 26th 2021, 10:22:36 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
-from twilio.twiml.voice_response import VoiceResponse
 from flaskapp.routes.bluprints import TwilioBluprint, MobileAPIBluprint
+from flaskapp.tools.utils import ensure_twilio_voice_response
 from flaskapp.views.ivrflow import (
     get_username,
     get_client_type,
@@ -49,12 +49,6 @@ from flaskapp.views.ivrflow import (
     new_user,
     unsubscribe
 )
-
-
-def ensure_twilio_voice_response(response):
-    if not response.get_data(as_text=True).strip():
-        response.set_data(str(VoiceResponse()))
-    return response
 
 
 IVRFlowBlueprint = TwilioBluprint('IVRFlowBlueprint', __name__)
