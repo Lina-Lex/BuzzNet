@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 18th 2021, 9:12:58 pm
+Last Modified: Tuesday, October 26th 2021, 10:43:03 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -66,6 +66,7 @@ def create_app():
     ###############################
     ##### Register blueprients ##### noqa: E266
 
+    # --  TODO: Investigate potential issues with app-context
     app.register_blueprint(IVRFlowBlueprint)
     app.register_blueprint(MobileBluprint)
     app.register_blueprint(AuthBlueprint, url_prefix='/authenticate')
