@@ -18,7 +18,7 @@ Created Date: Sunday October 17th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 8:07:16 pm
+Last Modified: Tuesday, October 26th 2021, 10:32:52 am
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -35,6 +35,7 @@ def error_handler_factory(
     """General error-handler factory for flaskapp
     """
 
+    # TODO: Probably major refactoring needed
     def error_handler(error):
         # NOTE: I completely don't unserstand why we need to return
         # such dictionary and status code when error occurrs
