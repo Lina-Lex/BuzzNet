@@ -421,8 +421,7 @@ def new_user():
     all_args = request.args.to_dict()
     rec1 = User.create(**all_args)
     rec1.save()
-    return {"success": 200, "newuser": model_to_dict(rec1)}
-
+    return {"success" : 200, "newuser" : model_to_dict(rec1)}
 
 def unsubscribe():
     user_info = request.args.to_dict()

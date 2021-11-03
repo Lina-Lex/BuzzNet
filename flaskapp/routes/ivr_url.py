@@ -2,7 +2,6 @@
 # -*- coding:utf-8 -*-
 """
 This file is a part of heartvoices.org project.
-
 The software embedded in or related to heartvoices.org
 is provided under a some-rights-reserved license. This means
 that Users are granted broad rights, including but not limited
@@ -13,7 +12,6 @@ inconsistent provisions of these Terms. In particular, heartvoices.org
 and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
-
 Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
