@@ -1,133 +1,178 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Monday, October 25th 2021, 9:05:13 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 import os
+import gspread
+import datetime
+import json
+import functools
 from flask import request, jsonify, url_for
 from flask import Response
-from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say, Client
-from twilio.rest import Client as Client
-import gspread
+from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say
+from twilio.rest import Client
 from oauth2client.service_account import ServiceAccountCredentials
-from flaskapp.core.ivr_core import *
-from flaskapp.models.ivr_model import *
-from flaskapp.view_functions.authenticate import is_user_authenticated
+from flaskapp.views.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
+from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
+                                    is_user_new, update_reminder)
+from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder
+from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
+                                  getTemporaryUserData, get_txt_from_url,
+                                  cleanup_phone_number)
+from flaskapp.models.storages import gs_users_existing, gs_health_metric_data
+
+from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
+                               GOOGLE_SA_JSON_PATH)
+from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING, GOOD_BYE
+
 
 def voice_joined():
     """ Function for making joined call """
-    resp = VoiceResponse()
-    tel = request.form['From']
-    answer = request.form['SpeechResult']
-    if 'Yes' in answer:
-        save_new_user(tel, 'Existing')
-        resp.say('Thanks for joining us. \n'
-                 'We are glad to welcome you to our social network. \n'
-                 'Heart Voices is a unique platform where you can make friends with the same interests.\n'
-                 'With us, you can use Google search through your phone. \n'
-                 'You can take advantage of the unique smart reminder feature. \n'
-                 'Our system will remind you every day of important events for you, it can be a daily medication intake, the need to do something, or a reminder that you really want to learn a new language.\n'
-                 'At your request, we will remind you to measure blood pressure or blood sugar, and we will collect this data for you. You can use them when you visit your doctor if needed. \n'
-                 'We provide social support through friendly calls to friends and our operators. \n'
-                 'After forwarding call you will access to our community.')
-        resp.dial(optional_number)
+    voice_response = VoiceResponse()
+    phone_number = request.form['From']
+    answer = request.form['SpeechResult'].lower().strip()
+    if 'yes' in answer:
+        save_new_user(phone_number, 'Existing')
+        voice_response.say(THANKS_FOR_JOIN)
+        voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
-        resp.say(f'We got your answer {answer}. We hope you will back us later. Take care.')
-        resp.hangup()
-    return (str(resp))
+        voice_response.say(f"We got your answer {answer}."
+                           "We hope you will back us later. Take care.")
+        voice_response.hangup()
+    return str(voice_response)
 
 
 def voice():
     """ Function for answering from any call to Main Number of the IVR """
-    resp = VoiceResponse()
-    tel = request.values['From']
-    user = check_new_user(tel)
-    if user == 'Exist':
-        resp.dial(optional_number)
+
+    voice_response = VoiceResponse()
+    phone_number = request.values['From']
+    if not is_user_new(phone_number):
+        voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
-        save_new_user(tel, 'Calls')
-        gather = Gather(input='speech dtmf', action='/voice_joined', timeout=3, num_digits=1)
-        gather.say(
-            'Welcome to Heart Voices ! We help people change their habits on their way to a healthy life without heart disease. Do you want to join us? Say yes or no.')
-        resp.append(gather)
-    return str(resp)
+        save_new_user(phone_number, 'Calls')
+        gather = Gather(input='speech dtmf',
+                        action='/voice_joined', timeout=3, num_digits=1)
+        gather.say(WELCOME_GREETING)
+        voice_response.append(gather)
+    return str(voice_response)
 
 
 def after_call():
     """ Function for saving data after call to spreadsheet """
-    resp = VoiceResponse()
-    req = request.values
-    for r in req:
-        save_data(r, req.get(r), req.get('phone'))
-    return str(resp)
+
+    voice_response = VoiceResponse()
+    request_values = request.values
+    current_date = datetime.datetime.now()
+    phone_number = cleanup_phone_number(request_values.get('phone'))
+    for key, val in request_values.items():
+        save_data(key, val, phone_number, date=current_date)
+    return str(voice_response)
 
 
-def username():
+def get_username():
     """ Function for getting Name of the Client from google spreadsheet """
-    req = request.values
-    phone = req.get('phone')
 
-    # GET username from SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+    request_values = request.values
+    phone_number = cleanup_phone_number(request_values.get('phone'))
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
-    all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
-    x = {}
+    # TODO: gs-support should be dropped
+    rows = gs_users_existing.get_all_records()
     for row in rows:
-        tel = row.get('Phone Number')
-        if phone == f'+{tel}':
+        # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
+        tel = cleanup_phone_number(row.get('Phone Number'))
+        if phone_number == tel:
             x = {"username": row.get('username')}
-    return (jsonify(x))
+
+    user = PhoneNumber.select().join(User).where(
+        PhoneNumber.number == phone_number
+    )
+
+    # FIXME: data from postgres have precedence
+    # should be removed when gs-support will be dropped
+    return jsonify(user.username or x)
 
 
-def check_client_type():
-    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
-    req = request.values
-    phone = req.get('phone')
+def get_client_type():
+    """ Function for checking Type of the Client from google spreadsheet
+    (Client, Volunteer, Client and Volunteer, QA Engineer
+    """
 
-    # GET username from SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+    request_values = request.values
+    phone_number = cleanup_phone_number(request_values.get('phone'))
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
-
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-
-    all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
-    x = {}
+    # TODO: gs-support should be dropped
+    rows = gs_users_existing.get_all_records()
     for row in rows:
-        tel = row.get('Phone Number')
-        if phone == f'+{tel}':
+        # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
+        tel = cleanup_phone_number(row.get('Phone Number'))
+        if phone_number == tel:
             x = {"type": row.get('type')}
-    return (jsonify(x))
+
+    user = PhoneNumber.select().join(User).where(
+        PhoneNumber.number == phone_number
+    )
+
+    # FIXME: should be changed when gs-support will be dropped
+    return jsonify(user.type or x)
 
 
 def save_client_type():
-    """ Function for checking Type of the Client from google spreadsheet (Client, Volunteer,Client and Volunteer, QA Engineer """
-    resp = VoiceResponse()
-    req = request.values
-    save_data('type', req.get('client_type'), req.get('phone'))
-    return str(resp)
+    """Function for saving client type to google
+    spreadsheet and postgres
+
+    Client Types: Client, Volunteer,Client and Volunteer, QA Engineer
+
+    :return: VoiceReponse instance (empty xml-like document)
+    :rtype: str
+    """
+    voice_response = VoiceResponse()
+    request_values = request.values
+    date = datetime.datetime.now()
+
+    save_data(
+        'type',
+        request_values.get('client_type'),
+        request_values.get('phone'),
+        date=date
+    )
+
+    return str(voice_response)
 
 
 def call_to_friend():
     """ Function for making call to the friend according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -170,24 +215,22 @@ def find_friend_timezone():
 
 def end_call():
     """Thank user & hang up."""
+
     response = VoiceResponse()
-    response.say(
-        "Thank you for using the Heart Voices IVR System! " + "Your voice makes a difference. Goodbye."
-    )
+    response.say(GOOD_BYE)
     response.hangup()
     return Response(str(response), 200, mimetype="application/xml")
 
 
 def call_to_operator():
     """ Function for making call to the operator according data in the spreadsheet """
-    resp = VoiceResponse()
 
     req = request.values
     phone = req.get('phone')
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
 
     spreadsheetName = "Users"
@@ -202,7 +245,7 @@ def call_to_operator():
         tel = row.get('Phone Number')
         if phone == f'+{tel}':
             x = {'operator': row.get('operator')}
-    return (jsonify(x))
+    return jsonify(x)
 
 
 def save_blood_pressure():
@@ -216,17 +259,19 @@ def save_blood_pressure():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "health_metrics"
     sheetName = "blood_pressure"
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
+    
+
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback_service():
@@ -248,7 +293,7 @@ def save_feedback_service():
 
     # GET username from SPREDASHEET
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
     client = gspread.authorize(creds)
     spreadsheetName = "feedback"
     sheetName = "service"
@@ -259,7 +304,7 @@ def save_feedback_service():
     sheet.append_row(new_row)
     send_mail("FEEDBACK", phone=phone, feedback=REurl)
 
-    return (str(resp))
+    return str(resp)
 
 
 def save_feedback():
@@ -269,7 +314,7 @@ def save_feedback():
         phone = request.args.get('phone')
         msg = request.args.get('msg')
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_SA_JSON_PATH, scope)
         client = gspread.authorize(creds)
         spreadsheetName = "feedback"
         sheetName = "service"
@@ -284,23 +329,28 @@ def save_feedback():
     return ('0')
 
 
-def search():
-    """ Function for answering search results on phrase from Client"""
+def search_via_google():
+    """ Prepare search results on the term provided by client
+
+    The function performs searching using Google Custom Search Engine,
+    returns #<GOOGLE_CSE_MAX_NUM> search items (see settings file)
+    and prepare the result for retrieving to an user.
+
+    Result is presented as a Flask's Response object
+    with the application/json mimetype.
+
+    """
+
     req = request.values
     req_str = req.get('str')
+    results = google_search(req_str)
 
-    results = google_search(req_str, my_api_key, my_cse_id, num=10)
-    it = 0
-    str = ''
-    for result in results:
-        # title=result.get('title')
-        res = result.get('snippet')
-        # name = result.get('displayLink')
-        str = str + f'{lst_num[it]} result: {res}".\n'
-        it = it + 1
-        if it == 3: break
-    x = {"search_result": str}
-    return (jsonify(x))
+    output = '\n'.join(
+        [f'{ORDINAL_NUMBERS[it]}. result: "{res}"'
+         for it, res in enumerate(results)]
+    )
+
+    return jsonify({"search_result": output})
 
 
 def get_next_reminder():
@@ -309,11 +359,11 @@ def get_next_reminder():
     tel = str(phone[1:15])  # exclude +
 
     # conn.connect()
-    # get Patient ID by the phone
-    pat = Patient.get(Patient.phone == tel)
+    # get User ID by the phone
+    pat = User.get(User.phone == tel)
     print(pat.id, pat.phone)
 
-    # get SmartReminders by Patient ID
+    # get SmartReminders by User ID
     # smr = SmartReminder.get(SmartReminder.id==pat.id)
     query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
     smr_selected = query.dicts().execute()
@@ -328,34 +378,23 @@ def get_next_reminder():
         update_reminder(s['reminder_id'])
         conn.commit()
     conn.close()
-    x = {"text": f' Lets listen interesting fact of the day...{result} ...Thank you.'}
-    return (jsonify(x))
+    return jsonify(
+        {
+            "text":
+            f' Lets listen interesting fact of the day...{result} ...Thank you.'
+        }
+    )
 
 
-def get_txt_from_url(url):
-    # import urllib  # the lib that handles the url stuff
-    # file = urllib.request.urlopen(url)
-    #
-    # for line in file:
-    #     decoded_line = line.decode("utf-8")
-    #     print(decoded_line)
-
-    import urllib
-    from bs4 import BeautifulSoup
-
-    html = urllib.request.urlopen(url).read()
-    soup = BeautifulSoup(html)
-    text = soup.get_text()
-
-    x = {"text1": text[0:15002], "text2": text[15002:30000]}
-    return (jsonify(x))
-
-
+@functools.cache
 def get_term_cond():
+    """ Returns terms and conditions represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
 
 
+@functools.cache
 def get_privacy():
+    """ Returns Privacy-policy document represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
 
 
@@ -365,7 +404,7 @@ def get_profile():
     auth, message = is_user_authenticated(phone)
     print(auth, message)
     if auth:
-        pat = Patient.get(Patient.phone == phone)
+        pat = User.get(User.phone == phone)
         patient = dict()
         patient["Phone Number"] = pat.phone
         patient["time zone"] = pat.timezone
@@ -380,16 +419,14 @@ def get_profile():
 # http://127.0.0.1:5000/new_user?username=testuser&&type=patient&&timezone=US/Pacific&&calltime=5:30:00&&phone=123-456-789
 def new_user():
     all_args = request.args.to_dict()
-    rec1 = Patient.create(**all_args)
+    rec1 = User.create(**all_args)
     rec1.save()
     return {"success" : 200, "newuser" : model_to_dict(rec1)}
-
 
 def unsubscribe():
     user_info = request.args.to_dict()
     ph = user_info.get('phone')
-    del_row  = Patient.delete().where(Patient.phone == ph)
+    del_row  = User.delete().where(User.phone == ph)
     if del_row > 0:
-        return {"success":200,"message":"user unsubscribed"}
-    return {"message":"user not found","failed":400}
-
+        return {"success": 200, "message": "user unsubscribed"}
+    return {"message": "user not found", "failed": 400}

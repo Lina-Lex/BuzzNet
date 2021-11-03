@@ -1,92 +1,118 @@
-from typing import Any
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
 
-from .authgen import generate_otp
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Friday, October 15th 2021, 9:34:01 am
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+import datetime
 from twilio.rest import Client
-import sqlite3
-import time
-from . import env
 from twilio.base.exceptions import TwilioRestException, TwilioException
+from flaskapp.settings import (OTP_DURATION,
+                               TWILIO_ACCOUNT_SID,
+                               TWILIO_AUTH_TOKEN,
+                               TWILIO_MAIN_PHONE_NUMBER)
+from flaskapp.models.ivr_models import OTPPassword
+from flaskapp.tools.utils import cleanup_phone_number
+from logging import getLogger
 
-with sqlite3.connect('otp.db') as con:  # can ise ":memory:" to run in mem
-    cur = con.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS otp_info (Phone TEXT PRIMARY KEY ,OTP,Exp_on,Verify)')
-    con.commit()
+logger = getLogger(__name__)
 
 
-def send_otp(to: str = None, sender: str = None, otp_len=6) -> bool:
-    otp = generate_otp(otp_len=otp_len)
-    if _map_otp(to, otp):
-        try:
-            client = Client(env.TWILIO_ACC_SID, env.TWILIO_AUTH_TOKEN)
-            message = client.messages.create(
-                to=to,
-                from_=env.SENDER_NUMBER,
-                body=f"Your One Time Password (OTP) is :- {otp}")
-        except (TwilioRestException) as e:
-            msg = f'[X] Fatal error,[X] Detailed error:- ({e}) '
-            raise RuntimeError(msg)
-        except TwilioException as e:
-            msg = f"unable to connect to message server :- {e}"
-            raise ConnectionError(msg)
-    else:
+class OTPValidator:
+    """ Helper class to perform OTP validation """
+
+    def send_message_by_twilio(self, phone_number='',  message=''):
+        """Send message using Twilio
+
+        :param phone_number: where to send the message, defaults to ''
+        :type phone_number: str, optional
+        :param message: what to send, defaults to ''
+        :type message: str, optional
+        :return: True -- message was succesfully sent, otherwise -- False
+        :rtype: bool
+        """
+
+        if message and phone_number:
+            try:
+                client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+                client.messages.create(
+                    to=phone_number,
+                    from_=TWILIO_MAIN_PHONE_NUMBER,
+                    body=message
+                )
+            except TwilioRestException as e:
+                logger.error(f'[X] Fatal error,[X] Detailed error:- ({e}) ')
+                return False
+            except TwilioException as e:
+                logger.error(f"unable to connect to message server :- {e}")
+                return False
+            return True
         return False
-    return True
+
+    def send_otp(self, phone_number=''):
+        """Send OTP to provided phone number
+
+        :param phone_number: phone number in the form +xxxx, defaults to ''
+        :type phone_number: str, optional
+        :return: True -- if OTP was succesfully sent, otherwise -- False
+        :rtype: bool
+        """
+
+        otp_object = OTPPassword.create(
+            phone_number=cleanup_phone_number(phone_number)
+        )
+        message = f"Your One Time Password (OTP) is: {otp_object.otp_password}"
+        return self.send_message_by_twilio(
+            phone_number='+' + otp_object.phone_number,
+            message=message
+        )
+
+    def verify_otp(self, otp_password='', phone_number=''):
+        """Verify OTP that was previously sent to the user
+
+        :param otp_password: otp to verify, defaults to ''
+        :type otp_password: str, optional
+        :param phone_number: phone to which otp was sent, defaults to ''
+        :type phone_number: str, optional
+        :return: True if OTP was verified, otherwise False
+        :rtype: bool
+        """
+
+        cleaned_phone_number = cleanup_phone_number(phone_number)
+        current_date = datetime.datetime.now()
+        time_delta = datetime.timedelta(seconds=OTP_DURATION)
+        verified = OTPPassword.select().where(
+            OTPPassword.phone_number == cleaned_phone_number &
+            OTPPassword.otp_password == otp_password &
+            OTPPassword.created >= current_date - time_delta).exists()
+
+        # TODO: When verified we need to create public/private keypair
+        # to sign all further requests to the api
+        return verified
 
 
-def verify_otp(otp: str = '', ph: str = '') -> bool:
-    with sqlite3.connect('otp.db') as db:
-        cur = db.cursor()
-        cur.execute("SELECT OTP , Exp_on FROM otp_info WHERE Phone = (?)", (ph,))
-        res = cur.fetchone()
-        if res:
-            print(res)
-            stored_otp, exp_time = res
-            curtime_stamp = _get_timestamp()
-            if curtime_stamp >= exp_time:
-                cur.execute("DELETE FROM otp_info where Phone=(?)", (ph,))
-                db.commit()
-                return False
-            elif stored_otp != str(otp):
-                return False
-            else:
-                verify = True
-                cur.execute('UPDATE otp_info SET Verify=(?) WHERE Phone =(?)', (verify, ph))
-                db.commit()
-                return True
-    return False
-
-
-def _map_otp(ph, otp):
-    curtime_stamp = _get_timestamp()
-    exp_on = curtime_stamp + env.OTP_DURATION
-    verify = False
-    with sqlite3.connect('otp.db') as db:
-        cur = db.cursor()
-        try:
-            cur.execute('INSERT INTO otp_info values(?,?,?,?)', (ph, otp, exp_on, verify))
-        except sqlite3.IntegrityError:
-            cur.execute('UPDATE otp_info SET  OTP=(?),Exp_on=(?),Verify=(?) WHERE Phone =(?)',
-                        (otp, exp_on, verify, ph))
-        db.commit()
-    return True
-
-
-def _get_timestamp():
-    return int(time.time())
-
-
-def purgeOtpDb():
-    curtime_stamp = _get_timestamp()
-    try:
-        with sqlite3.connect('otp.db') as db:
-            cur = db.cursor()
-            cur.execute("DELETE FROM otp_info WHERE Exp_on < (?)", (curtime_stamp,))
-            db.commit()
-    except sqlite3.Error as error:
-        print("Failed to delete multiple records with error : -- >> ", error)
-
-
-def get_authentication(phone) -> Any:
+# TODO: should be removed in the nearest feature (currently, orphaned function)
+def get_authentication(phone):
     with sqlite3.connect('otp.db') as db:
         cursor = db.cursor()
         cursor.execute("SELECT Verify FROM otp_info WHERE Phone =?", (phone,))

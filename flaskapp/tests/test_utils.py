@@ -14,28 +14,25 @@ and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
 
-Created Date: Sunday September 26th 2021
+Created Date: Sunday October 3rd 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 2:41:35 pm
+Last Modified: Sunday, October 10th 2021, 2:09:44 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
-
-from flask import Blueprint
-from flaskapp.views.authenticate import send_otp, validate_otp
-
-AuthBlueprint = Blueprint('Auth', __name__)
+import pytest
+from flaskapp.tools.utils import cleanup_phone_number
 
 
-# FIXME: endpoint /get_otp doesn't return any otp on response,
-# so, `get_otp` name isn't appropriate; Its about sending otp to the user,
-# and we should consider to rename get_otp to send_otp or something like this;
-# However, we have related mobile app which uses this OTP functionality,
-# so currently we need to leave this interface as is.
-AuthBlueprint.route('/get_otp', methods=['POST'])(send_otp)
-AuthBlueprint.route('/validate_otp', methods=['POST'])(validate_otp)
+def test_cleanup_phone_number():
+    # should be robust enough to cleanup such things as:
+    sample_phone_number = "+1-8--3-9  8 492-7-3-8  "
+    assert '18398492738' == cleanup_phone_number(sample_phone_number)
 
+    with pytest.raises(ValueError):
+        # Should raise an exception for malformed phone numbers
+        cleanup_phone_number('+1fsdr2135323423')

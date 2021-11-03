@@ -1,153 +1,200 @@
-from oauth2client.service_account import ServiceAccountCredentials
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+"""
+This file is a part of heartvoices.org project.
+
+The software embedded in or related to heartvoices.org
+is provided under a some-rights-reserved license. This means
+that Users are granted broad rights, including but not limited
+to the rights to use, execute, copy or distribute the software,
+to the extent determined by such license. The terms of such
+license shall always prevail upon conflicting, divergent or
+inconsistent provisions of these Terms. In particular, heartvoices.org
+and/or the software thereto related are provided under a GNU GPLv3 license,
+allowing Users to access and use the software’s source code.
+Terms and conditions: https://www.goandtodo.org/terms-and-conditions
+
+Created Date: Sunday September 26th 2021
+Author: GO and to DO Inc
+E-mail: heartvoices.org@gmail.com
+-----
+Last Modified: Saturday, October 16th 2021, 8:20:26 pm
+Modified By: GO and to DO Inc
+-----
+Copyright (c) 2021
+"""
+
+
 from supermemo2 import SMTwo
-import gspread
+import numpy as np
 import time
 import datetime
 import json
-from twilio.rest import Client as Client
-import os
+from twilio.rest import Client
+import logging
 from googleapiclient.discovery import build
-from flaskapp.settings import *
-from flaskapp.tools.util import *
-from flaskapp.models.ivr_model import *
+from flaskapp.models.storages import (gs_users_existing, gs_users_calls,
+                                      gs_health_metric_data)
+from flaskapp.tools.utils import cleanup_phone_number, send_mail
+from flaskapp.models.ivr_models import (User, PhoneNumber, HealthMetric,
+                                        SmartReminder)
+from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
+                               GOOGLE_CSE_MAX_NUM,
+                               TWILIO_MAIN_PHONE_NUMBER,
+                               TWILIO_ACCOUNT_SID,
+                               TWILIO_AUTH_TOKEN)
 
 
-def out_bound_call (tel):
-    """ Function for making outbound call"""
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    status = check_new_user(tel)
-    if (status != 'New'):
-        execution = client.studio \
+logger = logging.getLogger(__name__)
+
+
+def out_bound_call(phone_number=''):
+    """ Function for making outbound call
+
+    :param phone_number: the phone number to call to, defaults to ''
+    :type phone_number: str
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    # FIXME: I don't like hardcoded twilio flow ids; we need to
+    # handle this somehow
+
+    if not is_user_new(phone_number):
+        logger.info(
+            f"Put existing user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
+            phone number: {phone_number}"
+        )
+        client.studio \
             .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
             .executions \
-            .create(to=tel, from_=main_number)
+            .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
     else:
-        execution = client.studio \
+        logger.info(
+            f"Put new user to flow (id = FW21a0b56a4c5d0d9635f9f86616036b9c), \
+            phone number: {phone_number}"
+        )
+        client.studio \
             .flows('FW21a0b56a4c5d0d9635f9f86616036b9c') \
             .executions \
-            .create(to=tel, from_=main_number)
-def call_flow(flow_sid, tel=''):
-    """ Function for calling any flow from Twilio Studion """
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    if tel != '':
-        status = check_new_user(tel)
-        if (status != 'New'):
-            print (f'start call for existing User {tel}')
+            .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+
+
+def call_flow(flow_sid, phone_number=''):
+    """Function for calling any flow from Twilio Studio
+
+    :param flow_sid: internal id of twilio flow
+    :type flow_sid: str
+    :param phone_number: a phone number to call to, defaults to ''
+    :type phone_number: str, optional
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    if phone_number:
+        if not is_user_new(phone_number):
+            logger.info(
+                    f"Put existing user to flow (id = {flow_sid}), \
+                    phone number: {phone_number}"
+                )
+
             execution = client.studio \
                 .flows(flow_sid) \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+
             # wait for getting data from studio flow
-            steps = client.studio.flows(flow_sid) \
+            client.studio.flows(flow_sid) \
                 .executions(execution.sid) \
                 .steps \
                 .list(limit=20)
         else:
-            print(f'start call for new User {tel}')
-            execution = client.studio \
+            logger.info(
+                    f"Put new user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
+                    phone number: {phone_number}"
+                )
+            client.studio \
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
-                .create(to=tel, from_=main_number)
+                .create(to=phone_number, from_=TWILIO_MAIN_PHONE_NUMBER)
+    else:
+        logger.warning("Empty phone number provided;\
+                       I am silent, but you should discover why...")
 
 
-            # while len(steps) < 12:
-            #     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #         .executions(execution.sid) \
-            #         .steps \
-            #         .list(limit=20)
-            #     time.sleep(5)
-            #     print(len(steps))
-            #
-            # last_step_sid = steps[0].sid
-            # execution_step_context = client.studio \
-            #     .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-            #     .executions(execution.sid) \
-            #     .steps(last_step_sid) \
-            #     .step_context() \
-            #     .fetch()
 def profile_detail():
-    """ Function for gathering profile information from the Client"""
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
-    spreadsheetName = "Users"
-    sheetName = "Existing"
+    """Function for gathering profile information from the Client
+    """
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-    #all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
+    def logged_call_flow(flow_sid, phone_number, what):
+        logger.info(f"Getting {what} from {phone_number}...")
+        call_flow(flow_sid, phone_number)
 
-    row_num = 0
-    for r in rows:
-        ph = r.get('Phone Number')
+    # FIXME: Should be moved to settings or somewhere else...
+    call_flow_mapper = {
+        'dob':    "FWa23b5f2570ae23e2e1d68448378af0d0",
+        'gender': "FWa23b5f2570ae23e2e1d68448378af0d0",
 
-        for v in r:
-            val = r.get(v)
-            if val == '':
-                if v in ('dob', 'gender'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FWa23b5f2570ae23e2e1d68448378af0d0', str(ph))
-                    break
-                elif v in ('weight', 'height'):
-                    print(f'getting {v} from {ph}')
-                    call_flow ('FW6661af875fa71bfcc36030d653e745ec', str(ph))
-                    break
-                elif v in ('activity', 'hobby'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FW8db981daac5317452c78944626de52ac', str(ph))
-                    break
-                elif v in ('time zone', 'call time'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FWac7f7be3dcc167fed511d4c08cf76f8c', str(ph))
-                    break
-                elif v in ('emergency phone', 'emergency name'):
-                    print(f'getting {v} from {ph}')
-                    call_flow('FW21a0b56a4c5d0d9635f9f86616036b9c', str(ph))
-                    break
+        'weight': "FW6661af875fa71bfcc36030d653e745ec",
+        'height': "FW6661af875fa71bfcc36030d653e745ec",
+
+        'activity': "FW8db981daac5317452c78944626de52ac",
+        'hobby':    "FW8db981daac5317452c78944626de52ac",
+
+        'time zone':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
+        'call time':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
+
+        'emergency phone': "FW21a0b56a4c5d0d9635f9f86616036b9c",
+        'emergency name':  "FW21a0b56a4c5d0d9635f9f86616036b9c"
+    }
+
+    for row in gs_users_existing.get_all_records():
+        phone_number = row.get('Phone Number')
+
+        for feature_name, value in row.items():
+            if not value:
+                flow_sid = call_flow_mapper.get(feature_name, '')
+                if flow_sid:
+                    logged_call_flow(flow_sid, phone_number, feature_name)
             else:
-                print(f'for {ph}:{v} is good')
+                logger.info(f'Value of {feature_name} for {phone_number}:\
+                    {value},  is already defined')
 
+
+# FIXME: highly desirable to rename this function to something meaning...
+# update_blood_pressure etc.
 def call_to_check_bld():
-    """ Function for checking blood pressure and saving results to google spreadsheet """
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-    # call studio flow from Python app
+    """Function for checking blood pressure and saving results to
+    google spreadsheet
+    """
+
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+    # FIXME: All hardcoded flow ids should be placed to settings
+    # (or somewhere else) and called by human-readable names,
+    # e.g. MY_FLOW_THAT_DO_SOMETHING = 'flow_id'
 
     execution = client.studio \
         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions \
-        .create(to='+16692419870', from_=main_number)
+        .create(to='+16692419870', from_=TWILIO_MAIN_PHONE_NUMBER)
 
     steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
         .executions(execution.sid) \
         .steps \
         .list(limit=20)
+
+    # FIXME: I don't understand what 20 and 12 magic numbers mean;
+    # These number should be defined in settings file,
+    # and have meaningful names
+
     while len(steps) < 12:
         steps = client.studio.flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
             .executions(execution.sid) \
             .steps \
             .list(limit=20)
-        time.sleep(5)
-        print(len(steps))
-    # sid = execution.sid
-    # execution_step = client.studio \
-    #                         .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-    #                         .executions('FN76531ee7fcda3617d99bec690d915045') \
-    #                         .steps \
-    #                         .fetch()
-
-    # call specific Flow and Execution only for understanding and deveopment
-    # execution = client.studio \
-    #                   .flows('FWfb6357ea0756af8d65bc2fe4523cb21a') \
-    #                   .executions('FN76531ee7fcda3617d99bec690d915045') \
-    #                   .fetch()
+        time.sleep(5)  # NOTE: Do we really need this?
+        logger.info(f"The number of steps: {len(steps)}.")
 
     last_step_sid = steps[0].sid
     execution_step_context = client.studio \
@@ -157,130 +204,233 @@ def call_to_check_bld():
         .step_context() \
         .fetch()
 
-    UP = execution_step_context.context['flow']['variables'].get('UP')
-    DOWN = execution_step_context.context['flow']['variables'].get('DOWN')
+    # FIXME: I don't like 'UP' and 'DOWN' terms at all;
+    systolic_blood_pressure = \
+        execution_step_context.context['flow']['variables'].get('UP')
+    diastolic_blood_pressure = \
+        execution_step_context.context['flow']['variables'].get('DOWN')
 
-    # PUT DATA TO SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+    # NOTE: probably we need some validation systolic and diastolic
+    # blood pressure values:
+    # 1) systolic > diastolic ;
+    # 2) systolic shouldn't be too low (e.g. 30 mm probably very low)
+    # 3) diastolic shouldn't be very high;
+    # 4) systolic shouldn't be very high, e.g. 250 mm is too high...
 
-    new_row = [json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str), UP, DOWN]
-    spreadsheetName = "Ekaterina"
-    sheetName = "Blood_Preassure"
+    # store data to gs-spreadsheet using proxy object
+    gs_health_metric_data.append_row_to_sheet([
+        json.dumps(datetime.datetime.now(),
+                   indent=4, sort_keys=True, default=str),
+        systolic_blood_pressure,
+        diastolic_blood_pressure
+    ])
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
+    time.sleep(5)  # NOTE: Is this really necessary (not sure...)
 
-    sheet.append_row(new_row)
-    time.sleep(5)
-def check_new_user(tel=''):
-    """ Function for checking type of User (NEW/EXISTING) """
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
+def is_user_new(phone_number=''):
+    """Check if the user already registered in the System
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
-    all_sheet = sheet.get_all_values()
-    phone_lst = []
-    for a in all_sheet:phone_lst.append(a[0])
-    tel_not_plus = str(tel[1:15])
-    if tel_not_plus in phone_lst:
-        return 'Exist'
+    :param phone_number: User's phone number, defaults to ''
+    :type phone_number: str, optional
+    :return: False if the user already registered and True otherwise
+    :rtype: True or False
+    """
+
+    all_sheets = gs_users_existing.get_all_values()
+    cleaned_phone_number = cleanup_phone_number(phone_number)
+    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])\
+        or not PhoneNumber.select().where(
+            PhoneNumber.number == cleaned_phone_number
+        ).exists()
+
+
+def save_new_user(phone_number='', tab=''):
+    """Function for saving NEW user in google spreadsheet
+    and ProstgreSQL database.
+
+    Once objects are created this function sends notification email.
+
+    :param phone_number: phone number, defaults to ''
+    :type phone_number: str, optional
+    :param tab: sheet name for google docs, defaults to ''
+    :type tab: str, optional
+    """
+
+    cleaned_phone_number = cleanup_phone_number(phone_number)
+
+    # --- store data to google spreadsheet ( TODO: drop gs support)
+    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing'\
+        else gs_users_calls
+
+    # FIXME: Awkward and hardcoded values in new_row variable (changes needed)
+    new_row = [
+        cleaned_phone_number, '', '', '', '', '', '', '', '', '', '', '',
+        json.dumps(datetime.datetime.now(), indent=4, sort_keys=True,
+                   default=str), '19258609793', '19258609793'
+    ]
+
+    gs_proxy_sheet.append_row_to_sheet(new_row)
+    logger.info("Informational row about new user"
+                f"added to gspread: sheetname=({tab})")
+
+    # --- store new user and related call
+    try:
+        phone_obj = PhoneNumber.get_or_create(
+            number=cleaned_phone_number
+        )
+        user_obj = User.get_or_create(phone_number=phone_obj)
+        logger.info(f"User object ({user_obj.id}) and "
+                    f"corresponding phone object ({phone_obj.id})"
+                    f"are created (phone: {phone_number}).")
+    except Exception as e:
+        logger.error(f"Exception raised during DB operation: {e}")
+    logger.info(f"Sending notification email for phone num.={phone_number}.")
+    send_mail("NEW USER", phone=phone_number)
+    logger.info(f"Notification email for phone num.={phone_number} was sent.")
+
+
+def save_data_to_postgres(
+        feature_name,
+        value,
+        phone_number,
+        date=datetime.datetime.now()
+):
+    """Save data to Prostgres database
+
+    if feature_name is a field name of User model,
+    function override its value with new (value);
+    otherwise, it create related HealthMetric object
+    and save data to its bson field (data field).
+
+    :param feature_name: feature name to be saved
+    :type feature_name: str
+    :param value: feature value to be stored
+    :type value: Any
+    :param phone_number: user's phone number
+    :type phone_number: str
+    """
+
+    query = \
+        PhoneNumber.select().join(User).where(
+            PhoneNumber.number == phone_number
+        )
+
+    if query.exists():
+        first_occurrence = query.first()
+
+        # If feature_name is in User's field names, write its immediately
+        if feature_name in User._meta.sorted_field_names:
+            logger.info(
+                "Feature name is in User model; its value will be overriden. "
+                f"{feature_name} = {value}; phone_number = {phone_number}"
+            )
+            setattr(first_occurrence.user, feature_name, value)
+            first_occurrence.user.save()
+            return
+
+        health_metric = HealthMetric.select().where(
+            (HealthMetric.user == first_occurrence.user) &
+            (HealthMetric.created == date)
+        )
+
+        if health_metric.exists():
+            health_obj = health_metric.first()
+        else:
+            health_obj = HealthMetric.create(user=first_occurrence.user)
+            if date:
+                health_obj.created = date
+
+        bson_field = health_obj.data
+        if bson_field and bson_field.get(feature_name, None) is not None:
+            raise ValueError(f"Feature {feature_name} already defined "
+                             f"for phone={phone_number} for date={date}.")
+        elif bson_field is not None:
+            bson_field[feature_name] = value
+        else:
+            bson_field = {feature_name: value}
+        health_obj.data = bson_field
+        health_obj.save()
+
     else:
-        return 'New'
+        logger.error(f"Phone number ({phone_number}) is unknown;"
+                     f"couldn't associate data: {feature_name} = {value}.")
 
 
-def save_new_user(tel='', tab=''):
-    """ Function for saving NEW user in google spreadsheet"""
-    # check data in spreadsheet
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+def save_data(col_name, value, phone_number, date=None):
+    """Function for saving data to google spreadsheet
 
-    spreadsheetName = 'Users'
-    sheetName = tab
+    :param col_name: column name in google spreadsheet
+    :type col_name: str
+    :param value: value to be stored
+    :type value: str
+    :param phone_number: user's phone number
+    :type phone_number: str
+    """
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
+    phone_number = cleanup_phone_number(phone_number)
 
-    new_row = [tel[1:15],'','','','','','','','','','','',json.dumps(datetime.datetime.now(),indent=4, sort_keys=True, default=str),'19258609793','19258609793']
-    sheet.append_row(new_row)
-    send_mail("NEW USER", phone=tel)
+    # TODO: gs-support should be dropped
+    all_data = gs_users_existing.get_all_records()
+    if all_data:
+        all_data = np.array(all_data)
+        phone_num_index = np.argmax(all_data[:, 0] == phone_number)
+        col_name_index = np.argmax(all_data[0, :] == col_name)
+        gs_users_existing.update_cell(phone_num_index, col_name_index, value)
 
-def save_data(col_name, value, tel):
-    """ Function for saving data to google spreadsheet """
-    # PUT DATA TO SPREDASHEET
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(cred_json, scope)
-    client = gspread.authorize(creds)
+    save_data_to_postgres(
+        col_name,
+        value,
+        phone_number,
+        date=date or datetime.datetime.now()
+    )
 
-    spreadsheetName = "Users"
-    sheetName = "Existing"
 
-    spreadsheet = client.open(spreadsheetName)
-    sheet = spreadsheet.worksheet(sheetName)
+def google_search(search_term):
+    """ Search a term using Google Custom Search Engine
 
-    all_sheet = sheet.get_all_values()
-    rows = sheet.get_all_records()
-    row_num = 0
-    for r in all_sheet:
-        row_num = row_num + 1
-        ph = r[0] #find the Phone Number
-        if tel == f'+{ph}':
-            break
+    :param search_term: a term to search for;
+    :type search_term: str
 
-    col_num = 0
-    for c in all_sheet[0]:
-        col_num = col_num + 1
-        if col_name == c:
-            print(row_num, col_num, col_name, value)
-            sheet.update_cell(row_num, col_num, value)
-            break
+    NOTE
+    ----
+        see: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list   # noqa: E501
+    """
 
-def google_search(search_term, api_key, cse_id, **kwargs):
-    """ Function for using Google Search API"""
-    service = build("customsearch", "v1", developerKey=api_key)
-    res = service.cse().list(q=search_term, cx=cse_id, **kwargs).execute()
-    return res['items']
-# def print_mars_photos():
-#     from redis import Redis
-#     from rq import Queue
-#
-#     from mars import get_mars_photo
-#
-#     q = Queue(connection=Redis())
-#
-#     print('Before')
-#     for i in range(10):
-#         #get_mars_photo(1 + i)
-#         q.enqueue(get_mars_photo, 1 + i)
-#     print('After')
-#print_mars_photos()
+    service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+    res = service.cse().list(
+        q=search_term,
+        cx=GOOGLE_CSE_ID,
+        num=GOOGLE_CSE_MAX_NUM
+    ).execute()
+    return res.get('items', '')
 
 
 def update_reminder(id):
+    """Update reminder by id
+
+    :param id: reminder's id
+    :type id: int
+    """
 
     # get smart reminder by ID
-    smr = SmartReminder.get(SmartReminder.id==id)
-    #smr = SmartReminder()
-    r = SMTwo.first_review(3)
-    if smr.last_time is None:
+    smart_reminder = SmartReminder.get(SmartReminder.id == id)
+
+    if smart_reminder.last_time is None:
         # first review
-        r = SMTwo.first_review(3)
-        print(r)
+        review = SMTwo.first_review(3)
     else:
         # next review
-        r = SMTwo(smr.easiness, smr.interval, smr.repetitions).review(3)
-        print(r)
-    smr.interval = r.interval
-    smr.easiness = r.easiness
-    smr.repetitions = r.repetitions
-    smr.last_time = datetime.datetime.now()
-    smr.next_time = r.review_date
-    smr.save()
+        review = SMTwo(
+            smart_reminder.easiness,
+            smart_reminder.interval,
+            smart_reminder.repetitions
+        ).review(3)
+
+    logger.info(f"Review: {review}")
+    smart_reminder.interval = review.interval
+    smart_reminder.easiness = review.easiness
+    smart_reminder.repetitions = review.repetitions
+    smart_reminder.last_time = datetime.datetime.now()
+    smart_reminder.next_time = review.review_date
+    smart_reminder.save()

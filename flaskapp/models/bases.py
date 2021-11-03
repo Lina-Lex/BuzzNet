@@ -14,28 +14,42 @@ and/or the software thereto related are provided under a GNU GPLv3 license,
 allowing Users to access and use the software’s source code.
 Terms and conditions: https://www.goandtodo.org/terms-and-conditions
 
-Created Date: Sunday September 26th 2021
+Created Date: Thursday September 30th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Sunday, October 17th 2021, 2:41:35 pm
+Last Modified: Friday, October 15th 2021, 6:22:03 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
 
 
-from flask import Blueprint
-from flaskapp.views.authenticate import send_otp, validate_otp
+import datetime
+from peewee import Proxy, Model, DateTimeField
+from flaskapp.models.storages import postgres_db
 
-AuthBlueprint = Blueprint('Auth', __name__)
+db_proxy = Proxy()
 
 
-# FIXME: endpoint /get_otp doesn't return any otp on response,
-# so, `get_otp` name isn't appropriate; Its about sending otp to the user,
-# and we should consider to rename get_otp to send_otp or something like this;
-# However, we have related mobile app which uses this OTP functionality,
-# so currently we need to leave this interface as is.
-AuthBlueprint.route('/get_otp', methods=['POST'])(send_otp)
-AuthBlueprint.route('/validate_otp', methods=['POST'])(validate_otp)
+# Base model for work with Database through ORM
+class BaseModel(Model):
+    class Meta:
+        database = db_proxy  # connection with database
 
+
+class DatesMixin(BaseModel):
+    updated   = DateTimeField(null=True)  # noqa: E221
+    created   = DateTimeField(            # noqa: E221
+        default=datetime.datetime.now,
+        null=True
+    )
+
+    def save(self, *args, **kwargs):
+        self.updated = datetime.datetime.now()
+        super().save(*args, **kwargs)
+        
+
+# NOTE:  Dynamic db-switching is absolutely unnecessary
+# However, this construction will be useful when testing
+db_proxy.initialize(postgres_db)
