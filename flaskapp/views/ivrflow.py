@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Monday, October 25th 2021, 9:05:13 pm
+Last Modified: Sunday, November 7th 2021, 1:40:29 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -29,7 +29,6 @@ import os
 import gspread
 import datetime
 import json
-import functools
 from flask import request, jsonify, url_for
 from flask import Response
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say
@@ -49,6 +48,11 @@ from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
                                GOOGLE_SA_JSON_PATH)
 from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING, GOOD_BYE
 
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+    cache = lru_cache(maxsize=None)
 
 def voice_joined():
     """ Function for making joined call """
@@ -386,13 +390,13 @@ def get_next_reminder():
     )
 
 
-@functools.cache
+@cache
 def get_term_cond():
     """ Returns terms and conditions represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/terms-and-conditions/86762295')
 
 
-@functools.cache
+@cache
 def get_privacy():
     """ Returns Privacy-policy document represented as Flask response object """
     return get_txt_from_url('https://www.iubenda.com/privacy-policy/86762295/full-legal')
