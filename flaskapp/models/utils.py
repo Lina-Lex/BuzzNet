@@ -28,7 +28,7 @@ Copyright (c) 2021
 from flaskapp.models.storages import postgres_db
 from flaskapp.models.ivr_models import (User, UserToken, HealthMetric,
                                         Call, SmartReminder, Reminder,
-                                        OTPPassword, PhoneNumber)
+                                        OTPPassword, PhoneNumber, FeedBack)
 
 
 def create_tables(tables=None):
@@ -49,7 +49,7 @@ def init_db():
     """
 
     create_tables([User, UserToken, HealthMetric, Call, Reminder,
-                   SmartReminder, OTPPassword, PhoneNumber])
+                   SmartReminder, OTPPassword, PhoneNumber, FeedBack])
 
 
 def drop_all_tables():
@@ -57,4 +57,4 @@ def drop_all_tables():
     """
 
     postgres_db.drop_tables([User, UserToken, HealthMetric, Call, Reminder,
-                             SmartReminder, OTPPassword, PhoneNumber])
+                             SmartReminder, OTPPassword, PhoneNumber, FeedBack])

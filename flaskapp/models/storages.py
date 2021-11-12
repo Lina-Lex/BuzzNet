@@ -24,7 +24,6 @@ Modified By: GO and to DO Inc
 Copyright (c) 2021
 """
 
-
 import gspread
 import logging
 from functools import wraps
@@ -47,12 +46,9 @@ from flaskapp.settings import (
     TEST_ENVIRONMENT
 )
 
-
 __all__ = ('gs_users_existing', 'gs_users_calls', 'postgres_db')
 
-
 logger = logging.getLogger(__name__)
-
 
 postgres_db = PooledPostgresqlExtDatabase(
     database=POSTGRESQL_TEST_DB_NAME if
@@ -89,6 +85,7 @@ def ensure_gc_opened(method):
             logger.error(f"Exception raised while accessing google spreadsheet: {e}.")  # noqa: E501
             result = False
         return result
+
     return wrapper
 
 
@@ -133,13 +130,11 @@ gs_users_existing = GoogleSpreadSheet(
     GOOGLE_USERS_SHEET_NAME_EXISTING
 )
 
-
 # interacts with users spreadsheet / Calls tab
 gs_users_calls = GoogleSpreadSheet(
     GOOGLE_USERS_SPREADSHEET_ID,
     GOOGLE_USERS_SHEET_NAME_CALLS
 )
-
 
 # stores blood pressure data
 gs_health_metric_data = GoogleSpreadSheet(

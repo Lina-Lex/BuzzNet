@@ -28,9 +28,9 @@ import pytest
 import datetime
 import peewee
 from flaskapp.core.ivr_core import (save_data_to_postgres, save_new_user,
-                                    update_reminder)
+                                    update_reminder, insert_or_update_feedback)
 from flaskapp.models.ivr_models import (Reminder, SmartReminder, User,
-                                        HealthMetric, PhoneNumber)
+                                        HealthMetric, PhoneNumber, FeedBack)
 from flaskapp.tools.utils import cleanup_phone_number
 
 
@@ -68,7 +68,6 @@ def test_save_data_to_postgres():
     user = type(user).get(user._pk_expr())
     assert user.type == 'S'
 
-
     # Save health objects at different date
     save_data_to_postgres(
         'sbp',
@@ -89,6 +88,7 @@ def test_save_data_to_postgres():
 def test_save_new_user(monkeypatch):
     def mocked_google_proxy_obj():
         ...
+
     mocked_google_proxy_obj.append_row_to_sheet = lambda x: None
 
     def mocked_send_mail(msg, phone=''):
@@ -131,3 +131,20 @@ def test_update_reminder():
     # (NOTE: probably need some more tests)
     smart_reminder = type(smart_reminder).get(smart_reminder._pk_expr())
     assert smart_reminder.next_time is not None
+
+
+@pytest.mark.usefixtures("init_test_db")
+def test_insert_update_new_feedback():
+    phone_number = '+123456123456'
+    phone = cleanup_phone_number(phone_number)
+    insert_or_update_feedback(phone_number)
+    assert FeedBack.select().where(
+        FeedBack.phone == phone
+    ).exists()
+
+    msg = "completed"
+    insert_or_update_feedback(phone_number, msg)
+    row = FeedBack.get(FeedBack.phone == phone)
+    assert row.text is not None
+
+

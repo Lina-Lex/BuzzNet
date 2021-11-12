@@ -26,7 +26,7 @@ Copyright (c) 2021
 
 
 import os
-import flaskapp.setenvs
+#import flaskapp.setenvs
 # ---------- Twilio configuration ------------------
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")

@@ -24,7 +24,6 @@ Modified By: GO and to DO Inc
 Copyright (c) 2021
 """
 
-
 import os
 import gspread
 import datetime
@@ -45,14 +44,16 @@ from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
 from flaskapp.models.storages import gs_users_existing, gs_health_metric_data
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
-                               GOOGLE_SA_JSON_PATH)
+                               GOOGLE_SA_JSON_PATH, TWILIO_MAIN_PHONE_NUMBER)
 from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING, GOOD_BYE
 
 try:
     from functools import cache
 except ImportError:
     from functools import lru_cache
+
     cache = lru_cache(maxsize=None)
+
 
 def voice_joined():
     """ Function for making joined call """
@@ -103,7 +104,6 @@ def get_username():
 
     request_values = request.values
     phone_number = cleanup_phone_number(request_values.get('phone'))
-
     # TODO: gs-support should be dropped
     rows = gs_users_existing.get_all_records()
     for row in rows:
@@ -270,8 +270,6 @@ def save_blood_pressure():
     spreadsheet = client.open(spreadsheetName)
     sheet = spreadsheet.worksheet(sheetName)
 
-    
-
     new_row = [phone, UP, DOWN, json.dumps(datetime.datetime.now(), indent=4, sort_keys=True, default=str)]
     sheet.append_row(new_row)
 
@@ -385,7 +383,7 @@ def get_next_reminder():
     return jsonify(
         {
             "text":
-            f' Lets listen interesting fact of the day...{result} ...Thank you.'
+                f' Lets listen interesting fact of the day...{result} ...Thank you.'
         }
     )
 
@@ -420,17 +418,36 @@ def get_profile():
     else:
         return message
 
+
 # http://127.0.0.1:5000/new_user?username=testuser&&type=patient&&timezone=US/Pacific&&calltime=5:30:00&&phone=123-456-789
 def new_user():
     all_args = request.args.to_dict()
     rec1 = User.create(**all_args)
     rec1.save()
-    return {"success" : 200, "newuser" : model_to_dict(rec1)}
+    return {"success": 200, "newuser": model_to_dict(rec1)}
+
 
 def unsubscribe():
     user_info = request.args.to_dict()
     ph = user_info.get('phone')
-    del_row  = User.delete().where(User.phone == ph)
+    del_row = User.delete().where(User.phone == ph)
     if del_row > 0:
         return {"success": 200, "message": "user unsubscribed"}
     return {"message": "user not found", "failed": 400}
+
+
+# getting set of from_ numbers from twilio call logs  that are less than 7 days old
+def get_from_phone_number_from_twilio_call_logs():
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    start = datetime.datetime.now()
+    calls = [call.from_ for call in client.calls.list() if
+             ((start.date() - call.start_time.date())
+              + (datetime.timedelta(days=0, hours=start.hour, minutes=start.minute, seconds=start.second)
+                 - datetime.timedelta(days=0, hours=call.start_time.time().hour, minutes=call.start_time.time().minute,
+                                      seconds=call.start_time.time().second))) < datetime.timedelta(days=7)
+             and TWILIO_MAIN_PHONE_NUMBER.strip() != call.from_]
+
+    return set(calls)

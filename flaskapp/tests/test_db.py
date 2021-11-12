@@ -48,3 +48,4 @@ def test_create_and_drop_tables():
     assert 'phone_numbers' in tables_created
     assert 'health_metrics' in tables_created
     assert 'smart_reminders' in tables_created
+    assert 'feedback' in tables_created
