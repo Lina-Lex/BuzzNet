@@ -44,7 +44,8 @@ from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
 from flaskapp.models.storages import gs_users_existing, gs_health_metric_data
 
 from flaskapp.settings import (ORDINAL_NUMBERS, TWILIO_OPT_PHONE_NUMBER,
-                               GOOGLE_SA_JSON_PATH, TWILIO_MAIN_PHONE_NUMBER)
+                               GOOGLE_SA_JSON_PATH, TWILIO_MAIN_PHONE_NUMBER, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+                               MAGIC_NUMBER)
 from flaskapp.dialogs import THANKS_FOR_JOIN, WELCOME_GREETING, GOOD_BYE
 
 try:
@@ -438,16 +439,10 @@ def unsubscribe():
 
 # getting set of from_ numbers from twilio call logs  that are less than 7 days old
 def get_from_phone_number_from_twilio_call_logs():
-    account_sid = os.environ['TWILIO_ACCOUNT_SID']
-    auth_token = os.environ['TWILIO_AUTH_TOKEN']
-    client = Client(account_sid, auth_token)
-
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     start = datetime.datetime.now()
     calls = [call.from_ for call in client.calls.list() if
-             ((start.date() - call.start_time.date())
-              + (datetime.timedelta(days=0, hours=start.hour, minutes=start.minute, seconds=start.second)
-                 - datetime.timedelta(days=0, hours=call.start_time.time().hour, minutes=call.start_time.time().minute,
-                                      seconds=call.start_time.time().second))) < datetime.timedelta(days=7)
-             and TWILIO_MAIN_PHONE_NUMBER.strip() != call.from_]
+             (start.date() - call.start_time.date()) <= datetime.timedelta(days=MAGIC_NUMBER)
+             and TWILIO_MAIN_PHONE_NUMBER != call.from_]
 
     return set(calls)

@@ -24,9 +24,9 @@ Modified By: GO and to DO Inc
 Copyright (c) 2021
 """
 
-
 import os
-#import flaskapp.setenvs
+
+# import flaskapp.setenvs
 # ---------- Twilio configuration ------------------
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
@@ -36,6 +36,8 @@ TWILIO_MAIN_PHONE_NUMBER = os.environ.get("TWILIO_MAIN_PHONE_NUMBER", "")
 # Optional phone number
 TWILIO_OPT_PHONE_NUMBER = os.environ.get("TWILIO_OPT_PHONE_NUMBER", "")
 
+# magic_number for twilio call logs
+MAGIC_NUMBER = 7
 
 # ---------- Google API Configs --------------------
 
@@ -49,7 +51,6 @@ GOOGLE_CSE_MAX_NUM = 3
 
 # Path to the json file with Google service account credentials
 GOOGLE_SA_JSON_PATH = os.environ.get("GOOGLE_SA_JSON_PATH", "")
-
 
 # ---------- Google docs IDs -----------------------
 
@@ -66,7 +67,6 @@ GOOGLE_HEALTH_DB_SPREADSHEET_NAME = "health_metrics"
 GOOGLE_HEALTH_DB_SPREADSHEET_ID = ""
 GOOGLE_HEALTH_DB_SHEET_NAME = "blood_pressure"
 
-
 # ------------ DATABASE CONFIGURATION --------------
 POSTGRESQL_DB_NAME = 'goanddo'
 POSTGRESQL_USER = 'postgres'
@@ -81,7 +81,6 @@ POSTGRES_MAX_CONNECTIONS = 32
 # The number of seconds allowed to any of connections to postgres
 POSTGRES_STALE_TIMEOUT = 300
 
-
 # Heroku specific settings
 POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 # --------------------------------------------------
@@ -91,7 +90,6 @@ POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
 
 OTP_DURATION = os.environ.get('OTP_DURATION', 60)
 OTP_PASSWORD_LENGTH = 6
-
 
 # -----------  Helper constants --------------------
 # True if we run the script on Heroku, otherwise False.
@@ -110,13 +108,12 @@ ORDINAL_NUMBERS = [
     'tenth'
 ]
 
-
-
 # -- Override some values for Heroku environment ---
 
 if ON_HEROKU:
     # TODO: Put URL parsing function into helper function
     import urllib.parse
+
     urllib.parse.uses_netloc.append('postgres')
     url = urllib.parse.urlparse(POSTGRESQL_URL)
     POSTGRESQL_DB_NAME = url.path[1:]
