@@ -18,7 +18,7 @@ Created Date: Sunday September 26th 2021
 Author: GO and to DO Inc
 E-mail: heartvoices.org@gmail.com
 -----
-Last Modified: Tuesday, October 26th 2021, 10:43:03 am
+Last Modified: Wednesday, November 10th 2021, 9:34:18 pm
 Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
@@ -30,6 +30,7 @@ from flaskapp.routes.ivr_url import IVRFlowBlueprint, MobileBluprint
 from flaskapp.routes.auth import AuthBlueprint
 from flaskapp.routes.error_handlers import error_handler_factory
 from flaskapp import settings
+from flaskapp.models.bases import db_proxy
 
 
 def create_app():
@@ -39,6 +40,19 @@ def create_app():
     # ------------ Configuration
     app.config['TESTING'] = settings.TEST_ENVIRONMENT
     app.config['SERVER_NAME'] = "MAIN_FLASKAPP"
+
+    # ----------------- Open and close db-connection --------------
+    # Open db connection when request has come and close when
+    # response is sent
+    @app.before_request
+    def _db_connect():
+        db_proxy.connect()
+
+    @app.teardown_request
+    def _db_close(exc):
+        if not db_proxy.is_closed():
+            db_proxy.close()
+    # --------------------------------------------------------------
 
     #############################
     ###### ERROR HANDLER ######## noqa: E266
