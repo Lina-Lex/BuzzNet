@@ -24,7 +24,6 @@ Modified By: GO and to DO Inc
 Copyright (c) 2021
 """
 
-
 import uuid
 from peewee import (AutoField, TextField, DateTimeField,
                     CharField, ForeignKeyField, FloatField,
@@ -35,15 +34,14 @@ from flaskapp.models.bases import BaseModel, DatesMixin
 from flaskapp.tools.authtools.authgen import generate_otp
 from playhouse.postgres_ext import BinaryJSONField
 
-
 USER_STATUSES = (
-        ('A', 'Active'),
-        ('B', 'Blocked'),
-        ('D', 'Deleted')
-    )
+    ('A', 'Active'),
+    ('B', 'Blocked'),
+    ('D', 'Deleted')
+)
 
 GENDER_CHOICES = (
-    ('M', 'Man'),   # NOTE: May be male/female more appropriate?
+    ('M', 'Man'),  # NOTE: May be male/female more appropriate?
     ('W', 'Woman')
 )
 
@@ -51,27 +49,27 @@ GENDER_CHOICES = (
 class User(DatesMixin, BaseModel):
     """ General user model """
 
-    id        = AutoField()                             # noqa: E221
-    username  = TextField(null=True)                    # noqa: E221
-    gender    = CharField(                              # noqa: E221
+    id = AutoField()
+    username = TextField(null=True)
+    gender = CharField(
         max_length=1,
         null=True,
         choices=GENDER_CHOICES
     )
-    timezone  = CharField(max_length=50, null=True)     # noqa: E221
-    type      = CharField(max_length=1, null=True)      # noqa: E221
-    status    = CharField(max_length=1,                 # noqa: E221
-                          default='A',
-                          choices=USER_STATUSES)
+    timezone = CharField(max_length=50, null=True)
+    type = CharField(max_length=1, null=True)
+    status = CharField(max_length=1,
+                       default='A',
+                       choices=USER_STATUSES)
 
     class Meta:
         table_name = 'users'
 
 
 class PhoneNumber(DatesMixin, BaseModel):
-    id      = AutoField()                            # noqa: E221
-    number  = CharField(max_length=30, unique=True)  # noqa: E221
-    user    = ForeignKeyField(                       # noqa: E221
+    id = AutoField()
+    number = CharField(max_length=30, unique=True)
+    user = ForeignKeyField(
         User,
         null=True,
         on_delete='CASCADE'
@@ -82,10 +80,10 @@ class PhoneNumber(DatesMixin, BaseModel):
 
 
 class Call(DatesMixin, BaseModel):
-    id         = AutoField()              # noqa: E221
-    call_start = DateTimeField()          # noqa: E221
-    call_end   = DateTimeField()          # noqa: E221
-    user       = ForeignKeyField(         # noqa: E221
+    id = AutoField()
+    call_start = DateTimeField()
+    call_end = DateTimeField()
+    user = ForeignKeyField(
         User,
         backref='calls',
         on_delete='CASCADE'
@@ -96,9 +94,9 @@ class Call(DatesMixin, BaseModel):
 
 
 class HealthMetric(DatesMixin, BaseModel):
-    id         = AutoField()                 # noqa: E221
-    data       = BinaryJSONField(null=True)  # noqa: E221
-    user       = ForeignKeyField(            # noqa: E221
+    id = AutoField()
+    data = BinaryJSONField(null=True)
+    user = ForeignKeyField(
         User,
         backref='health_metrics',
         on_delete='CASCADE'
@@ -109,7 +107,7 @@ class HealthMetric(DatesMixin, BaseModel):
 
 
 class Reminder(BaseModel):
-    id   = AutoField()   # noqa: E221
+    id = AutoField()
     text = TextField(column_name='text', null=True)
 
     class Meta:
@@ -119,9 +117,9 @@ class Reminder(BaseModel):
 class OTPPassword(DatesMixin, BaseModel):
     """ Storage for OTP passwords """
 
-    id           = AutoField()                              # noqa: E221
-    phone_number = CharField(max_length=30)                 # noqa: E221
-    otp_password = CharField(                               # noqa: E221
+    id = AutoField()
+    phone_number = CharField(max_length=30)
+    otp_password = CharField(
         max_length=15,
         default=lambda x: generate_otp(OTP_PASSWORD_LENGTH)
     )
@@ -130,36 +128,24 @@ class OTPPassword(DatesMixin, BaseModel):
         table_name = 'otp_passwords'
 
 
-class UserToken(DatesMixin, BaseModel):
-    """ Per-user token storage """
-
-    id          = AutoField()                       # noqa: E221
-    user        = ForeignKeyField(User, null=True)  # noqa: E221
-    token       = CharField(max_length=32,          # noqa: E221
-                            null=False,
-                            default=uuid.uuid4().hex)
-
-    class Meta:
-        table_name = 'user_tokens'
-
-
 class SmartReminder(DatesMixin, BaseModel):
-    id          = AutoField()                                 # noqa: E221
-    user        = ForeignKeyField(User,                       # noqa: E221
-                                  backref='smart_remainders')
-    reminder    = ForeignKeyField(Reminder,                   # noqa: E221
-                                  backref='smart_remainders')
-
-    easiness    = FloatField(null=True, default=2.3)          # noqa: E221
-
-    interval    = IntegerField(column_name='interval',        # noqa: E221
-                               null=True)
+    id = AutoField()
+    user = ForeignKeyField(User, backref='smart_remainders')
+    reminder = ForeignKeyField(Reminder, backref='smart_remainders')
+    easiness = FloatField(null=True, default=2.3)
+    interval = IntegerField(column_name='interval', null=True)
     repetitions = IntegerField(column_name='repetitions', null=True)
-
-    last_time   = DateTimeField(column_name='lasttime',       # noqa: E221
-                                null=True)
-    next_time   = DateTimeField(column_name='nexttime',       # noqa: E221
-                                null=True)
+    last_time = DateTimeField(column_name='lasttime', null=True)
+    next_time = DateTimeField(column_name='nexttime', null=True)
 
     class Meta:
         table_name = 'smart_reminders'
+
+
+class FeedBack(DatesMixin, BaseModel):
+    id = AutoField()
+    phone = CharField(column_name='phone', max_length=30)
+    text = TextField(column_name='text', null=True)
+
+    class Meta:
+        table_name = 'feedback'

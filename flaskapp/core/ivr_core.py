@@ -23,7 +23,7 @@ Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
-
+import os
 
 from supermemo2 import SMTwo
 import numpy as np
@@ -37,13 +37,12 @@ from flaskapp.models.storages import (gs_users_existing, gs_users_calls,
                                       gs_health_metric_data)
 from flaskapp.tools.utils import cleanup_phone_number, send_mail
 from flaskapp.models.ivr_models import (User, PhoneNumber, HealthMetric,
-                                        SmartReminder)
+                                        SmartReminder, FeedBack)
 from flaskapp.settings import (GOOGLE_API_KEY, GOOGLE_CSE_ID,
                                GOOGLE_CSE_MAX_NUM,
                                TWILIO_MAIN_PHONE_NUMBER,
                                TWILIO_ACCOUNT_SID,
                                TWILIO_AUTH_TOKEN)
-
 
 logger = logging.getLogger(__name__)
 
@@ -94,9 +93,9 @@ def call_flow(flow_sid, phone_number=''):
     if phone_number:
         if not is_user_new(phone_number):
             logger.info(
-                    f"Put existing user to flow (id = {flow_sid}), \
+                f"Put existing user to flow (id = {flow_sid}), \
                     phone number: {phone_number}"
-                )
+            )
 
             execution = client.studio \
                 .flows(flow_sid) \
@@ -110,9 +109,9 @@ def call_flow(flow_sid, phone_number=''):
                 .list(limit=20)
         else:
             logger.info(
-                    f"Put new user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
+                f"Put new user to flow (id = FW66222e22d7301b1f1e0f02ca198c440a), \
                     phone number: {phone_number}"
-                )
+            )
             client.studio \
                 .flows('FW66222e22d7301b1f1e0f02ca198c440a') \
                 .executions \
@@ -132,20 +131,20 @@ def profile_detail():
 
     # FIXME: Should be moved to settings or somewhere else...
     call_flow_mapper = {
-        'dob':    "FWa23b5f2570ae23e2e1d68448378af0d0",
+        'dob': "FWa23b5f2570ae23e2e1d68448378af0d0",
         'gender': "FWa23b5f2570ae23e2e1d68448378af0d0",
 
         'weight': "FW6661af875fa71bfcc36030d653e745ec",
         'height': "FW6661af875fa71bfcc36030d653e745ec",
 
         'activity': "FW8db981daac5317452c78944626de52ac",
-        'hobby':    "FW8db981daac5317452c78944626de52ac",
+        'hobby': "FW8db981daac5317452c78944626de52ac",
 
-        'time zone':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
-        'call time':  "FWac7f7be3dcc167fed511d4c08cf76f8c",
+        'time zone': "FWac7f7be3dcc167fed511d4c08cf76f8c",
+        'call time': "FWac7f7be3dcc167fed511d4c08cf76f8c",
 
         'emergency phone': "FW21a0b56a4c5d0d9635f9f86616036b9c",
-        'emergency name':  "FW21a0b56a4c5d0d9635f9f86616036b9c"
+        'emergency name': "FW21a0b56a4c5d0d9635f9f86616036b9c"
     }
 
     for row in gs_users_existing.get_all_records():
@@ -239,10 +238,10 @@ def is_user_new(phone_number=''):
 
     all_sheets = gs_users_existing.get_all_values()
     cleaned_phone_number = cleanup_phone_number(phone_number)
-    return not any([True for a in all_sheets if cleaned_phone_number == a[0]])\
-        or not PhoneNumber.select().where(
-            PhoneNumber.number == cleaned_phone_number
-        ).exists()
+    return not any([True for a in all_sheets if cleaned_phone_number == a[0]]) \
+           or not PhoneNumber.select().where(
+        PhoneNumber.number == cleaned_phone_number
+    ).exists()
 
 
 def save_new_user(phone_number='', tab=''):
@@ -260,7 +259,7 @@ def save_new_user(phone_number='', tab=''):
     cleaned_phone_number = cleanup_phone_number(phone_number)
 
     # --- store data to google spreadsheet ( TODO: drop gs support)
-    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing'\
+    gs_proxy_sheet = gs_users_existing if tab.lower() == 'existing' \
         else gs_users_calls
 
     # FIXME: Awkward and hardcoded values in new_row variable (changes needed)
@@ -434,3 +433,26 @@ def update_reminder(id):
     smart_reminder.last_time = datetime.datetime.now()
     smart_reminder.next_time = review.review_date
     smart_reminder.save()
+
+
+# Updating and inserting feedback table
+def insert_or_update_feedback(phone_number, msg=None):
+    phone = cleanup_phone_number(phone_number)
+    exist = FeedBack.select().where(FeedBack.phone == phone).exists()
+    if msg is not None:
+        result = FeedBack.get(FeedBack.phone == phone)
+        result.text = msg
+        result.save()
+    elif not exist:
+        row = FeedBack.create(phone=phone, text=msg)
+        row.save()
+
+
+# Getting set of phone that has feedback message null
+def get_phone_from_feedback():
+    query = FeedBack.select(FeedBack.phone).where(FeedBack.text == None)
+    phone = set()
+    for feedback in query:
+        phone.add(feedback.phone)
+
+    return phone
