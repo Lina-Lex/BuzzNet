@@ -30,6 +30,7 @@ import datetime
 import json
 from flask import request, jsonify, url_for
 from flask import Response
+from sqlalchemy.orm import join
 from twilio.twiml.voice_response import VoiceResponse, Dial, Gather, Say
 from twilio.rest import Client
 from oauth2client.service_account import ServiceAccountCredentials
@@ -37,7 +38,7 @@ from flaskapp.views.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
-from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder
+from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder, HealthMetric
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
                                   getTemporaryUserData, get_txt_from_url,
                                   cleanup_phone_number)
@@ -446,3 +447,23 @@ def get_from_phone_number_from_twilio_call_logs():
              and TWILIO_MAIN_PHONE_NUMBER != call.from_]
 
     return set(calls)
+
+
+# getting one month healthMetric data for a particular patient or user
+def get_month_data():
+    req = request.values
+    phone = req.get('phone')
+    query = HealthMetric.select() \
+        .join(PhoneNumber, on=(HealthMetric.user == PhoneNumber.user)) \
+        .where(PhoneNumber.number == phone)
+    list_of_data = list()
+    for item in query:
+        data = {}
+        duration = datetime.datetime.now() - datetime.datetime.fromisoformat(item.data["DateTime"])
+        if duration <= datetime.timedelta(days=30):
+            data['UP'] = item.data['UP']
+            data['DOWN'] = item.data['DOWN']
+            data['DateTime'] = item.data['DateTime']
+            list_of_data.append(data)
+
+    return jsonify(list_of_data)
