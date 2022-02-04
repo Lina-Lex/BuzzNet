@@ -364,7 +364,7 @@ def get_next_reminder():
 
     # conn.connect()
     # get User ID by the phone
-    pat = User.get(User.phone == tel)
+    pat = User.get(PhoneNumber.number == tel)
     print(pat.id, pat.phone)
 
     # get SmartReminders by User ID
