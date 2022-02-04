@@ -105,7 +105,7 @@ class GoogleSpreadSheet:
         self.worksheet = self.spreadsheet.worksheet(self.sheet_name)
 
     @ensure_gc_opened
-    def get_all_value(self):
+    def get_all_values(self):
         return self.worksheet.get_all_values()
 
     @ensure_gc_opened
