@@ -29,8 +29,11 @@ from flaskapp.models.storages import postgres_db
 from flaskapp.models.ivr_models import (User, HealthMetric,
                                         Call, SmartReminder, Reminder,
                                         OTPPassword, PhoneNumber, FeedBack)
+from playhouse.db_url import connect
+import os
 
-
+postgres_db = connect(os.environ.get('DATABASE_URL') or 'sqlite:///default.db')
+                           
 def create_tables(tables=None):
     """Create specific tables if they do not exist
 
