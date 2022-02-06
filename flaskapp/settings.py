@@ -115,7 +115,7 @@ if ON_HEROKU:
     import urllib.parse
 
     urllib.parse.uses_netloc.append('postgres')
-    url = urllib.parse.urlparse(POSTGRESQL_URL)
+    url = urllib.parse.urlparse(DATABASE_URL)
     POSTGRESQL_DB_NAME = url.path[1:]
     POSTGRESQL_USER = url.username
     POSTGRESQL_PASSWORD = url.password
