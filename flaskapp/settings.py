@@ -82,7 +82,7 @@ POSTGRES_MAX_CONNECTIONS = 32
 POSTGRES_STALE_TIMEOUT = 300
 
 # Heroku specific settings
-POSTGRESQL_URL = os.environ.get("POSTGRESQL_URL", "")
+POSTGRESQL_URL = os.environ.get("DATABASE_URL", "")
 # --------------------------------------------------
 
 
