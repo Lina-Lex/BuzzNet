@@ -39,7 +39,7 @@ def create_app():
 
     # ------------ Configuration
     app.config['TESTING'] = settings.TEST_ENVIRONMENT
-    app.config['SERVER_NAME'] = "heart-ivr.herokuapp.com"
+    #app.config['SERVER_NAME'] = "heart-ivr.herokuapp.com"
 
     # ----------------- Open and close db-connection --------------
     # Open db connection when request has come and close when
