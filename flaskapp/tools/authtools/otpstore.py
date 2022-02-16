@@ -41,7 +41,7 @@ logger = getLogger(__name__)
 class OTPValidator:
     """ Helper class to perform OTP validation """
 
-    def send_message_by_twilio(self, phone_number='',  message=''):
+    def send_message_by_twilio(self, phone_number='', message=''):
         """Send message using Twilio
 
         :param phone_number: where to send the message, defaults to ''
@@ -100,11 +100,11 @@ class OTPValidator:
 
         cleaned_phone_number = cleanup_phone_number(phone_number)
         current_date = datetime.datetime.now()
-        time_delta = datetime.timedelta(seconds=OTP_DURATION)
+        time_delta = datetime.timedelta(minutes=int(OTP_DURATION))
         verified = OTPPassword.select().where(
-            OTPPassword.phone_number == cleaned_phone_number &
-            OTPPassword.otp_password == otp_password &
-            OTPPassword.created >= current_date - time_delta).exists()
+            (OTPPassword.phone_number == cleaned_phone_number) &
+            (OTPPassword.otp_password == otp_password) &
+            (OTPPassword.created >= current_date - time_delta)).exists()
 
         # TODO: When verified we need to create public/private keypair
         # to sign all further requests to the api
@@ -113,11 +113,4 @@ class OTPValidator:
 
 # TODO: should be removed in the nearest feature (currently, orphaned function)
 def get_authentication(phone):
-    with sqlite3.connect('otp.db') as db:
-        cursor = db.cursor()
-        cursor.execute("SELECT Verify FROM otp_info WHERE Phone =?", (phone,))
-        result = cursor.fetchone()
-        verify = False
-        cursor.execute('UPDATE otp_info SET Verify=(?) WHERE Phone =(?)', (verify, phone))
-        db.commit()
-        return result
+    return [True]

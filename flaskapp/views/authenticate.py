@@ -23,13 +23,12 @@ Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
-
+import logging
 
 from flaskapp.tools.authtools.otpstore import OTPValidator
 from flask import request, abort
 
 from flaskapp.tools.authtools.otpstore import get_authentication
-
 
 otp_validator = OTPValidator()
 
@@ -44,6 +43,7 @@ def send_otp():
     if request.method == 'POST':
         try:
             data = request.get_json()
+            logging.info("phone number is ", data.get('phone'))
             if not len(data) == 1 and 'phone' not in data:
                 abort(400, 'Incorrect data format')
 
@@ -81,8 +81,8 @@ def validate_otp():
         data = request.get_json()
         if 'phone' in data and 'otp' in data and len(data) == 2:
             if otp_validator.verify_otp(
-                otp_password=data.get('otp'),
-                phone_number=data.get('phone')
+                    otp_password=data.get('otp'),
+                    phone_number=data.get('phone')
             ):
                 return {"message": "success", 'exit_code': 0}
             else:
@@ -94,7 +94,7 @@ def validate_otp():
 
 
 # TODO: should be removed in the nearest feature (currently, orphaned function)
-def is_user_authenticated(phone): # -> (bool, str): -- temporarily dropped, Tuple(bool, str)
+def is_user_authenticated(phone):  # -> (bool, str): -- temporarily dropped, Tuple(bool, str)
     verify, message = None, None
     res = get_authentication(phone)
     if res is not None:

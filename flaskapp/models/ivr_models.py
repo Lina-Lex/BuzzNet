@@ -121,7 +121,7 @@ class OTPPassword(DatesMixin, BaseModel):
     phone_number = CharField(max_length=30)
     otp_password = CharField(
         max_length=15,
-        default=lambda x: generate_otp(OTP_PASSWORD_LENGTH)
+        default=lambda: generate_otp(OTP_PASSWORD_LENGTH)
     )
 
     class Meta:
