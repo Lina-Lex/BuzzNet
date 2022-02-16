@@ -110,24 +110,24 @@ def get_username():
     rows = gs_users_existing.get_all_records()
     for row in rows:
         # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
-        tel = cleanup_phone_number(row.get('Phone Number'))
+        tel = cleanup_phone_number(str(row.get('Phone Number')))
         if phone_number == tel:
             x = {"username": row.get('username')}
 
-    user = PhoneNumber.select().join(User).where(
+    user_query = User.select().join(PhoneNumber).where(
         PhoneNumber.number == phone_number
     )
+    user = lambda z: z[0].username if len(z) != 0 else None
 
     # FIXME: data from postgres have precedence
     # should be removed when gs-support will be dropped
-    return jsonify(user.username or x)
+    return jsonify(user(user_query) or x)
 
 
 def get_client_type():
     """ Function for checking Type of the Client from google spreadsheet
     (Client, Volunteer, Client and Volunteer, QA Engineer
     """
-    x = {}
     request_values = request.values
     phone_number = cleanup_phone_number(request_values.get('phone'))
     # TODO: gs-support should be dropped
