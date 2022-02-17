@@ -23,7 +23,7 @@ Modified By: GO and to DO Inc
 -----
 Copyright (c) 2021
 """
-
+import logging
 import os
 import gspread
 import datetime
@@ -38,7 +38,7 @@ from flaskapp.views.authenticate import is_user_authenticated
 from playhouse.shortcuts import model_to_dict
 from flaskapp.core.ivr_core import (google_search, save_new_user, save_data,
                                     is_user_new, update_reminder)
-from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder, HealthMetric
+from flaskapp.models.ivr_models import PhoneNumber, User, SmartReminder, Reminder, HealthMetric, Call
 from flaskapp.tools.utils import (send_mail, matchFromDf, TimeZoneHelper,
                                   getTemporaryUserData, get_txt_from_url,
                                   cleanup_phone_number)
@@ -110,41 +110,41 @@ def get_username():
     rows = gs_users_existing.get_all_records()
     for row in rows:
         # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
-        tel = cleanup_phone_number(row.get('Phone Number'))
+        tel = cleanup_phone_number(str(row.get('Phone Number')))
         if phone_number == tel:
             x = {"username": row.get('username')}
 
-    user = PhoneNumber.select().join(User).where(
+    user_query = User.select().join(PhoneNumber).where(
         PhoneNumber.number == phone_number
     )
+    user = lambda z: z[0].username if len(z) != 0 else None
 
     # FIXME: data from postgres have precedence
     # should be removed when gs-support will be dropped
-    return jsonify(user.username or x)
+    return jsonify(user(user_query) or x)
 
 
 def get_client_type():
     """ Function for checking Type of the Client from google spreadsheet
     (Client, Volunteer, Client and Volunteer, QA Engineer
     """
-
     request_values = request.values
     phone_number = cleanup_phone_number(request_values.get('phone'))
-
     # TODO: gs-support should be dropped
     rows = gs_users_existing.get_all_records()
     for row in rows:
         # FIXME: WE have different names 'phone' and 'Phone Number' (bad)
-        tel = cleanup_phone_number(row.get('Phone Number'))
+        tel = cleanup_phone_number(str(row.get('Phone Number')))
         if phone_number == tel:
             x = {"type": row.get('type')}
 
-    user = PhoneNumber.select().join(User).where(
+    query = User.select().join(PhoneNumber, on=(User.id == PhoneNumber.user)).where(
         PhoneNumber.number == phone_number
     )
 
     # FIXME: should be changed when gs-support will be dropped
-    return jsonify(user.type or x)
+    user = lambda z: z[0].type if len(z) != 0 else None
+    return jsonify(user(query) or x)
 
 
 def save_client_type():
@@ -360,28 +360,28 @@ def search_via_google():
 def get_next_reminder():
     req = request.values
     phone = req.get('phone')
-    tel = str(phone[1:15])  # exclude +
+    tel = cleanup_phone_number(phone)  # exclude +
 
-    # conn.connect()
-    # get User ID by the phone
-    pat = User.get(PhoneNumber.number == tel)
-    print(pat.id, pat.phone)
+    query = User.select() \
+        .join(PhoneNumber, on=(User.id == PhoneNumber.user)) \
+        .where(PhoneNumber.number == tel)
+
+    user = query[0]
 
     # get SmartReminders by User ID
-    # smr = SmartReminder.get(SmartReminder.id==pat.id)
-    query = SmartReminder.select().where(SmartReminder.patient_id == pat.id).order_by(SmartReminder.next_time).limit(1)
-    smr_selected = query.dicts().execute()
-
+    smr_selected = SmartReminder.select().where(SmartReminder.user == user.id).order_by(SmartReminder.next_time).limit(
+        1)
+    print(smr_selected)
     result = ''
     # get reminder text by SmartReminder ID
     for s in smr_selected:
-        rm = Reminder.get(Reminder.id == s['reminder_id'])
+        print(s)
+        rm = Reminder.get(Reminder.id == s.reminder_id)
         result = rm.text
         print(rm.text)
         # change next time of reminding
-        update_reminder(s['reminder_id'])
-        conn.commit()
-    conn.close()
+        update_reminder(s.reminder_id)
+
     return jsonify(
         {
             "text":
@@ -405,17 +405,29 @@ def get_privacy():
 def get_profile():
     req = request.json
     phone = req.get("Phone Number")
+    tel = cleanup_phone_number(phone)
+    print(tel)
     auth, message = is_user_authenticated(phone)
     print(auth, message)
     if auth:
-        pat = User.get(User.phone == phone)
+        user = User.select(User, PhoneNumber, Call) \
+            .join(PhoneNumber, on=(User.id == PhoneNumber.user)) \
+            .join(Call, on=(User.id == Call.user)) \
+            .where(PhoneNumber.number == tel)
+
+        print(user.get())
+
         patient = dict()
-        patient["Phone Number"] = pat.phone
-        patient["time zone"] = pat.timezone
-        patient["call time"] = str(pat.callstart)
-        patient["username"] = pat.username
-        patient["type"] = pat.type
-        print(patient)
+        for pat in user:
+            print(pat)
+
+            patient["Phone Number"] = pat.phonenumber.number
+            patient["time zone"] = pat.timezone
+            patient["call time"] = str(pat.phonenumber.call.call_start)
+            patient["username"] = pat.username
+            patient["type"] = pat.type
+            print(patient)
+
         return jsonify(patient)
     else:
         return message

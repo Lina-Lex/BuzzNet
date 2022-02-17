@@ -82,8 +82,13 @@ def ensure_gc_opened(method):
                 logger.error(f"Error raised while appending data to {self.sheet_name}.")  # noqa: E501
                 result = False
         except Exception as e:
-            logger.error(f"Exception raised while accessing google spreadsheet: {e}.")  # noqa: E501
-            result = False
+            try:
+                self.gc.login()
+                self.open_spreadsheet()
+                result = method(self, *args, **kwargs) or True
+            except:
+                logger.error(f"Exception raised while accessing google spreadsheet: {e}.")  # noqa: E501
+                result = False
         return result
 
     return wrapper
