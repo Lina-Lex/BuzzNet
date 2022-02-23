@@ -126,7 +126,7 @@ class GoogleSpreadSheet:
         """Tries to append a row to the corresponding spreadsheet/sheet_name
         and returns True if success, otherwise returns False
         """
-        self.woorksheet.append_row(row)
+        self.worksheet.append_row(row)
 
 
 # interacts with users spreadsheet / Existing tab
