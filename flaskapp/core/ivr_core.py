@@ -379,17 +379,10 @@ def save_data(col_name, value, phone_number, date=None):
         phone_num_index = 1
         for data in all_data:
             phone_num_index = phone_num_index + 1
-            print(type(data))
-            print(phone_number)
-            print(data['Phone Number'])
             array_data = np.array(list(data.items()))
-            print(array_data[:, 0])
-            print(array_data[0, :])
             if str(data['Phone Number']) == phone_number:
                 # phone_num_index = np.argmax(array_data[0, :] == phone_number)
-                # print(phone_num_index)
                 col_name_index = np.argmax(array_data[:, 0] == col_name)
-                print(col_name_index)
                 gs_users_existing.update_cell(phone_num_index, col_name_index+1, value)
 
     save_data_to_postgres(
