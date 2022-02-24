@@ -78,10 +78,11 @@ def voice():
 
     voice_response = VoiceResponse()
     phone_number = request.values['From']
+    username = request.values['username']
     if not is_user_new(phone_number):
         voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
-        save_new_user(phone_number, 'Calls')
+        save_new_user(username, phone_number, 'Calls')
         gather = Gather(input='speech dtmf',
                         action='/voice_joined', timeout=3, num_digits=1)
         gather.say(WELCOME_GREETING)
@@ -461,10 +462,11 @@ def get_from_phone_number_from_twilio_call_logs():
     return set(calls)
 
 
-# getting one month healthMetric data for a particular patient or user
-def get_month_data():
+# getting healthMetric data by days interval for a particular patient or user
+def get_data_by_days_interval():
     req = request.values
-    phone = req.get('phone')
+    phone = cleanup_phone_number(req.get('phone'))
+    days = int(req.get('days'))
     query = HealthMetric.select() \
         .join(PhoneNumber, on=(HealthMetric.user == PhoneNumber.user)) \
         .where(PhoneNumber.number == phone)
@@ -472,7 +474,7 @@ def get_month_data():
     for item in query:
         data = {}
         duration = datetime.datetime.now() - datetime.datetime.fromisoformat(item.data["DateTime"])
-        if duration <= datetime.timedelta(days=30):
+        if duration <= datetime.timedelta(days=days):
             data['UP'] = item.data['UP']
             data['DOWN'] = item.data['DOWN']
             data['DateTime'] = item.data['DateTime']

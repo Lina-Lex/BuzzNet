@@ -244,7 +244,7 @@ def is_user_new(phone_number=''):
     ).exists()
 
 
-def save_new_user(phone_number='', tab=''):
+def save_new_user(username='', phone_number='', tab=''):
     """Function for saving NEW user in google spreadsheet
     and ProstgreSQL database.
 
@@ -275,16 +275,19 @@ def save_new_user(phone_number='', tab=''):
 
     # --- store new user and related call
     try:
+        user_obj = User.get_or_create(username=username)
         phone_obj = PhoneNumber.get_or_create(
-            number=cleaned_phone_number
+            number=cleaned_phone_number,
+            user=user_obj[0]
         )
-        user_obj = User.get_or_create(phone_number=phone_obj)
-        logger.info(f"User object ({user_obj.id}) and "
-                    f"corresponding phone object ({phone_obj.id})"
+
+        logger.info(f"User object ({user_obj[0].id}) and "
+                    f"corresponding phone object ({phone_obj[0].id})"
                     f"are created (phone: {phone_number}).")
     except Exception as e:
         logger.error(f"Exception raised during DB operation: {e}")
     logger.info(f"Sending notification email for phone num.={phone_number}.")
+
     send_mail("NEW USER", phone=phone_number)
     logger.info(f"Notification email for phone num.={phone_number} was sent.")
 
@@ -373,9 +376,14 @@ def save_data(col_name, value, phone_number, date=None):
     all_data = gs_users_existing.get_all_records()
     if all_data:
         all_data = np.array(all_data)
-        phone_num_index = np.argmax(all_data[:, 0] == phone_number)
-        col_name_index = np.argmax(all_data[0, :] == col_name)
-        gs_users_existing.update_cell(phone_num_index, col_name_index, value)
+        phone_num_index = 1
+        for data in all_data:
+            phone_num_index = phone_num_index + 1
+            array_data = np.array(list(data.items()))
+            if str(data['Phone Number']) == phone_number:
+                # phone_num_index = np.argmax(array_data[0, :] == phone_number)
+                col_name_index = np.argmax(array_data[:, 0] == col_name)
+                gs_users_existing.update_cell(phone_num_index, col_name_index+1, value)
 
     save_data_to_postgres(
         col_name,

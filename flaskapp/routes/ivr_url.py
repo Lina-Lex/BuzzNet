@@ -46,7 +46,7 @@ from flaskapp.views.ivrflow import (
     get_profile,
     new_user,
     unsubscribe,
-    get_month_data
+    get_data_by_days_interval
 )
 
 
@@ -76,7 +76,7 @@ IVRFlowBlueprint.bulk_register(
         end_call,
         save_blood_pressure,
         save_feedback_service,
-        get_month_data
+        get_data_by_days_interval
 )
 
 
@@ -93,7 +93,7 @@ MobileBluprint.bulk_register(
         get_term_cond,
         get_privacy,
         get_profile,
-        get_month_data,
+        get_data_by_days_interval,
 
         # Some view names aren't the same as url-endpoint names,
         # so we provide additional information in `route_urls`,
@@ -107,6 +107,7 @@ MobileBluprint.bulk_register(
             'search_via_google': 'search',
             'get_term_cond': 'term_cond',
             'get_privacy': 'privacy',
-            'get_profile': 'authenticate/get_profile'
+            'get_profile': 'authenticate/get_profile',
+            'get_data_by_days_interval': 'get_data'
         }
 )
