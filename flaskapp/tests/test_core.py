@@ -104,7 +104,7 @@ def test_save_new_user(monkeypatch):
         mocked_google_proxy_obj
     )
     user_phone_number = "+123456"
-    save_new_user(phone_number=user_phone_number)
+    save_new_user('user', phone_number=user_phone_number)
     assert PhoneNumber.select().where(
         PhoneNumber.number == cleanup_phone_number(user_phone_number)
     ).exists()

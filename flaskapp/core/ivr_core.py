@@ -244,7 +244,7 @@ def is_user_new(phone_number=''):
     ).exists()
 
 
-def save_new_user(username='', phone_number='', tab=''):
+def save_new_user(username, phone_number, tab):
     """Function for saving NEW user in google spreadsheet
     and ProstgreSQL database.
 
