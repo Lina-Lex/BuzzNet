@@ -52,7 +52,7 @@ def send_mail(mail_type, phone, feedback=''):
     """
     phone = str(phone[0:5] + '*****' + phone[10:])
     if mail_type == 'FEEDBACK':
-        with open('templates/feedback.html', 'r') as template:
+        with open('flaskapp/tools/templates/feedback.html', 'r') as template:
             html = ''.join(template.readlines())
             message = Mail(
                 from_email=sender_mail,
@@ -61,7 +61,7 @@ def send_mail(mail_type, phone, feedback=''):
                 html_content=html.format(phone=phone, feedback=feedback))
 
     elif mail_type == 'NEW USER':
-        with open('templates/welcome.html', 'r') as template:
+        with open('flaskapp/tools/templates/welcome.html', 'r') as template:
             html = ''.join(template.readlines())
             message = Mail(
                 from_email=sender_mail,
