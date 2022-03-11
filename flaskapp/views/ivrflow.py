@@ -61,9 +61,10 @@ def voice_joined():
     """ Function for making joined call """
     voice_response = VoiceResponse()
     phone_number = request.form['From']
+    username = request.form['Caller']
     answer = request.form['SpeechResult'].lower().strip()
     if 'yes' in answer:
-        save_new_user(phone_number, 'Existing')
+        save_new_user(username, phone_number, 'Existing')
         voice_response.say(THANKS_FOR_JOIN)
         voice_response.dial(TWILIO_OPT_PHONE_NUMBER)
     else:
@@ -122,7 +123,7 @@ def get_username():
 
     # FIXME: data from postgres have precedence
     # should be removed when gs-support will be dropped
-    return jsonify(user(user_query) or x)
+    return jsonify({"username": user(user_query)} or x)
 
 
 def get_client_type():
@@ -145,7 +146,7 @@ def get_client_type():
 
     # FIXME: should be changed when gs-support will be dropped
     user = lambda z: z[0].type if len(z) != 0 else None
-    return jsonify(user(query) or x)
+    return jsonify({"type": user(query)} or x)
 
 
 def save_client_type():
